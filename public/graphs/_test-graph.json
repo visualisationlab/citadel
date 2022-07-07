@@ -1,0 +1,101 @@
+{
+    "attributes": {
+      "edgeType": "undirected",
+      "mode": "static",
+      "id": "graph"
+    },
+    "nodes": [
+      {
+        "attributes": {
+            "age": 18,
+            "name": "James",
+            "nationality": "british",
+            "income": 10000,
+            "height": 180
+        },
+        "id": "james",
+        "label": "James"
+      },
+      {
+        "attributes": {
+            "age": 54,
+            "name": "King",
+            "nationality": "british",
+            "income": 100000,
+            "height": 165
+        },
+        "id": "king",
+        "label": "King"
+      },
+      {
+        "attributes": {
+            "age": 38,
+            "name": "Lisa",
+            "nationality": "dutch",
+            "income": 85000,
+            "height": 170
+        },
+        "id": "lisa",
+        "label": "lisa"
+      },
+      {
+        "attributes": {
+            "age": 22,
+            "name": "Joanne",
+            "nationality": "dutch",
+            "income": 23000,
+            "height": 155
+        },
+        "id": "joanne",
+        "label": "joanne"
+      },
+      {
+        "attributes": {
+            "age": 27,
+            "name": "Jacob",
+            "nationality": "dutch",
+            "income": 70000,
+            "height": 200
+        },
+        "id": "jacob",
+        "label": "Jacob"
+      },
+      {
+        "attributes": {
+            "age": 26,
+            "name": "Walter",
+            "nationality": "british",
+            "income": 120000,
+            "height": 178
+        },
+        "id": "walter",
+        "label": "walter"
+      }
+    ],
+    "edges": [
+        {
+            "attributes": {},
+            "id": "family",
+            "source": "king",
+            "target": "lisa"
+        },
+        {
+            "attributes": {},
+            "id": "employment",
+            "source": "lisa",
+            "target": "jacob"
+        },
+        {
+            "attributes": {},
+            "id": "employment",
+            "source": "king",
+            "target": "walter"
+        },
+        {
+            "attributes": {},
+            "id": "employment",
+            "source": "joanne",
+            "target": "james"
+        }
+    ]
+  }

@@ -1,0 +1,230 @@
+import React from "react";
+import { useEffect, useState } from "react";
+import * as d3 from "d3";
+
+import * as forceBoundary from "d3-force-boundary";
+
+import * as jsnx from "jsnetworkx";
+
+function nodeColor(id, parent) {
+    if (parent.state.selectedNode === id) {
+        return "red";
+    }
+
+    if (parent.state.selectionType === "") {
+        return "black";
+    }
+
+    if (parent.state.highlightedNodes.includes(id)) {
+        return "green";
+    }
+
+    return "black";
+}
+
+function nodeOpacity(id, parent) {
+    if (parent.state.highlightedNodes.length === 0) {
+        return 1;
+    }
+
+    if (!parent.state.highlightedNodes.includes(id)) {
+        return 0.5;
+    }
+
+    return 1;
+}
+
+function genLine(edge, parent) {
+    let l = <line x1={edge.source.x} y1={edge.source.y}
+        x2={edge.target.x} y2={edge.target.y} stroke="black" stroke-opacity={lineOpacity(edge, parent)}/>
+
+    return l;
+}
+
+function lineOpacity(edge, parent) {
+    if (parent.state.highlightedNodes.length === 0) {
+        return 0.7;
+    }
+
+    if (parent.state.selectionType === "neighbors") {
+        if (parent.state.highlightedNodes.includes(edge.source.id) &&
+        edge.target.id === parent.state.selectedNode) {
+            return 0.7;
+        }
+
+        if (parent.state.highlightedNodes.includes(edge.target.id) &&
+        edge.source.id === parent.state.selectedNode) {
+            return 0.7;
+        }
+
+        return 0.1;
+    }
+
+    if (parent.state.highlightedNodes.includes(edge.source.id) &&
+        parent.state.highlightedNodes.includes(edge.target.id)) {
+        return 0.7;
+    }
+
+    return 0.1;
+}
+
+function groupHelper(startingNode, G) {
+    let group = [];
+
+    let stack = [startingNode];
+
+    while (stack.length > 0) {
+        var elem = stack.pop();
+
+        group.push(elem);
+
+        jsnx.neighbors(G, elem).forEach(neighbor => {
+            if (!group.includes(neighbor)) {
+                stack.push(neighbor);
+            }
+        });
+    }
+
+    return group;
+}
+
+function fun(node, parent, nodes, removeNode) {
+    let c = <g>
+        {/* <text x={node.x} y={node.y}>{node.id}</text> */}
+        <circle
+            onClick={()=>{
+                if (parent.state.selectionType === "neighbors") {
+                    parent.setState({
+                        selectedNode: node.id,
+                        highlightedNodes: parent.state.nx.neighbors(node.id),
+                        message: "number of neighbors: " + parent.state.nx.neighbors(node.id).length
+                    })
+                }
+                else if (parent.state.selectionType === "delete") {
+                    removeNode(node);
+                }
+                else if (parent.state.selectionType === "shortestpath") {
+                    if (parent.state.shortestpath_node0 === -1) {
+                        parent.setState({
+                            selectedNode: node.id,
+                            shortestpath_node0: node.id
+                        })
+
+                        return;
+                    }
+                    else if (parent.state.shortestpath_node1 === -1) {
+                        if (jsnx.hasPath(parent.state.nx, {source: parent.state.shortestpath_node0, target: node.id})) {
+                            parent.setState({
+                                selectedNode: "",
+                                shortestpath_node1: node.id,
+                                highlightedNodes: jsnx.shortestPath(parent.state.nx, {source: parent.state.shortestpath_node0, target: node.id}),
+                                message: "path length: " + jsnx.shortestPathLength(parent.state.nx, {source: parent.state.shortestpath_node0, target: node.id})
+                            });
+                        }
+                        else {
+                            parent.setState({
+                                message: "no path from node " + parent.state.shortestpath_node0 + " to " + node.id,
+                                selectedNode: "",
+                                shortestpath_node0: -1,
+                                highlightedNodes: [],
+                            });
+
+                            return;
+                        }
+                    }
+                    else {
+                        parent.setState({
+                            selectedNode: "",
+                            shortestpath_node0: -1,
+                            shortestpath_node1: -1,
+                            highlightedNodes: []
+                        });
+                    }
+                }
+                else if (parent.state.selectionType === "group") {
+                    let group = []
+
+                    group = groupHelper(node.id, parent.state.nx);
+
+                    parent.setState({
+                        highlightedNodes: group,
+                        message: "Group size: " + group.length
+                    })
+                }
+            }}
+          cx={node.x}
+          cy={node.y}
+          r={node.r}
+          key={node.id}
+          stroke={nodeColor(node.id, parent)}
+          opacity={nodeOpacity(node.id, parent)}
+          fill="transparent"
+          stroke-width="4"
+        /></g>;
+
+    return c;
+}
+
+function f(width, height, simulation) {
+    var g = d3.select("g")
+    d3.select("svg")
+        .call(d3.zoom().scaleExtent([0.25, 3])
+          .on("zoom", function () {
+            g.attr("transform", d3.event.transform)
+        }))
+}
+
+
+export default function ForceGraph({ nodes, edges, charge, parent, width, height, removeNode, ws}) {
+    const [animatedNodes, setAnimatedNodes] = useState([]);
+    const [animatedLinks, setAnimatedLinks] = useState([]);
+
+    // re-create animation every time nodes change
+    useEffect(() => {
+        console.log("Updating ")
+
+      const simulation = d3.forceSimulation()
+        .force("x", d3.forceX(width / 2))
+        .force("y", d3.forceY(height / 2))
+        .force("link", d3.forceLink().id(function(d) { return d.id; }))
+        .force("charge", d3.forceManyBody().strength(charge))
+        .on('tick', function() {
+        })
+        .on('end', function() {
+
+            console.log("Done");
+        })
+        .force("collision", d3.forceCollide(5));
+
+      // update state on every frame
+      simulation.on("tick", () => {
+        setAnimatedNodes([...simulation.nodes()]);
+        setAnimatedLinks([...edges]);
+      });
+
+      // copy nodes into simulation
+      simulation.nodes([...Object.keys(nodes).map(function(key){
+        return nodes[key];})
+    ]);
+
+      simulation.force("link")
+        .links(edges);
+
+      // slow down with a small alpha
+      simulation.alpha(0.3).restart();
+      f(width, height, simulation);
+
+      // stop simulation on unmount
+      return () => simulation.stop();
+    }, [nodes, edges, charge, parent, width, height]);
+
+    let nds = animatedNodes.map((node) => fun(node, parent, nodes, removeNode));
+    let lines = animatedLinks.map((edge) => genLine(edge, parent));
+
+    return (
+      <g className='y'>
+          {lines}
+          {nds}
+      </g>
+    );
+  }

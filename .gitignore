@@ -1,3 +1,9 @@
+*.graphml
+*.jsx
+*.js
+
+cache
+
 # Logs
 logs
 *.log

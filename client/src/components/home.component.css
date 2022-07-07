@@ -1,0 +1,109 @@
+.graphState {
+    padding: 5px;
+    background-color:rgba(0,0,0,0.5);
+    /* border-radius: 0px 0px 5px 5px; */
+    color:white;
+    /* border-width: 1; */
+}
+
+#errorInfo {
+    padding: 5px;
+    background-color:rgba(0,0,0,0.5);
+    border-radius: 0px 0px 5px 5px;
+    color:red;
+    height:400px;
+    /* border-width: 1; */
+}
+
+.nav-link {
+    color:white !important;
+}
+
+.numericalSetting input {
+    width: 4em;
+    margin-left: 1em;
+    margin-right: 1em;
+}
+
+#menu {
+    top:100px;
+    left: 50px;
+    position:absolute;
+    width:auto;
+}
+
+.tabsInactive {
+    background-color: rgba(150, 150, 150, 0.8);
+    border-radius: 5px 5px 0px 0px;
+    /* margin-left: 0.5px; */
+    margin-right: 0.5px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.tabsActive {
+    background-color: rgba(0,0,0,0.5) !important;
+    border-radius: 5px 5px 0px 0px;
+    margin-right: 0.5px;
+    cursor: pointer;
+    user-select: none;
+}
+
+svg {
+    overflow:hidden;
+}
+
+.heightClass {
+    height:100vh;
+}
+
+.menuContents {
+    height: 600px;
+    overflow-y: auto
+}
+
+.infoContents {
+    color:white;
+    padding: 5px;
+    top:100px;
+    width:400px;
+    right: 50px;
+    position:absolute;
+    overflow-y: auto;
+    background-color:rgba(0,0,0,0.5);
+    border-radius: 5px;
+}
+
+.float {
+    display:flex;
+    justify-content: space-between;
+}
+
+.floatColours {
+    display:flex;
+    justify-content: space-between;
+    width: 150px;
+}
+
+#nodeSelected {
+    height: 400px;
+}
+
+.analysisMatrix {
+    /* width: 300px; */
+    /* display:flex; */
+    /* justify-content: space-between; */
+    border-collapse:separate;
+    border-spacing:1em 0em;
+    /* flex-direction: column; */
+    /* align-items: stretch; */
+}
+
+.analysisMatrix td {
+    width: 3em;
+}
+
+#cy {
+    width: 900px;
+    height: 900px;
+}

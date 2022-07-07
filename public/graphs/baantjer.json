@@ -1,0 +1,2243 @@
+{
+  "attributes": {
+    "edgeType": "undirected",
+    "mode": "static",
+    "id": "nl.ns.d.0993c8f54e87f7224ff6bd5e06ed954d6238f613.s"
+  },
+  "nodes": [
+    {
+      "attributes": {
+        "n1": "VLEDDER DE COCK",
+        "n2": 1901,
+        "n4": 545,
+        "n3": 34
+      },
+      "id": "nym.person.66"
+    },
+    {
+      "attributes": {
+        "n1": "ALEX DELSZSEN SHEPHERD",
+        "n2": 343,
+        "n4": 130,
+        "n3": 0
+      },
+      "id": "nym.person.34"
+    },
+    {
+      "attributes": {
+        "n1": "ELLEN DE VRIES",
+        "n2": 112,
+        "n4": 62,
+        "n3": 10
+      },
+      "id": "nym.person.17"
+    },
+    {
+      "attributes": {
+        "n1": "HANDIGE HENKIE",
+        "n2": 93,
+        "n4": 34,
+        "n3": 6
+      },
+      "id": "nym.person.29"
+    },
+    {
+      "attributes": {
+        "n1": "HANS VAN DER DUIJN",
+        "n2": 75,
+        "n4": 34,
+        "n3": 8
+      },
+      "id": "nym.person.3"
+    },
+    {
+      "attributes": {
+        "n1": "VADER MATTIAS",
+        "n2": 75,
+        "n4": 32,
+        "n3": 6
+      },
+      "id": "nym.person.16"
+    },
+    {
+      "attributes": {
+        "n1": "WIM HAVERMAN",
+        "n2": 61,
+        "n4": 33,
+        "n3": 12
+      },
+      "id": "nym.person.50"
+    },
+    {
+      "attributes": {
+        "n1": "HENDRIK JAN VAN MARLE",
+        "n2": 53,
+        "n4": 22,
+        "n3": 11
+      },
+      "id": "nym.person.64"
+    },
+    {
+      "attributes": {
+        "n1": "JOOST HOFMAN",
+        "n2": 49,
+        "n4": 24,
+        "n3": 5
+      },
+      "id": "nym.person.18"
+    },
+    {
+      "attributes": {
+        "n1": "BIE DOLMEN",
+        "n2": 43,
+        "n4": 24,
+        "n3": 5
+      },
+      "id": "nym.person.43"
+    },
+    {
+      "attributes": {
+        "n1": "FEMMY VAN WIJNGAARDEN",
+        "n2": 41,
+        "n4": 24,
+        "n3": 5
+      },
+      "id": "nym.person.59"
+    },
+    {
+      "attributes": {
+        "n1": "ELLA ROSSELING",
+        "n2": 36,
+        "n4": 21,
+        "n3": 11
+      },
+      "id": "nym.person.55"
+    },
+    {
+      "attributes": {
+        "n1": "SMALLE LOWIETJE",
+        "n2": 34,
+        "n4": 14,
+        "n3": 0
+      },
+      "id": "nym.person.122"
+    },
+    {
+      "attributes": {
+        "n1": "TOM VAN WIJK",
+        "n2": 34,
+        "n4": 24,
+        "n3": 5
+      },
+      "id": "nym.person.69"
+    },
+    {
+      "attributes": {
+        "n1": "BARBARA",
+        "n2": 33,
+        "n4": 21,
+        "n3": 6
+      },
+      "id": "nym.person.37"
+    },
+    {
+      "attributes": {
+        "n1": "ERNST KLUFFERT",
+        "n2": 32,
+        "n4": 24,
+        "n3": 11
+      },
+      "id": "nym.person.111"
+    },
+    {
+      "attributes": {
+        "n1": "SONJA",
+        "n2": 31,
+        "n4": 21,
+        "n3": 7
+      },
+      "id": "nym.person.131"
+    },
+    {
+      "attributes": {
+        "n1": "BLEKE GONNY",
+        "n2": 31,
+        "n4": 17,
+        "n3": 0
+      },
+      "id": "nym.person.105"
+    },
+    {
+      "attributes": {
+        "n1": "TOBIAS",
+        "n2": 24,
+        "n4": 10,
+        "n3": 0
+      },
+      "id": "nym.person.92"
+    },
+    {
+      "attributes": {
+        "n1": "GOD",
+        "n2": 24,
+        "n4": 16,
+        "n3": 0
+      },
+      "id": "nym.person.57"
+    },
+    {
+      "attributes": {
+        "n1": "ESKES",
+        "n2": 23,
+        "n4": 11,
+        "n3": 0
+      },
+      "id": "nym.person.130"
+    },
+    {
+      "attributes": {
+        "n1": "JOHAN VAN GELDER",
+        "n2": 22,
+        "n4": 9,
+        "n3": 9
+      },
+      "id": "nym.person.128"
+    },
+    {
+      "attributes": {
+        "n1": "KLAAS PIEPER",
+        "n2": 21,
+        "n4": 10,
+        "n3": 0
+      },
+      "id": "nym.person.26"
+    },
+    {
+      "attributes": {
+        "n1": "RUSTELOOS",
+        "n2": 20,
+        "n4": 15,
+        "n3": 0
+      },
+      "id": "nym.person.58"
+    },
+    {
+      "attributes": {
+        "n1": "KRAAIJENBRINK",
+        "n2": 17,
+        "n4": 9,
+        "n3": 5
+      },
+      "id": "nym.person.42"
+    },
+    {
+      "attributes": {
+        "n1": "ROBERT ANTOINE VAN DIJK",
+        "n2": 17,
+        "n4": 11,
+        "n3": 0
+      },
+      "id": "nym.person.9"
+    },
+    {
+      "attributes": {
+        "n1": "ANS",
+        "n2": 16,
+        "n4": 8,
+        "n3": 5
+      },
+      "id": "nym.person.100"
+    },
+    {
+      "attributes": {
+        "n1": "ZORGHDRAGER",
+        "n2": 16,
+        "n4": 11,
+        "n3": 0
+      },
+      "id": "nym.person.41"
+    },
+    {
+      "attributes": {
+        "n1": "MANKE MIEP",
+        "n2": 15,
+        "n4": 9,
+        "n3": 5
+      },
+      "id": "nym.person.93"
+    },
+    {
+      "attributes": {
+        "n1": "BIERENS",
+        "n2": 15,
+        "n4": 7,
+        "n3": 5
+      },
+      "id": "nym.person.19"
+    },
+    {
+      "attributes": {
+        "n1": "BRAM VAN WIELIGEN",
+        "n2": 14,
+        "n4": 13,
+        "n3": 0
+      },
+      "id": "nym.person.78"
+    },
+    {
+      "attributes": {
+        "n1": "BAPS",
+        "n2": 12,
+        "n4": 8,
+        "n3": 6
+      },
+      "id": "nym.person.11"
+    },
+    {
+      "attributes": {
+        "n1": "BRANDERS",
+        "n2": 11,
+        "n4": 6,
+        "n3": 3
+      },
+      "id": "nym.person.80"
+    },
+    {
+      "attributes": {
+        "n1": "BEN KREUGER",
+        "n2": 11,
+        "n4": 7,
+        "n3": 2
+      },
+      "id": "nym.person.90"
+    },
+    {
+      "attributes": {
+        "n1": "LOUISE VAN CAMERIJK",
+        "n2": 9,
+        "n4": 7,
+        "n3": 9
+      },
+      "id": "nym.person.7"
+    },
+    {
+      "attributes": {
+        "n1": "BERENDSEN",
+        "n2": 9,
+        "n4": 5,
+        "n3": 1
+      },
+      "id": "nym.person.72"
+    },
+    {
+      "attributes": {
+        "n1": "TRUUS",
+        "n2": 8,
+        "n4": 6,
+        "n3": 2
+      },
+      "id": "nym.person.46"
+    },
+    {
+      "attributes": {
+        "n1": "BIJKERK",
+        "n2": 8,
+        "n4": 7,
+        "n3": 5
+      },
+      "id": "nym.person.62"
+    },
+    {
+      "attributes": {
+        "n1": "EMANUEL ARCHIBALD SHEPHERD",
+        "n2": 7,
+        "n4": 7,
+        "n3": 8
+      },
+      "id": "nym.person.44"
+    },
+    {
+      "attributes": {
+        "n1": "RIA KLUFFERT",
+        "n2": 7,
+        "n4": 6,
+        "n3": 10
+      },
+      "id": "nym.person.116"
+    },
+    {
+      "attributes": {
+        "n1": "PARATHION",
+        "n2": 6,
+        "n4": 4,
+        "n3": 6
+      },
+      "id": "nym.person.31"
+    },
+    {
+      "attributes": {
+        "n1": "FLIP",
+        "n2": 6,
+        "n4": 4,
+        "n3": 1
+      },
+      "id": "nym.person.15"
+    },
+    {
+      "attributes": {
+        "n1": "DÉ COCK",
+        "n2": 5,
+        "n4": 4,
+        "n3": 2
+      },
+      "id": "nym.person.25"
+    },
+    {
+      "attributes": {
+        "n1": "MOSIE",
+        "n2": 4,
+        "n4": 4,
+        "n3": 1
+      },
+      "id": "nym.person.115"
+    },
+    {
+      "attributes": {
+        "n1": "BOSSE PIETJE",
+        "n2": 4,
+        "n4": 2,
+        "n3": 0
+      },
+      "id": "nym.person.76"
+    },
+    {
+      "attributes": {
+        "n1": "DISPUUT HORA",
+        "n2": 4,
+        "n4": 3,
+        "n3": 2
+      },
+      "id": "nym.person.33"
+    },
+    {
+      "attributes": {
+        "n1": "HELEENTJE",
+        "n2": 3,
+        "n4": 2,
+        "n3": 0
+      },
+      "id": "nym.person.23"
+    },
+    {
+      "attributes": {
+        "n1": "VAN BEVEREN",
+        "n2": 3,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.24"
+    },
+    {
+      "attributes": {
+        "n1": "EMANUEL SHEPHERD",
+        "n2": 3,
+        "n4": 3,
+        "n3": 5
+      },
+      "id": "nym.person.70"
+    },
+    {
+      "attributes": {
+        "n1": "MOOS",
+        "n2": 3,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.118"
+    },
+    {
+      "attributes": {
+        "n1": "ANTJE",
+        "n2": 3,
+        "n4": 2,
+        "n3": 0
+      },
+      "id": "nym.person.49"
+    },
+    {
+      "attributes": {
+        "n1": "RASKOLNIKOW",
+        "n2": 3,
+        "n4": 2,
+        "n3": 0
+      },
+      "id": "nym.person.2"
+    },
+    {
+      "attributes": {
+        "n1": "SCHULD",
+        "n2": 2,
+        "n4": 2,
+        "n3": 0
+      },
+      "id": "nym.person.21"
+    },
+    {
+      "attributes": {
+        "n1": "LEENTJE",
+        "n2": 2,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.98"
+    },
+    {
+      "attributes": {
+        "n1": "CHRISTUS",
+        "n2": 2,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.27"
+    },
+    {
+      "attributes": {
+        "n1": "HEINTJE HOEKSTEEG",
+        "n2": 2,
+        "n4": 2,
+        "n3": 0
+      },
+      "id": "nym.person.95"
+    },
+    {
+      "attributes": {
+        "n1": "HELENA MARÍA DE VRIES",
+        "n2": 2,
+        "n4": 2,
+        "n3": 0
+      },
+      "id": "nym.person.74"
+    },
+    {
+      "attributes": {
+        "n1": "BLEKE GONRTY",
+        "n2": 2,
+        "n4": 2,
+        "n3": 0
+      },
+      "id": "nym.person.99"
+    },
+    {
+      "attributes": {
+        "n1": "VAN VLIET",
+        "n2": 2,
+        "n4": 2,
+        "n3": 0
+      },
+      "id": "nym.person.13"
+    },
+    {
+      "attributes": {
+        "n1": "LAUREL",
+        "n2": 2,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.4"
+    },
+    {
+      "attributes": {
+        "n1": "HANSJE",
+        "n2": 2,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.112"
+    },
+    {
+      "attributes": {
+        "n1": "WILLEM",
+        "n2": 2,
+        "n4": 2,
+        "n3": 0
+      },
+      "id": "nym.person.107"
+    },
+    {
+      "attributes": {
+        "n1": "DICK",
+        "n2": 2,
+        "n4": 2,
+        "n3": 0
+      },
+      "id": "nym.person.123"
+    },
+    {
+      "attributes": {
+        "n1": "VAN DIJKE",
+        "n2": 2,
+        "n4": 2,
+        "n3": 0
+      },
+      "id": "nym.person.119"
+    },
+    {
+      "attributes": {
+        "n1": "HARDY",
+        "n2": 2,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.60"
+    },
+    {
+      "attributes": {
+        "n1": "JACOB HAVERMAN",
+        "n2": 2,
+        "n4": 2,
+        "n3": 0
+      },
+      "id": "nym.person.108"
+    },
+    {
+      "attributes": {
+        "n1": "MANNIE",
+        "n2": 2,
+        "n4": 2,
+        "n3": 0
+      },
+      "id": "nym.person.39"
+    },
+    {
+      "attributes": {
+        "n1": "JAAP",
+        "n2": 2,
+        "n4": 2,
+        "n3": 0
+      },
+      "id": "nym.person.45"
+    },
+    {
+      "attributes": {
+        "n1": "DE GRAAF",
+        "n2": 2,
+        "n4": 2,
+        "n3": 0
+      },
+      "id": "nym.person.75"
+    },
+    {
+      "attributes": {
+        "n1": "BOETE VAN DOSTOJEWSKI",
+        "n2": 2,
+        "n4": 2,
+        "n3": 0
+      },
+      "id": "nym.person.35"
+    },
+    {
+      "attributes": {
+        "n1": "SODOM",
+        "n2": 2,
+        "n4": 2,
+        "n3": 0
+      },
+      "id": "nym.person.88"
+    },
+    {
+      "attributes": {
+        "n1": "DIEN",
+        "n2": 2,
+        "n4": 2,
+        "n3": 0
+      },
+      "id": "nym.person.20"
+    },
+    {
+      "attributes": {
+        "n1": "RASKOL",
+        "n2": 2,
+        "n4": 2,
+        "n3": 0
+      },
+      "id": "nym.person.10"
+    },
+    {
+      "attributes": {
+        "n1": "DE. COCK",
+        "n2": 2,
+        "n4": 2,
+        "n3": 0
+      },
+      "id": "nym.person.68"
+    },
+    {
+      "attributes": {
+        "n1": "JOHNNY",
+        "n2": 2,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.40"
+    },
+    {
+      "attributes": {
+        "n1": "DE GENESTET",
+        "n2": 2,
+        "n4": 2,
+        "n3": 0
+      },
+      "id": "nym.person.91"
+    },
+    {
+      "attributes": {
+        "n1": "LENIE",
+        "n2": 2,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.56"
+    },
+    {
+      "attributes": {
+        "n1": "KAVALIER",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.96"
+    },
+    {
+      "attributes": {
+        "n1": "BARSINGERHORN",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.102"
+    },
+    {
+      "attributes": {
+        "n1": "CLARA",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.36"
+    },
+    {
+      "attributes": {
+        "n1": "DE CPCK",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.71"
+    },
+    {
+      "attributes": {
+        "n1": "HENK HILTERMAN",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.89"
+    },
+    {
+      "attributes": {
+        "n1": "ALEX DELSZEN",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.53"
+    },
+    {
+      "attributes": {
+        "n1": "ROOSJE",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.22"
+    },
+    {
+      "attributes": {
+        "n1": "MARIETJE",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.120"
+    },
+    {
+      "attributes": {
+        "n1": "DÈ COCK",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.113"
+    },
+    {
+      "attributes": {
+        "n1": "ROBERT ANTOINÉ VAN DIJK",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.125"
+    },
+    {
+      "attributes": {
+        "n1": "ELLA.",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.73"
+    },
+    {
+      "attributes": {
+        "n1": "KAA",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.86"
+    },
+    {
+      "attributes": {
+        "n1": "SOLDER",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.14"
+    },
+    {
+      "attributes": {
+        "n1": "BILTHOVEN",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.52"
+    },
+    {
+      "attributes": {
+        "n1": "BA",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.103"
+    },
+    {
+      "attributes": {
+        "n1": "AA",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.109"
+    },
+    {
+      "attributes": {
+        "n1": "JANSEN",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.81"
+    },
+    {
+      "attributes": {
+        "n1": "TOONTJE",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.6"
+    },
+    {
+      "attributes": {
+        "n1": "WILLIAM SHAKESPEARES MUCH",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.94"
+    },
+    {
+      "attributes": {
+        "n1": "VAN DUIJN",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.85"
+    },
+    {
+      "attributes": {
+        "n1": "TVLET",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.54"
+    },
+    {
+      "attributes": {
+        "n1": "ROEL",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.38"
+    },
+    {
+      "attributes": {
+        "n1": "JANUS",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.84"
+    },
+    {
+      "attributes": {
+        "n1": "RIJK",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.127"
+    },
+    {
+      "attributes": {
+        "n1": "SCHOTSE",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.126"
+    },
+    {
+      "attributes": {
+        "n1": "WENSDORP",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.8"
+    },
+    {
+      "attributes": {
+        "n1": "ROOIE BERTUS",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.106"
+    },
+    {
+      "attributes": {
+        "n1": "VAN GEND",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.61"
+    },
+    {
+      "attributes": {
+        "n1": "MARIE",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.28"
+    },
+    {
+      "attributes": {
+        "n1": "DE GOCK",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.87"
+    },
+    {
+      "attributes": {
+        "n1": "SINTERKLAAS",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.83"
+    },
+    {
+      "attributes": {
+        "n1": "CHESTERFIELDS",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.82"
+    },
+    {
+      "attributes": {
+        "n1": "ABEL",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.114"
+    },
+    {
+      "attributes": {
+        "n1": "MATTIAS.",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.117"
+    },
+    {
+      "attributes": {
+        "n1": "VONDEL",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.47"
+    },
+    {
+      "attributes": {
+        "n1": "WI M",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.79"
+    },
+    {
+      "attributes": {
+        "n1": "DE \"COCK",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.124"
+    },
+    {
+      "attributes": {
+        "n1": "GO VAN GONNY",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.121"
+    },
+    {
+      "attributes": {
+        "n1": "WILT",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.30"
+    },
+    {
+      "attributes": {
+        "n1": "DE CÓCK",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.110"
+    },
+    {
+      "attributes": {
+        "n1": "LOES",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.12"
+    },
+    {
+      "attributes": {
+        "n1": "VLEDDEF",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.104"
+    },
+    {
+      "attributes": {
+        "n1": "MARIAN RUTTEN OMSLAGFOTO",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.129"
+    },
+    {
+      "attributes": {
+        "n1": "DE COCK VLEDDER",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.77"
+    },
+    {
+      "attributes": {
+        "n1": "NJATTIAS",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.48"
+    },
+    {
+      "attributes": {
+        "n1": "LOOS",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.63"
+    },
+    {
+      "attributes": {
+        "n1": "DUBROVNIK",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.65"
+    },
+    {
+      "attributes": {
+        "n1": "HANDIGE HENKIË",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.101"
+    },
+    {
+      "attributes": {
+        "n1": "FORTUNA",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.5"
+    },
+    {
+      "attributes": {
+        "n1": "PIEKER",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.51"
+    },
+    {
+      "attributes": {
+        "n1": "STUDIO POT",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.67"
+    },
+    {
+      "attributes": {
+        "n1": "KIER",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.1"
+    },
+    {
+      "attributes": {
+        "n1": "BABEL",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.97"
+    },
+    {
+      "attributes": {
+        "n1": "KITTY",
+        "n2": 1,
+        "n4": 1,
+        "n3": 0
+      },
+      "id": "nym.person.32"
+    }
+  ],
+  "edges": [
+    {
+      "attributes": {
+        "e1": 45,
+        "e2": 0.11452232430431088
+      },
+      "id": "17-66",
+      "source": "nym.person.17",
+      "target": "nym.person.66"
+    },
+    {
+      "attributes": {
+        "e1": 31,
+        "e2": 0.3426208994480675
+      },
+      "id": "3-66",
+      "source": "nym.person.3",
+      "target": "nym.person.66"
+    },
+    {
+      "attributes": {
+        "e1": 30,
+        "e2": 0.3098310766250766
+      },
+      "id": "29-66",
+      "source": "nym.person.29",
+      "target": "nym.person.66"
+    },
+    {
+      "attributes": {
+        "e1": 30,
+        "e2": 0.339684039774758
+      },
+      "id": "50-66",
+      "source": "nym.person.50",
+      "target": "nym.person.66"
+    },
+    {
+      "attributes": {
+        "e1": 27,
+        "e2": 0.2650951827836852
+      },
+      "id": "16-66",
+      "source": "nym.person.16",
+      "target": "nym.person.66"
+    },
+    {
+      "attributes": {
+        "e1": 23,
+        "e2": 0.39243460516028666
+      },
+      "id": "111-66",
+      "source": "nym.person.111",
+      "target": "nym.person.66"
+    },
+    {
+      "attributes": {
+        "e1": 21,
+        "e2": 0.38847420394418986
+      },
+      "id": "64-66",
+      "source": "nym.person.64",
+      "target": "nym.person.66"
+    },
+    {
+      "attributes": {
+        "e1": 21,
+        "e2": 0.30146282695456006
+      },
+      "id": "18-66",
+      "source": "nym.person.18",
+      "target": "nym.person.66"
+    },
+    {
+      "attributes": {
+        "e1": 20,
+        "e2": 0.252672662785128
+      },
+      "id": "66-69",
+      "source": "nym.person.66",
+      "target": "nym.person.69"
+    },
+    {
+      "attributes": {
+        "e1": 20,
+        "e2": 0.252672662785128
+      },
+      "id": "43-66",
+      "source": "nym.person.43",
+      "target": "nym.person.66"
+    },
+    {
+      "attributes": {
+        "e1": 20,
+        "e2": 0.3862040554096507
+      },
+      "id": "37-66",
+      "source": "nym.person.37",
+      "target": "nym.person.66"
+    },
+    {
+      "attributes": {
+        "e1": 20,
+        "e2": 0.3862040554096507
+      },
+      "id": "131-66",
+      "source": "nym.person.131",
+      "target": "nym.person.66"
+    },
+    {
+      "attributes": {
+        "e1": 19,
+        "e2": 0.3349107610221002
+      },
+      "id": "55-66",
+      "source": "nym.person.55",
+      "target": "nym.person.66"
+    },
+    {
+      "attributes": {
+        "e1": 18,
+        "e2": 0.1473121471273018
+      },
+      "id": "59-66",
+      "source": "nym.person.59",
+      "target": "nym.person.66"
+    },
+    {
+      "attributes": {
+        "e1": 13,
+        "e2": 1.9955411563108263
+      },
+      "id": "17-43",
+      "source": "nym.person.17",
+      "target": "nym.person.43"
+    },
+    {
+      "attributes": {
+        "e1": 13,
+        "e2": 2.2778612856212215
+      },
+      "id": "3-50",
+      "source": "nym.person.3",
+      "target": "nym.person.50"
+    },
+    {
+      "attributes": {
+        "e1": 12,
+        "e2": 1.91549844863729
+      },
+      "id": "17-59",
+      "source": "nym.person.17",
+      "target": "nym.person.59"
+    },
+    {
+      "attributes": {
+        "e1": 11,
+        "e2": 1.8284870716476602
+      },
+      "id": "17-69",
+      "source": "nym.person.17",
+      "target": "nym.person.69"
+    },
+    {
+      "attributes": {
+        "e1": 9,
+        "e2": 2.2285902366144392
+      },
+      "id": "18-29",
+      "source": "nym.person.18",
+      "target": "nym.person.29"
+    },
+    {
+      "attributes": {
+        "e1": 9,
+        "e2": 0.4349942195790828
+      },
+      "id": "128-66",
+      "source": "nym.person.128",
+      "target": "nym.person.66"
+    },
+    {
+      "attributes": {
+        "e1": 8,
+        "e2": 2.4908625935408515
+      },
+      "id": "17-42",
+      "source": "nym.person.17",
+      "target": "nym.person.42"
+    },
+    {
+      "attributes": {
+        "e1": 7,
+        "e2": 0.18367979129817655
+      },
+      "id": "66-93",
+      "source": "nym.person.66",
+      "target": "nym.person.93"
+    },
+    {
+      "attributes": {
+        "e1": 7,
+        "e2": 0.43499421957908263
+      },
+      "id": "66-7",
+      "source": "nym.person.66",
+      "target": "nym.person.7"
+    },
+    {
+      "attributes": {
+        "e1": 7,
+        "e2": 2.1714318227744904
+      },
+      "id": "16-37",
+      "source": "nym.person.16",
+      "target": "nym.person.37"
+    },
+    {
+      "attributes": {
+        "e1": 7,
+        "e2": 0.30146282695456006
+      },
+      "id": "100-66",
+      "source": "nym.person.100",
+      "target": "nym.person.66"
+    },
+    {
+      "attributes": {
+        "e1": 7,
+        "e2": 0.4349942195790828
+      },
+      "id": "19-66",
+      "source": "nym.person.19",
+      "target": "nym.person.66"
+    },
+    {
+      "attributes": {
+        "e1": 7,
+        "e2": 0.30146282695456006
+      },
+      "id": "11-66",
+      "source": "nym.person.11",
+      "target": "nym.person.66"
+    },
+    {
+      "attributes": {
+        "e1": 6,
+        "e2": 0.2808435397518242
+      },
+      "id": "66-90",
+      "source": "nym.person.66",
+      "target": "nym.person.90"
+    },
+    {
+      "attributes": {
+        "e1": 6,
+        "e2": 1.2223512680773447
+      },
+      "id": "17-18",
+      "source": "nym.person.17",
+      "target": "nym.person.18"
+    },
+    {
+      "attributes": {
+        "e1": 6,
+        "e2": 3.0851217729485882
+      },
+      "id": "50-7",
+      "source": "nym.person.50",
+      "target": "nym.person.7"
+    },
+    {
+      "attributes": {
+        "e1": 6,
+        "e2": 2.25844319976412
+      },
+      "id": "111-64",
+      "source": "nym.person.111",
+      "target": "nym.person.64"
+    },
+    {
+      "attributes": {
+        "e1": 6,
+        "e2": 0.28084353975182436
+      },
+      "id": "62-66",
+      "source": "nym.person.62",
+      "target": "nym.person.66"
+    },
+    {
+      "attributes": {
+        "e1": 6,
+        "e2": 0.28084353975182436
+      },
+      "id": "44-66",
+      "source": "nym.person.44",
+      "target": "nym.person.66"
+    },
+    {
+      "attributes": {
+        "e1": 5,
+        "e2": 0.252672662785128
+      },
+      "id": "66-80",
+      "source": "nym.person.66",
+      "target": "nym.person.80"
+    },
+    {
+      "attributes": {
+        "e1": 5,
+        "e2": 0.43499421957908263
+      },
+      "id": "66-72",
+      "source": "nym.person.66",
+      "target": "nym.person.72"
+    },
+    {
+      "attributes": {
+        "e1": 5,
+        "e2": 1.757667911851631
+      },
+      "id": "50-64",
+      "source": "nym.person.50",
+      "target": "nym.person.64"
+    },
+    {
+      "attributes": {
+        "e1": 5,
+        "e2": 1.9891102659805358
+      },
+      "id": "43-59",
+      "source": "nym.person.43",
+      "target": "nym.person.59"
+    },
+    {
+      "attributes": {
+        "e1": 5,
+        "e2": 1.9891102659805358
+      },
+      "id": "59-69",
+      "source": "nym.person.59",
+      "target": "nym.person.69"
+    },
+    {
+      "attributes": {
+        "e1": 5,
+        "e2": 1.6706565348620013
+      },
+      "id": "111-50",
+      "source": "nym.person.111",
+      "target": "nym.person.50"
+    },
+    {
+      "attributes": {
+        "e1": 5,
+        "e2": 3.508936019724949
+      },
+      "id": "131-80",
+      "source": "nym.person.131",
+      "target": "nym.person.80"
+    },
+    {
+      "attributes": {
+        "e1": 5,
+        "e2": 2.6514857878737277
+      },
+      "id": "128-50",
+      "source": "nym.person.128",
+      "target": "nym.person.50"
+    },
+    {
+      "attributes": {
+        "e1": 5,
+        "e2": 0.252672662785128
+      },
+      "id": "46-66",
+      "source": "nym.person.46",
+      "target": "nym.person.66"
+    },
+    {
+      "attributes": {
+        "e1": 5,
+        "e2": 3.508936019724949
+      },
+      "id": "46-55",
+      "source": "nym.person.46",
+      "target": "nym.person.55"
+    },
+    {
+      "attributes": {
+        "e1": 5,
+        "e2": 0.252672662785128
+      },
+      "id": "116-66",
+      "source": "nym.person.116",
+      "target": "nym.person.66"
+    },
+    {
+      "attributes": {
+        "e1": 4,
+        "e2": 1.581044376172314
+      },
+      "id": "50-55",
+      "source": "nym.person.50",
+      "target": "nym.person.55"
+    },
+    {
+      "attributes": {
+        "e1": 4,
+        "e2": 1.8994981072908486
+      },
+      "id": "111-55",
+      "source": "nym.person.111",
+      "target": "nym.person.55"
+    },
+    {
+      "attributes": {
+        "e1": 4,
+        "e2": 1.6118160348390678
+      },
+      "id": "131-16",
+      "source": "nym.person.131",
+      "target": "nym.person.16"
+    },
+    {
+      "attributes": {
+        "e1": 4,
+        "e2": -0.375935996637246
+      },
+      "id": "42-66",
+      "source": "nym.person.42",
+      "target": "nym.person.66"
+    },
+    {
+      "attributes": {
+        "e1": 4,
+        "e2": 4.096722684627068
+      },
+      "id": "100-19",
+      "source": "nym.person.100",
+      "target": "nym.person.19"
+    },
+    {
+      "attributes": {
+        "e1": 4,
+        "e2": 0.43499421957908263
+      },
+      "id": "31-66",
+      "source": "nym.person.31",
+      "target": "nym.person.66"
+    },
+    {
+      "attributes": {
+        "e1": 4,
+        "e2": 0.43499421957908263
+      },
+      "id": "25-66",
+      "source": "nym.person.25",
+      "target": "nym.person.66"
+    },
+    {
+      "attributes": {
+        "e1": 3,
+        "e2": 0.43499421957908263
+      },
+      "id": "66-70",
+      "source": "nym.person.66",
+      "target": "nym.person.70"
+    },
+    {
+      "attributes": {
+        "e1": 3,
+        "e2": 0.1808973932491836
+      },
+      "id": "17-29",
+      "source": "nym.person.17",
+      "target": "nym.person.29"
+    },
+    {
+      "attributes": {
+        "e1": 3,
+        "e2": 1.2169893249359591
+      },
+      "id": "3-64",
+      "source": "nym.person.3",
+      "target": "nym.person.64"
+    },
+    {
+      "attributes": {
+        "e1": 3,
+        "e2": 2.3621216292389615
+      },
+      "id": "3-7",
+      "source": "nym.person.3",
+      "target": "nym.person.7"
+    },
+    {
+      "attributes": {
+        "e1": 3,
+        "e2": 1.478284642214545
+      },
+      "id": "18-69",
+      "source": "nym.person.18",
+      "target": "nym.person.69"
+    },
+    {
+      "attributes": {
+        "e1": 3,
+        "e2": 1.6988274118286975
+      },
+      "id": "55-64",
+      "source": "nym.person.55",
+      "target": "nym.person.64"
+    },
+    {
+      "attributes": {
+        "e1": 3,
+        "e2": 3.6912575765189035
+      },
+      "id": "55-70",
+      "source": "nym.person.55",
+      "target": "nym.person.70"
+    },
+    {
+      "attributes": {
+        "e1": 3,
+        "e2": 2.864579003334436
+      },
+      "id": "111-116",
+      "source": "nym.person.111",
+      "target": "nym.person.116"
+    },
+    {
+      "attributes": {
+        "e1": 3,
+        "e2": 2.592645287850794
+      },
+      "id": "131-93",
+      "source": "nym.person.131",
+      "target": "nym.person.93"
+    },
+    {
+      "attributes": {
+        "e1": 3,
+        "e2": 3.6755092195507646
+      },
+      "id": "100-11",
+      "source": "nym.person.100",
+      "target": "nym.person.11"
+    },
+    {
+      "attributes": {
+        "e1": 3,
+        "e2": 2.289214858430874
+      },
+      "id": "11-16",
+      "source": "nym.person.11",
+      "target": "nym.person.16"
+    },
+    {
+      "attributes": {
+        "e1": 3,
+        "e2": 2.7104283235071773
+      },
+      "id": "11-37",
+      "source": "nym.person.11",
+      "target": "nym.person.37"
+    },
+    {
+      "attributes": {
+        "e1": 3,
+        "e2": 0.1473121471273018
+      },
+      "id": "15-66",
+      "source": "nym.person.15",
+      "target": "nym.person.66"
+    },
+    {
+      "attributes": {
+        "e1": 3,
+        "e2": 0.1473121471273018
+      },
+      "id": "115-66",
+      "source": "nym.person.115",
+      "target": "nym.person.66"
+    },
+    {
+      "attributes": {
+        "e1": 3,
+        "e2": 0.43499421957908263
+      },
+      "id": "33-66",
+      "source": "nym.person.33",
+      "target": "nym.person.66"
+    },
+    {
+      "attributes": {
+        "e1": 2,
+        "e2": 1.705342092849891
+      },
+      "id": "29-93",
+      "source": "nym.person.29",
+      "target": "nym.person.93"
+    },
+    {
+      "attributes": {
+        "e1": 2,
+        "e2": 2.017281142947232
+      },
+      "id": "16-19",
+      "source": "nym.person.16",
+      "target": "nym.person.19"
+    },
+    {
+      "attributes": {
+        "e1": 2,
+        "e2": 1.0728195341063806
+      },
+      "id": "43-69",
+      "source": "nym.person.43",
+      "target": "nym.person.69"
+    },
+    {
+      "attributes": {
+        "e1": 2,
+        "e2": 2.438494608023536
+      },
+      "id": "55-7",
+      "source": "nym.person.55",
+      "target": "nym.person.7"
+    },
+    {
+      "attributes": {
+        "e1": 2,
+        "e2": 0.724512839838165
+      },
+      "id": "111-3",
+      "source": "nym.person.111",
+      "target": "nym.person.3"
+    },
+    {
+      "attributes": {
+        "e1": 2,
+        "e2": 2.053648787118107
+      },
+      "id": "111-128",
+      "source": "nym.person.111",
+      "target": "nym.person.128"
+    },
+    {
+      "attributes": {
+        "e1": 2,
+        "e2": 2.3049632153990127
+      },
+      "id": "111-7",
+      "source": "nym.person.111",
+      "target": "nym.person.7"
+    },
+    {
+      "attributes": {
+        "e1": 2,
+        "e2": 2.3049632153990127
+      },
+      "id": "111-44",
+      "source": "nym.person.111",
+      "target": "nym.person.44"
+    },
+    {
+      "attributes": {
+        "e1": 2,
+        "e2": 2.1406601641077367
+      },
+      "id": "128-64",
+      "source": "nym.person.128",
+      "target": "nym.person.64"
+    },
+    {
+      "attributes": {
+        "e1": 2,
+        "e2": 3.845408256346162
+      },
+      "id": "128-31",
+      "source": "nym.person.128",
+      "target": "nym.person.31"
+    },
+    {
+      "attributes": {
+        "e1": 2,
+        "e2": 2.3049632153990127
+      },
+      "id": "100-37",
+      "source": "nym.person.100",
+      "target": "nym.person.37"
+    },
+    {
+      "attributes": {
+        "e1": 2,
+        "e2": 3.4035755040671227
+      },
+      "id": "11-19",
+      "source": "nym.person.11",
+      "target": "nym.person.19"
+    },
+    {
+      "attributes": {
+        "e1": 2,
+        "e2": 2.1406601641077367
+      },
+      "id": "116-50",
+      "source": "nym.person.116",
+      "target": "nym.person.50"
+    },
+    {
+      "attributes": {
+        "e1": 2,
+        "e2": 2.5461252722159013
+      },
+      "id": "116-64",
+      "source": "nym.person.116",
+      "target": "nym.person.64"
+    },
+    {
+      "attributes": {
+        "e1": 2,
+        "e2": 2.592645287850794
+      },
+      "id": "116-55",
+      "source": "nym.person.116",
+      "target": "nym.person.55"
+    },
+    {
+      "attributes": {
+        "e1": 2,
+        "e2": 2.5461252722159013
+      },
+      "id": "31-50",
+      "source": "nym.person.31",
+      "target": "nym.person.50"
+    },
+    {
+      "attributes": {
+        "e1": 1,
+        "e2": -0.9177148954189261
+      },
+      "id": "17-3",
+      "source": "nym.person.17",
+      "target": "nym.person.3"
+    },
+    {
+      "attributes": {
+        "e1": 1,
+        "e2": -0.887861932269245
+      },
+      "id": "17-50",
+      "source": "nym.person.17",
+      "target": "nym.person.50"
+    },
+    {
+      "attributes": {
+        "e1": 1,
+        "e2": 0.6627354801419219
+      },
+      "id": "17-62",
+      "source": "nym.person.17",
+      "target": "nym.person.62"
+    },
+    {
+      "attributes": {
+        "e1": 1,
+        "e2": 0.03136565927821961
+      },
+      "id": "29-43",
+      "source": "nym.person.29",
+      "target": "nym.person.43"
+    },
+    {
+      "attributes": {
+        "e1": 1,
+        "e2": 0.03136565927821961
+      },
+      "id": "29-59",
+      "source": "nym.person.29",
+      "target": "nym.person.59"
+    },
+    {
+      "attributes": {
+        "e1": 1,
+        "e2": 1.0121949122899458
+      },
+      "id": "3-42",
+      "source": "nym.person.3",
+      "target": "nym.person.42"
+    },
+    {
+      "attributes": {
+        "e1": 1,
+        "e2": 2.1108072009580554
+      },
+      "id": "3-33",
+      "source": "nym.person.3",
+      "target": "nym.person.33"
+    },
+    {
+      "attributes": {
+        "e1": 1,
+        "e2": 1.6988274118286975
+      },
+      "id": "64-7",
+      "source": "nym.person.64",
+      "target": "nym.person.7"
+    },
+    {
+      "attributes": {
+        "e1": 1,
+        "e2": 2.546125272215901
+      },
+      "id": "64-70",
+      "source": "nym.person.64",
+      "target": "nym.person.70"
+    },
+    {
+      "attributes": {
+        "e1": 1,
+        "e2": 1.3605016065581617
+      },
+      "id": "18-93",
+      "source": "nym.person.18",
+      "target": "nym.person.93"
+    },
+    {
+      "attributes": {
+        "e1": 1,
+        "e2": 1.7453474274635903
+      },
+      "id": "55-62",
+      "source": "nym.person.55",
+      "target": "nym.person.62"
+    },
+    {
+      "attributes": {
+        "e1": 1,
+        "e2": 2.1714318227744904
+      },
+      "id": "111-31",
+      "source": "nym.person.111",
+      "target": "nym.person.31"
+    },
+    {
+      "attributes": {
+        "e1": 1,
+        "e2": 2.459113895226271
+      },
+      "id": "111-70",
+      "source": "nym.person.111",
+      "target": "nym.person.70"
+    },
+    {
+      "attributes": {
+        "e1": 1,
+        "e2": 0.6467351387954807
+      },
+      "id": "131-37",
+      "source": "nym.person.131",
+      "target": "nym.person.37"
+    },
+    {
+      "attributes": {
+        "e1": 1,
+        "e2": 1.7453474274635903
+      },
+      "id": "131-90",
+      "source": "nym.person.131",
+      "target": "nym.person.90"
+    },
+    {
+      "attributes": {
+        "e1": 1,
+        "e2": 1.4940329991826844
+      },
+      "id": "128-55",
+      "source": "nym.person.128",
+      "target": "nym.person.55"
+    },
+    {
+      "attributes": {
+        "e1": 1,
+        "e2": 2.592645287850794
+      },
+      "id": "128-7",
+      "source": "nym.person.128",
+      "target": "nym.person.7"
+    },
+    {
+      "attributes": {
+        "e1": 1,
+        "e2": 2.592645287850794
+      },
+      "id": "128-44",
+      "source": "nym.person.128",
+      "target": "nym.person.44"
+    },
+    {
+      "attributes": {
+        "e1": 1,
+        "e2": 1.0420478754396272
+      },
+      "id": "42-50",
+      "source": "nym.person.42",
+      "target": "nym.person.50"
+    },
+    {
+      "attributes": {
+        "e1": 1,
+        "e2": 2.592645287850794
+      },
+      "id": "42-62",
+      "source": "nym.person.42",
+      "target": "nym.person.62"
+    },
+    {
+      "attributes": {
+        "e1": 1,
+        "e2": 1.1906025697627642
+      },
+      "id": "100-16",
+      "source": "nym.person.100",
+      "target": "nym.person.16"
+    },
+    {
+      "attributes": {
+        "e1": 1,
+        "e2": 1.7453474274635903
+      },
+      "id": "19-37",
+      "source": "nym.person.19",
+      "target": "nym.person.37"
+    },
+    {
+      "attributes": {
+        "e1": 1,
+        "e2": 1.6118160348390675
+      },
+      "id": "11-131",
+      "source": "nym.person.11",
+      "target": "nym.person.131"
+    },
+    {
+      "attributes": {
+        "e1": 1,
+        "e2": 2.7467959676780525
+      },
+      "id": "80-93",
+      "source": "nym.person.80",
+      "target": "nym.person.93"
+    },
+    {
+      "attributes": {
+        "e1": 1,
+        "e2": 3.6912575765189035
+      },
+      "id": "62-70",
+      "source": "nym.person.62",
+      "target": "nym.person.70"
+    },
+    {
+      "attributes": {
+        "e1": 1,
+        "e2": 1.2933623037205333
+      },
+      "id": "44-50",
+      "source": "nym.person.44",
+      "target": "nym.person.50"
+    },
+    {
+      "attributes": {
+        "e1": 1,
+        "e2": 1.6988274118286977
+      },
+      "id": "44-64",
+      "source": "nym.person.44",
+      "target": "nym.person.64"
+    },
+    {
+      "attributes": {
+        "e1": 1,
+        "e2": 1.7453474274635903
+      },
+      "id": "44-55",
+      "source": "nym.person.44",
+      "target": "nym.person.55"
+    },
+    {
+      "attributes": {
+        "e1": 1,
+        "e2": 2.8439597161317
+      },
+      "id": "44-7",
+      "source": "nym.person.44",
+      "target": "nym.person.7"
+    },
+    {
+      "attributes": {
+        "e1": 1,
+        "e2": 2.7467959676780525
+      },
+      "id": "116-128",
+      "source": "nym.person.116",
+      "target": "nym.person.128"
+    },
+    {
+      "attributes": {
+        "e1": 1,
+        "e2": 2.998110395958958
+      },
+      "id": "116-7",
+      "source": "nym.person.116",
+      "target": "nym.person.7"
+    },
+    {
+      "attributes": {
+        "e1": 1,
+        "e2": 2.998110395958958
+      },
+      "id": "116-44",
+      "source": "nym.person.116",
+      "target": "nym.person.44"
+    },
+    {
+      "attributes": {
+        "e1": 1,
+        "e2": 3.557726183894381
+      },
+      "id": "116-31",
+      "source": "nym.person.116",
+      "target": "nym.person.31"
+    },
+    {
+      "attributes": {
+        "e1": 1,
+        "e2": 3.557726183894381
+      },
+      "id": "116-25",
+      "source": "nym.person.116",
+      "target": "nym.person.25"
+    },
+    {
+      "attributes": {
+        "e1": 1,
+        "e2": 2.25844319976412
+      },
+      "id": "31-64",
+      "source": "nym.person.31",
+      "target": "nym.person.64"
+    }
+  ]
+}
