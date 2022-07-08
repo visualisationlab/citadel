@@ -1,34 +1,59 @@
 import { RequestHandler, Request, Response } from "express";
 import { WebSocket } from "ws";
 
-import express from 'express';
+import http from 'http'
+import express from 'express'
+import bodyParser from 'body-parser'
+
+import { body } from 'express-validator'
+
+import { sessions, genSession, checkSessions } from './src/sessions'
+import { networkInterfaces } from 'os'
 
 const path = require('path');
 const cors = require('cors');
 const fs = require('fs');
 
-const testJson = require('./public/graphs/cyto.json')
+// Load env config file in root directory.
+require('dotenv').config({path:__dirname + "/.env"})
 
-console.log(JSON.stringify(testJson))
+const {GraphFormatConverter} = require("graph-format-converter")
+const { WebSocketServer } = require("ws")
+
+import { server, onOpen, onClose, onMessage, onError } from './src/socket'
 
 import cytoscape from 'cytoscape'
 
-import { networkInterfaces } from 'os';
+server.on('connection', (socket: WebSocket, req) => {
 
-// Load env config file in root directory.
-require('dotenv').config({path:__dirname + "/.env"});
+    onOpen(socket, req)
 
-const {GraphFormatConverter} = require("graph-format-converter");
+    socket.on('close', (code, reason) => onClose(socket, req, code, reason))
 
-const { WebSocketServer } = require("ws");
+    socket.on('message', (data, isBinary) => onMessage(socket, data, isBinary))
+
+    socket.on('error', (err) => onError(socket, req, err))
+})
+
+server.on('close', () => {
+    console.log('Web Client server closed')
+})
+
+server.on('error ', (error: Error) => {
+    console.log(`Web Client server error: ${error}`)
+})
+
+setInterval(checkSessions, 5000)
 
 const unityServer = new WebSocketServer({
     port: process.env.WSUNITYPORT
-});
+})
 
-const clientServer = new WebSocketServer({
-    port: process.env.WSCLIENTPORT
-});
+// const clientServer = new WebSocketServer({
+//     port: process.env.WSCLIENTPORT
+// })
+
+
 
 const nInterface = networkInterfaces()['wlp3s0'];
 
@@ -147,78 +172,78 @@ unityServer.on("connection", (socket: WebSocket) => {
 });
 
 // Handles connection with client instances.
-clientServer.on("connection", (socket: WebSocket) => {
-    let myId = 0;
+// clientServer.on("connection", (socket: WebSocket) => {
+//     let myId = 0;
 
-    socket.on("message", (data) => {
-        let clientData = null;
+//     socket.on("message", (data) => {
+//         let clientData = null;
 
-        try {
-            clientData = JSON.parse(Buffer.from(data.toString()).toString());
-        } catch (e) {
-            console.log("Error parsing data.");
+//         try {
+//             clientData = JSON.parse(Buffer.from(data.toString()).toString());
+//         } catch (e) {
+//             console.log("Error parsing data.");
 
-            socket.close();
-            return;
-        }
+//             socket.close();
+//             return;
+//         }
 
-        // If client tries to connect, give it a new ID and store session.
-        if (clientData.type == MessageType.CONNECT) {
-            sendPacket(socket, {
-                type: MessageType.CONNECT,
-                content: "",
-                id: idCounter
-            })
+//         // If client tries to connect, give it a new ID and store session.
+//         if (clientData.type == MessageType.CONNECT) {
+//             sendPacket(socket, {
+//                 type: MessageType.CONNECT,
+//                 content: "",
+//                 id: idCounter
+//             })
 
-            myId = idCounter;
+//             myId = idCounter;
 
-            clientSessions[idCounter] = socket;
+//             clientSessions[idCounter] = socket;
 
-            idCounter++;
+//             idCounter++;
 
-            return;
-        }
+//             return;
+//         }
 
-        if (!Object.keys(clientSessions).includes(clientData.id.toString())) {
-            sendPacket(socket, {
-                type: MessageType.ERROR,
-                id: clientData.id,
-                content: "Session ID not in use.",
-            })
+//         if (!Object.keys(clientSessions).includes(clientData.id.toString())) {
+//             sendPacket(socket, {
+//                 type: MessageType.ERROR,
+//                 id: clientData.id,
+//                 content: "Session ID not in use.",
+//             })
 
-            socket.close();
-            return;
-        }
+//             socket.close();
+//             return;
+//         }
 
-        switch (clientData.type) {
-            case MessageType.INITIAL:
-                logMessage(clientData.id, "Received initial state from client");
-                break;
-            case MessageType.UPDATE:
-                // logMessage(clientData.id, "Received updated state from client.");
-                break;
-            case MessageType.DELETE:
-                logMessage(clientData.id, "Deleting node " + clientData.content);
-                break;
-            case MessageType.CLEAR:
-                logMessage(clientData.id, "Received clear state from client");
-                break;
-            default:
-                break;
-        }
+//         switch (clientData.type) {
+//             case MessageType.INITIAL:
+//                 logMessage(clientData.id, "Received initial state from client");
+//                 break;
+//             case MessageType.UPDATE:
+//                 // logMessage(clientData.id, "Received updated state from client.");
+//                 break;
+//             case MessageType.DELETE:
+//                 logMessage(clientData.id, "Deleting node " + clientData.content);
+//                 break;
+//             case MessageType.CLEAR:
+//                 logMessage(clientData.id, "Received clear state from client");
+//                 break;
+//             default:
+//                 break;
+//         }
 
-        if (Object.keys(unitySessions).includes(clientData.id.toString())) {
-            unitySessions[clientData.id].send(JSON.stringify(clientData));
-        }
-    });
+//         if (Object.keys(unitySessions).includes(clientData.id.toString())) {
+//             unitySessions[clientData.id].send(JSON.stringify(clientData));
+//         }
+//     });
 
-    socket.on("close", () => {
-        delete clientSessions[myId];
+//     socket.on("close", () => {
+//         delete clientSessions[myId];
 
-        logMessage(myId, "Client disconnected")
-        // TODO: send disconnect message to unity sessions.
-    });
-});
+//         logMessage(myId, "Client disconnected")
+//         // TODO: send disconnect message to unity sessions.
+//     });
+// });
 
 // Check if graphs need to be converted.
 fs.readdir("./public/graphs", (err: Error, files: File[]) => {
@@ -294,6 +319,7 @@ else {
 
 app.use(cors(corsOptions));
 
+
 // NOTE: USING D3 v 4.12.2
 // npm install d3@4.12.2
 app.use(express.json());
@@ -320,10 +346,12 @@ let getGraphs : RequestHandler = (req, res, next) => {
 }
 
 let getSessions : RequestHandler = (req, res, next ) => {
-    res.locals.sessions = Object.keys(clientSessions).filter((key) => {
-        return (clientSessions[parseInt(key)].readyState !== WebSocket.CLOSED
-            || clientSessions[parseInt(key)].readyState !== WebSocket.CLOSING);
-    });
+    // res.locals.sessions = Object.keys(clientSessions).filter((key) => {
+    //     return (clientSessions[parseInt(key)].readyState !== WebSocket.CLOSED
+    //         || clientSessions[parseInt(key)].readyState !== WebSocket.CLOSING);
+    // });
+
+    res.locals.sessions = sessions
 
     next();
 }
@@ -336,9 +364,21 @@ app.get('/graphs', getGraphs, (req: Request, res: Response) => {
     res.json(res.locals.graphs);
 })
 
+app.post('/urls', body('url').trim().unescape(),  (req, res) => {
+    genSession(req.body.url, (uid) => {
+        res.json(uid)
+    })
+})
+
 app.get('/sessions', getSessions, (req: Request, res: Response) => {
     res.json(res.locals.sessions);
 })
+
+app.get('/ws', (req: Request, res: Response) => {
+    res.json(server);
+})
+
+app.get('/')
 
 // app.get('/websocket_update', (req : Request, res: Response) => {
 //     for (let j = 0; j < 100; j++) {

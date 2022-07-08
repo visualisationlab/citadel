@@ -2,14 +2,14 @@ import cytoscape from 'cytoscape'
 
 
 
-function generateGraph() {
+export function generateGraph() {
     var cy = cytoscape({
         headless: true,
         styleEnabled: true
     })
 }
 
-function setLayout(cy: cytoscape.Core, name: string) {
+export function setLayout(cy: cytoscape.Core, name: string) {
     cy.layout({
         name: name as any,
         boundingBox: {
@@ -21,11 +21,9 @@ function setLayout(cy: cytoscape.Core, name: string) {
         randomize: true,
         animate: false
     }).run()
-
-    // TODO: WS UPDATE
 }
 
-function addNode(
+export function addNode(
     cy: cytoscape.Core,
     id: string,
     data: {[key: string]: any},
@@ -38,7 +36,7 @@ function addNode(
     })
 }
 
-function addEdge(
+export function addEdge(
     cy: cytoscape.Core,
     id: string,
     source: string,
@@ -55,14 +53,14 @@ function addEdge(
     })
 }
 
-function removeElement(
+export function removeElement(
     cy: cytoscape.Core,
     id: string) {
 
     cy.remove(id)
 }
 
-function destroyGraph(
+export function destroyGraph(
     cy: cytoscape.Core) {
 
     cy.destroy()

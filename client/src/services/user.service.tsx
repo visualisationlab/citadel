@@ -37,6 +37,10 @@ class UserService {
     getData() {
         return axios.get(DATA_URL);
     }
+
+    genSession(url: string) {
+        return axios.post(URL + '/urls', { url: url})
+    }
 }
 
-export const userService = new UserService();
+export const userService = new UserService()

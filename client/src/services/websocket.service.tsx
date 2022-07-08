@@ -4,6 +4,7 @@ import {GraphComponent} from '../types/types';
 import queue from 'queue'
 
 export enum MessageType {
+    INIT,
     ERROR,
     INITIAL,
     UPDATE,
@@ -14,14 +15,15 @@ export enum MessageType {
 }
 
 // Websocket URL.
-const URL = process.env.REACT_APP_WSURL + ':' +
-    process.env.REACT_APP_WEBSOCKETPORT;
 
 const MAX_QUEUE_LENGTH = 3;
 
+const URL = process.env.REACT_APP_WSURL + ':' +
+    process.env.REACT_APP_WEBSOCKETPORT
+
 class WebsocketService {
     sessionID: number = -1;
-    ws: WebSocket = new WebSocket(URL);
+    ws: WebSocket | null = null;
     nodes: GraphComponent.NodeDict = {};
     transform: GraphComponent.Transform = {'k': 1, 'x': 0, 'y': 0};
     graphName: string = "";
@@ -32,43 +34,39 @@ class WebsocketService {
 
     constructor() {
         this.q.start();
+    }
 
+    connect(sid: string) {
         let self = this;
+
+        if (this.ws !== null) {
+            this.ws.close()
+        }
+
+        this.ws = new WebSocket(`${URL}?sid=${sid}`)
 
         // Handles incoming messages from server.
         this.ws.onmessage = function(msg) {
-            let messageData = null;
-
+            console.log('here')
             // Attempt to parse data sent by a server.
             try {
-                messageData = JSON.parse(msg.data);
+                const messageData = JSON.parse(msg.data);
+
+                console.log(messageData)
             } catch (e) {
                 console.log(e)
 
                 return;
             }
-
-            if (messageData.type === MessageType.CONNECT) {
-                self.sessionID = messageData.id;
-            } else if (messageData.type === MessageType.INITIAL) {
-                // If the client has not yet selected a graph, send a CLEAR message.
-                if (self.nodes === null) {
-                    self.sendMessage("", MessageType.CLEAR);
-
-                    return;
-                }
-
-                self.sendMessage(JSON.stringify(self.nodes), MessageType.INITIAL);
-            }
-        };
+        }
 
         // Request a new ID when socket is opened.
-        this.ws.onopen = function() {
-            this.send(JSON.stringify({
-                type: MessageType.CONNECT,
-                content: ""
-            }));
-        };
+        // this.ws.onopen = function() {
+            // this.send(JSON.stringify({
+            //     type: MessageType.INIT,
+            //     content: ""
+            // }));
+        // };
     }
 
     deleteNode(id: string) {
@@ -79,6 +77,9 @@ class WebsocketService {
 
     // Sends messages to server.
     sendMessage(content: string, type: MessageType) {
+        if (this.ws === null) {
+            return
+        }
         if (this.ws.readyState === WebSocket.CLOSED || this.ws.readyState === WebSocket.CONNECTING) {
             // console.log("NOT SENDING");
             return;

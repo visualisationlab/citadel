@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useReducer } from 'react';
 
 // @ts-ignore
@@ -9,9 +7,11 @@ import { isValid, format } from 'date-fns'
 
 import { userService } from '../services/user.service';
 import { websocketService } from '../services/websocket.service';
-import {ForceGraph} from './forcegraph.component';
+import { ForceGraph } from './forcegraph.component';
 
-import {GraphComponent} from '../types/types';
+import { GraphComponent } from '../types/types';
+
+import { useParams } from 'react-router-dom'
 
 import './home.component.css'
 
@@ -35,6 +35,10 @@ enum Marker {
 enum Tabs {
     Analyze,
     Settings
+}
+
+type Param = {
+    sid: string
 }
 
 type ColourSettings = GraphComponent.ColourSettings;
@@ -85,6 +89,8 @@ function lerp(colour0: GraphComponent.Colour, colour1: GraphComponent.Colour, va
  * @returns JSX element
  */
 export default function Home() {
+    const { sid } = useParams<Param>()
+
     const [graphDimensions, setGraphDimensions] = useState<GraphComponent.GraphDimensions>({
         width: window.innerWidth,
         height: window.innerHeight - 56
@@ -560,6 +566,7 @@ export default function Home() {
      * Runs on startup. Loads new graph.
      */
     useEffect(() => {
+
         /**
          * Sets window handler.
          */
