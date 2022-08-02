@@ -15,9 +15,9 @@
     /* border-width: 1; */
 }
 
-.nav-link {
+/* .nav-link {
     color:white !important;
-}
+} */
 
 .numericalSetting input {
     width: 4em;
@@ -64,7 +64,7 @@ svg {
 
 .infoContents {
     color:white;
-    padding: 5px;
+    /* padding: 5px; */
     top:100px;
     width:400px;
     right: 50px;

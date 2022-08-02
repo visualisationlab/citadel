@@ -3,27 +3,20 @@ import { useHistory } from 'react-router-dom'
 import { Form, Button, Container, Row, Col } from 'react-bootstrap'
 import { userService } from '../services/user.service';
 
-import { websocketService } from '../services/websocket.service'
-
 import './home.component.css'
 
 export default function Home() {
-    const [sidError, setSidError] = useState('')
     const [url, setURL] = useState('')
 
     let history = useHistory();
 
     function joinSession() {
-        websocketService.connect(sid)
-
         history.push(`/sessions/${sid}`)
     }
 
     function startSession(url: string) {
         userService.genSession(url).then(
             response => {
-                websocketService.connect(response.data)
-
                 history.push(`/sessions/${response.data}`)
             },
             error => {
@@ -32,26 +25,7 @@ export default function Home() {
         )
     }
 
-    function sidReducer(state: string, action: string) : string {
-        try {
-            // if (action.length > 14) {
-            //     setSidError('Session ID must be 14 characters long or less')
-
-            //     return state
-            // }
-            setSidError('')
-
-            return action
-        } catch (e) {
-            console.log(e)
-            setSidError('Not a valid session ID')
-
-            return state
-        }
-    }
-
-    const [sid, sidDispatch] = useReducer(sidReducer, '')
-
+    const [sid, setSid] = useState('')
 
     return (
         <>
@@ -108,7 +82,7 @@ export default function Home() {
                                     type="text"
                                     id="sid"
                                     aria-describedby="sidBlock"
-                                    onChange={(e) => sidDispatch(e.target.value)}
+                                    onChange={(e) => setSid(e.target.value)}
                                     />
                                     <Form.Text id="sid">
                                     Enter an existing session ID.
@@ -127,7 +101,7 @@ export default function Home() {
                                 marginTop: '20px'
                             }}>
                             <Col >
-                                <Button variant='primary' type='submit' disabled={sid === '' || sidError !== ''} onClick={joinSession}>
+                                <Button variant='primary' type='submit' disabled={sid === ''} onClick={joinSession}>
                                     Join Session
                                 </Button>
                             </Col>

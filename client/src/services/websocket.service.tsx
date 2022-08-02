@@ -1,159 +1,179 @@
-import {GraphComponent} from '../types/types';
 // Handles Websocket communication between client and server.
 
-import queue from 'queue'
+import { Server } from 'http'
+import { unpack, pack } from 'msgpackr'
+import { VisGraph } from '../types'
+import { Router } from '../components/router.component'
+import { API } from '../services/api.service'
 
-export enum MessageType {
-    INIT,
-    ERROR,
-    INITIAL,
-    UPDATE,
-    SUCCESS,
-    CONNECT,
-    CLEAR,
-    DELETE
+type Request =
+    | 'info'
+
+interface ClientMessage {
+    type:   | 'transform'
+            | 'get'
+            | 'set',
+    sid: string,
+    contents: Object
 }
 
-// Websocket URL.
+export interface ServerMessage {
+    type:   | 'data'
+            | 'info'
+            | 'layouts',
+    contents: Object
+}
 
-const MAX_QUEUE_LENGTH = 3;
+interface TransformMessage extends ClientMessage {
+    type: 'transform',
+    contents: {
+        x: number,
+        y: number,
+        k: number
+    }
+}
 
-const URL = process.env.REACT_APP_WSURL + ':' +
+interface RequestMessage extends ClientMessage {
+    type: 'get',
+    contents: {
+        type: Request
+    }
+}
+
+interface DataMessage extends ServerMessage {
+    type: 'data',
+    contents: {
+        nodes: VisGraph.CytoNode[]
+        edges: VisGraph.CytoEdge[]
+    }
+}
+
+interface InfoMessage extends ServerMessage {
+    type: 'info',
+    contents: {
+        sid: string,
+        expirationDate: Date,
+        users: string[],
+        graphURL: string
+    }
+}
+
+// Websocket WSURL.
+const WSURL = process.env.REACT_APP_WSURL + ':' +
     process.env.REACT_APP_WEBSOCKETPORT
 
 class WebsocketService {
-    sessionID: number = -1;
-    ws: WebSocket | null = null;
-    nodes: GraphComponent.NodeDict = {};
-    transform: GraphComponent.Transform = {'k': 1, 'x': 0, 'y': 0};
-    graphName: string = "";
-    width: number = window.innerWidth;
-    height: number = window.innerHeight - 56;
+    ws: WebSocket | null = null
+    // transform: VisGraph.Transform = {'k': 1, 'x': 0, 'y': 0}
+    // width: number = window.innerWidth
+    // height: number = window.innerHeight
+    // sid: string | null = null
 
-    q = queue({timeout: 30, concurrency: 1});
+    // updateFunction: ((nodes: VisGraph.GraphNode[], edges: VisGraph.Edge[]) => void) | null = null
+    // sidUpdateFunction: ((sid: string) => (void)) | null = null
 
-    constructor() {
-        this.q.start();
+    // setGraphUpdateFunction(fun: (nodes: VisGraph.GraphNode[], edges: VisGraph.Edge[]) => void) {
+    //     this.updateFunction = fun
+
+    //     this.ws?.close()
+
+    //     this.ws = null
+
+    //     this.checkConnection()
+    // }
+
+    // setSidUpdateFunction(fun: (sid: string) => (void)) {
+    //     this.sidUpdateFunction = fun
+
+    //     if (this.sid === null) {
+    //         return
+    //     }
+
+    //     this.requestInfo({
+    //         type: 'request',
+    //         contents: {
+    //             type: 'info'
+    //         },
+    //         sid: this.sid
+    //     })
+    // }
+
+    checkConnection() {
+        const currentURL = new URL(window.location.href)
+
+        const splitString = currentURL.pathname.split('/')
+
+        if (splitString.length !== 3) {
+            return
+        }
+
+        if (splitString[1] !== 'sessions' || (splitString[2].length === 0)) {
+            return
+        }
+
+        this.connect(splitString[2])
+    }
+
+    parseServerMessage(message: ServerMessage) {
+        Router.route(message)
     }
 
     connect(sid: string) {
-        let self = this;
-
         if (this.ws !== null) {
             this.ws.close()
         }
 
-        this.ws = new WebSocket(`${URL}?sid=${sid}`)
+        this.ws = new WebSocket(`${WSURL}?sid=${sid}`)
 
         // Handles incoming messages from server.
-        this.ws.onmessage = function(msg) {
-            console.log('here')
-            // Attempt to parse data sent by a server.
-            try {
-                const messageData = JSON.parse(msg.data);
+        this.ws.onmessage = (msg) => {
+            // console.log(msg.data)
 
-                console.log(messageData)
+            try {
+                const messageData: ServerMessage = JSON.parse(msg.data)
+
+                API.setSID(sid)
+
+                this.parseServerMessage(messageData)
             } catch (e) {
                 console.log(e)
 
-                return;
+                this.ws?.close()
+
+                return
             }
+            // (msg.data).then((buffer) => {
+            //     console.log(buffer)
+            //     // const decompressedData = unpack(new Uint8Array(buffer))
+
+            //     // Attempt to parse data sent by a server.
+            // })
         }
-
-        // Request a new ID when socket is opened.
-        // this.ws.onopen = function() {
-            // this.send(JSON.stringify({
-            //     type: MessageType.INIT,
-            //     content: ""
-            // }));
-        // };
-    }
-
-    deleteNode(id: string) {
-        delete this.nodes[id];
-
-        this.sendMessage(id, MessageType.DELETE);
     }
 
     // Sends messages to server.
-    sendMessage(content: string, type: MessageType) {
+    sendMessage(message: ClientMessage) {
         if (this.ws === null) {
             return
         }
-        if (this.ws.readyState === WebSocket.CLOSED || this.ws.readyState === WebSocket.CONNECTING) {
-            // console.log("NOT SENDING");
-            return;
+
+        if (this.ws.readyState === WebSocket.CLOSED
+            || this.ws.readyState === WebSocket.CLOSING
+            || this.ws.readyState === WebSocket.CONNECTING) {
+            return
         }
 
-        if (this.sessionID === -1 &&
-            type !== MessageType.CONNECT) {
-
-            console.log("No session ID from server.");
-        }
-
-        // TODO: COPY TYPE DEF TO SERVER
-        this.ws.send(JSON.stringify({
-            type: type,
-            id: this.sessionID,
-            content: content,
-            graphName: this.graphName,
-            width: this.width,
-            height: this.height,
-            transform: this.transform
-        }));
+        console.log('sending')
+        this.ws.send(JSON.stringify(message))
     }
 
-
-    // Clears the state, sends a clear message to server.
-    clearGraphState() {
-        this.nodes = {};
-        this.graphName = ""
-
-        this.sendMessage("", MessageType.CLEAR);
+    requestInfo(message: RequestMessage) {
+        this.sendMessage(message)
     }
 
-    updateGraphTransform(transform: GraphComponent.Transform) {
-        this.transform = {
-            x: transform.x,
-            y: transform.y,
-            k: transform.k
-        };
-
-        this.sendMessage("", MessageType.UPDATE);
-    }
-
-    // Updates the local state, sends an update message to server.
-    updateGraphState(nodes: GraphComponent.GraphNode[], graphName: string) {
-        let type = MessageType.UPDATE;
-
-        if (Object.keys(this.nodes).length === 0) {
-            type = MessageType.INITIAL;
-        }
-
-        this.graphName = graphName;
-
-        if (this.q.length > MAX_QUEUE_LENGTH) {
-            this.q.pop();
-        }
-
-        this.q.push(
-            () => {
-                this.nodes = {};
-
-            nodes.forEach((node) => {
-                this.nodes[node.id] = node
-            }); this.sendMessage(JSON.stringify(this.nodes), type);}
-        )
-
-        this.q.start();
-    }
-
-    updateWindowSize(width: number, height: number) {
-        this.width = width;
-        this.height = height;
-
-        this.sendMessage("", MessageType.UPDATE);
+    updateTransform(message: TransformMessage) {
+        this.sendMessage(message);
     }
 }
 
-export const websocketService = new WebsocketService();
+export const websocketService = new WebsocketService()

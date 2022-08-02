@@ -1,161 +1,166 @@
-/**
- * Miles van der Lely (12206970), 2022.
- *
- * Exports functional component returning the graph visualization.
- */
+// /**
+//  * Miles van der Lely (12206970), 2022.
+//  *
+//  * Exports functional component returning the graph visualization.
+//  */
 
-import React, {useRef, useState} from 'react';
+// import React, {useRef, useState} from 'react';
 
-import { ForceGraphPixi } from './pixi.component';
+// import { ForceGraphPixi } from './pixi.component';
 
-import * as d3 from 'd3';
-import { websocketService } from "../services/websocket.service";
+// import { Render } from './renderer.component'
 
-import {GraphComponent} from '../types/types'
+// import * as d3 from 'd3';
+// import { websocketService } from "../services/websocket.service";
 
-/**
- * Returns a container, which is updated by reference to contain the graph.
- * @param param0 props
- * @returns JSX
- */
-export function ForceGraph({
-    graphState,
-    graphSettings,
-    onClickHandler,
-    onClickBackground,
-    getFillColour,
-    getRadius,
-    getAlpha,
-    getLineWidth,
-    getLineAlpha,
-    getEdgeColour,
-    getLineColour,
-    rendering,
-    setParentRendering,
-    selectionState,
-    colourDict} : GraphComponent.ForceGraphProps) {
-    const containerRef = useRef(null)
+// // import {GraphComponent} from '../types'
 
-    let [graphData, setGraphData] = useState<[GraphComponent.GraphNode[], GraphComponent.Link[]]>([[], []])
+// /**
+//  * Returns a container, which is updated by reference to contain the graph.
+//  * @param param0 props
+//  * @returns JSX
+//  */
+// export function ForceGraph({
+//     graphState,
+//     graphSettings,
+//     onClickHandler,
+//     onClickBackground,
+//     getFillColour,
+//     getRadius,
+//     getAlpha,
+//     getLineWidth,
+//     getLineAlpha,
+//     getEdgeColour,
+//     getLineColour,
+//     rendering,
+//     setParentRendering,
+//     selectionState,
+//     colourDict} : GraphComponent.ForceGraphProps) {
+//     const containerRef = useRef(null)
 
-    let [tickInterval, setTickInterval] = useState(1)
+//     let [graphData, setGraphData] = useState<[GraphComponent.GraphNode[], GraphComponent.Link[]]>([[], []])
 
-    let [generating, setGenerating] = useState(false)
+//     let [tickInterval, setTickInterval] = useState(1)
 
-    // Use effect for node positioning simulation.
-    React.useEffect(() => {
-        const localNodes = [...graphState.nodes];
-        const localLinks = [...graphState.links];
+//     let [generating, setGenerating] = useState(false)
 
-        const simulation = d3.forceSimulation(localNodes)
-            .force("link", d3.forceLink(localLinks)
-                .id((d: any) => d.id)
-                .distance(50)
-            )
-            .force("charge", d3.forceManyBody().strength(graphSettings.charge))
-            .force("x", d3.forceX(window.innerWidth / 2))
-            .force("y", d3.forceY(window.innerHeight / 2))
-            .force("collision", d3.forceCollide().radius((d) => 15));
+//     // Use effect for node positioning simulation.
+//     React.useEffect(() => {
+//         websocketService.setGraphUpdateFunction((nodes: GraphComponent.GraphNode[], edges: GraphComponent.Link[]) => setGraphData([[...nodes], [...localLinks]]))
 
-            if (graphSettings.radialForce > 0) {
-                simulation.force("radial", d3.forceRadial(graphSettings.radialForce));
-            }
+//         const localNodes = [...graphState.nodes];
+//         const localLinks = [...graphState.links];
 
-        // simulation.alpha(1).restart();
+//         const simulation = d3.forceSimulation(localNodes)
+//             .force("link", d3.forceLink(localLinks)
+//                 .id((d: any) => d.id)
+//                 .distance(50)
+//             )
+//             .force("charge", d3.forceManyBody().strength(graphSettings.charge))
+//             .force("x", d3.forceX(window.innerWidth / 2))
+//             .force("y", d3.forceY(window.innerHeight / 2))
+//             .force("collision", d3.forceCollide().radius((d) => 15));
 
-        setParentRendering(true);
-        let i = 0;
+//             if (graphSettings.radialForce > 0) {
+//                 simulation.force("radial", d3.forceRadial(graphSettings.radialForce));
+//             }
 
-        /**
-         * Updates remote state every tick, and sets the local graph information.
-         */
-        simulation.on("tick", function() {
-            setGenerating(true)
-            websocketService.updateGraphState(localNodes, graphState.selectedGraph);
+//         // simulation.alpha(1).restart();
 
-            // if ((localNodes.length > 9000 || localLinks.length > 9000) && tickInterval !== 12) {
-            //     setTickInterval(20);
-            // }
+//         setParentRendering(true);
+//         let i = 0;
 
-            // if (localNodes.length < 9000 && localLinks.length < 9000 && tickInterval === 20) {
-            //     setTickInterval(1);
-            // }
+//         /**
+//          * Updates remote state every tick, and sets the local graph information.
+//          */
+//         simulation.on("tick", function() {
+//             setGenerating(true)
+//             websocketService.updateGraphState(localNodes, graphState.selectedGraph);
 
-            //Updates node only every x ticks.
-            // if (i % tickInterval !== 0) {
-            //     i++;
+//             // if ((localNodes.length > 9000 || localLinks.length > 9000) && tickInterval !== 12) {
+//             //     setTickInterval(20);
+//             // }
 
-            //     return;
-            // }
+//             // if (localNodes.length < 9000 && localLinks.length < 9000 && tickInterval === 20) {
+//             //     setTickInterval(1);
+//             // }
 
-            i++;
+//             //Updates node only every x ticks.
+//             // if (i % tickInterval !== 0) {
+//             //     i++;
 
-            setGraphData([[...localNodes], [...localLinks]])
-        })
+//             //     return;
+//             // }
 
-        /**
-         * Updates parent rendering state.
-         */
-        simulation.on("end", function(){
-            setParentRendering(false)
-            setGenerating(false)
-        })
 
-        return () => {
-            simulation.stop();
-        }
-    }, [graphState.nodes, graphState.links, graphState.selectedGraph,
-        graphSettings.charge, graphSettings.radialForce, setParentRendering, tickInterval])
+//             setGraphData([[...localNodes], [...localLinks]])
+//         })
 
-    /**
-     * Updates the tickinterval when graph settings change.
-     */
-    React.useEffect(() => {
-        setTickInterval(graphSettings.tickInterval);
-    }, [graphSettings.tickInterval])
+//         /**
+//          * Updates parent rendering state.
+//          */
+//         simulation.on("end", function(){
+//             setParentRendering(false)
+//             setGenerating(false)
+//         })
 
-    /**
-     * Updates the container reference with graph visualization.
-     */
-    React.useEffect(() => {
-        const { destroy } = ForceGraphPixi({
-            container: containerRef.current!,
-            nodes: graphData[0],
-            links: graphData[1],
-            graphSettings: graphSettings,
-            isDirected: graphState.graphType === GraphComponent.GraphType.Directed,
-            onClickHandler,
-            onClickBackground,
-            getFillColour,
-            getRadius,
-            getAlpha,
-            getLineWidth,
-            getLineAlpha,
-            getEdgeColour,
-            getLineColour,
-            rendering,
-            selectionState,
-            mappings: graphState.mappings,
-            colourDict,
-            generating});
+//         return () => {
+//             simulation.stop();
+//         }
+//     }, [graphState.nodes, graphState.links, graphState.selectedGraph,
+//         graphSettings.charge, graphSettings.radialForce, setParentRendering, tickInterval])
 
-        return destroy;
-    }, [onClickHandler,
-        onClickBackground,
-        getFillColour,
-        getRadius,
-        getAlpha,
-        getLineWidth,
-        getLineAlpha,
-        getEdgeColour,
-        getLineColour,
-        graphData,
-        graphState.graphType,
-        graphSettings,
-        rendering,
-        selectionState,
-        graphState.mappings,
-        colourDict]);
+//     /**
+//      * Updates the tickinterval when graph settings change.
+//      */
+//     React.useEffect(() => {
+//         setTickInterval(graphSettings.tickInterval);
+//     }, [graphSettings.tickInterval])
 
-    return <div><script src="http://d3js.org/d3.v3.min.js" charSet="utf-8"></script><div ref={containerRef} className="graph" /></div>;
-}
+//     /**
+//      * Updates the container reference with graph visualization.
+//      */
+//     React.useEffect(() => {
+//         console.log('Generating...')
+
+//         const { destroy } = Render({
+//             container: containerRef.current!,
+//             nodes: graphData[0],
+//             links: graphData[1],
+//             graphSettings: graphSettings,
+//             isDirected: graphState.graphType === GraphComponent.GraphType.Directed,
+//             onClickHandler,
+//             onClickBackground,
+//             getFillColour,
+//             getRadius,
+//             getAlpha,
+//             getLineWidth,
+//             getLineAlpha,
+//             getEdgeColour,
+//             getLineColour,
+//             rendering,
+//             selectionState,
+//             mappings: graphState.mappings,
+//             colourDict,
+//             generating})
+
+//         return destroy
+//     }, [onClickHandler,
+//         onClickBackground,
+//         getFillColour,
+//         getRadius,
+//         getAlpha,
+//         getLineWidth,
+//         getLineAlpha,
+//         getEdgeColour,
+//         getLineColour,
+//         graphData,
+//         graphState.graphType,
+//         graphSettings,
+//         rendering,
+//         selectionState,
+//         graphState.mappings,
+//         colourDict]);
+
+//     return <div><script src="http://d3js.org/d3.v3.min.js" charSet="utf-8"></script><div ref={containerRef} className="graph" /></div>;
+// }
