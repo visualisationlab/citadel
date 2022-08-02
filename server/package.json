@@ -4,7 +4,7 @@
   "private": true,
   "main": "app.js",
   "scripts": {
-    "start": "npx tsc; node app.js",
+    "start": "npx tsc; node lib/app.js",
     "compile": ""
   },
   "dependencies": {

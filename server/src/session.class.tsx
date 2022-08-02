@@ -1,6 +1,6 @@
 import uid from 'uid-safe'
 import cytoscape from 'cytoscape'
-import { WebSocketServer, WebSocket, RawData } from 'ws';
+import { WebSocket } from 'ws';
 
 type SessionState = 'idle' | 'generating layout' | 'running simulation'
 
