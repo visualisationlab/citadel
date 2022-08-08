@@ -58,6 +58,7 @@ export declare module VisGraph {
     export interface Edge {
         source: string;
         target: string;
+        id: string;
         attributes: {
             [id: string]: any;
         };

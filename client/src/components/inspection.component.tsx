@@ -237,12 +237,36 @@ export default function InspectionTab(): JSX.Element {
     const [ attributeSelectionList, setAttributeSelectionList ] = useState<string[]>([])
 
     useEffect(() => {
-        console.log(`Starting useEffect: ${selectionState?.selectedNodes.length}`)
         if (selectionState === null || graphState === null) {
             return
         }
 
-        if (selectionState.selectedNodes.length === 1) {
+        if (selectionState.selectedNodes.length === 0 && selectionState.selectedEdges.length === 0) {
+            return
+        }
+
+        if (selectionState.selectedNodes.length > 1) {
+            if (selectionState.selectedNodes.length > 1) {
+                const filteredResult = graphState.nodes.data
+                    .filter((node) => { return selectionState.selectedNodes.includes(node.id)})
+
+
+                if (filteredResult.length !== selectionState.selectedNodes.length) {
+                    console.log(`Wrong number of nodes for cluster ${selectionState.selectedNodes.length}: ${filteredResult.length}`)
+
+                    return
+                }
+
+                setAttributeSelectionList(Object.keys(filteredResult[0].attributes))
+
+                const result = filteredResult.map((node) => { return node.attributes })
+                console.log(result)
+
+                setClusterAttributes(result)
+
+                return
+            }
+
             const id = selectionState.selectedNodes[0]
 
             const result = graphState.nodes.data.filter((node) => {return node.id === id})
@@ -253,34 +277,45 @@ export default function InspectionTab(): JSX.Element {
                 return
             }
 
-            console.log(`1 selected: ${result[0].attributes}`)
             setAttributes(result[0].attributes)
 
             return
         }
-        else if (selectionState.selectedNodes.length > 1) {
-            console.log(`Selected nodes: ${selectionState.selectedNodes}`)
+
+        if (selectionState.selectedEdges.length > 1) {
+            const filteredResult = graphState.edges.data
+                .filter((edge) => { return selectionState.selectedEdges.includes(edge.id)})
 
 
-            const filteredResult = graphState.nodes.data
-                .filter((node) => { return selectionState.selectedNodes.includes(node.id)})
-
-
-            if (filteredResult.length !== selectionState.selectedNodes.length) {
-                console.log(`Wrong number of nodes for cluster ${selectionState.selectedNodes.length}: ${filteredResult.length}`)
+            if (filteredResult.length !== selectionState.selectedEdges.length) {
+                console.log(`Wrong number of edges for cluster ${selectionState.selectedEdges.length}: ${filteredResult.length}`)
 
                 return
             }
 
             setAttributeSelectionList(Object.keys(filteredResult[0].attributes))
 
-            const result = filteredResult.map((node) => { return node.attributes })
-            console.log(result)
+            const result = filteredResult.map((edge) => { return edge.attributes })
 
             setClusterAttributes(result)
 
             return
         }
+
+        const id = selectionState.selectedEdges[0]
+
+        const result = graphState.edges.data.filter((edge) => {return edge.id === id})
+
+        if (result.length === 0 || result.length > 1) {
+            console.log(`Wrong number of edges with id ${id}: ${result.length}`)
+
+            return
+        }
+
+        setAttributes(result[0].attributes)
+
+        return
+
     }, [graphState, selectionState])
 
     if (state === null || graphState == null || graphDispatch == null
@@ -289,16 +324,32 @@ export default function InspectionTab(): JSX.Element {
         return <></>
     }
 
-    if (selectionState.selectedNodes.length === 0) {
+    if (selectionState.selectedNodes.length === 0 && selectionState.selectedEdges.length === 0) {
         return <></>
     }
-    else if (selectionState.selectedNodes.length === 1) {
+
+    if (selectionState.selectedNodes.length > 0) {
+        if (selectionState.selectedNodes.length > 1) {
+            return (
+                <Container
+                    className="shadow bg-white rounded"
+                    style={{width: '400px',
+                    padding: '0px', top: '50px',
+                    right: '50px',
+                    position:'absolute'}}>
+                    <Tabs>
+                        {ClusterTab(attributeSelectionList, selectionDispatch, clusterAttributes, selectedAttribute, setSelectedAttribute)}
+                    </Tabs>
+                </Container>
+            )
+        }
+
         const id = selectionState.selectedNodes[0]
 
         const result = graphState.nodes.data.filter((node) => {return node.id === id})
 
         if (result.length === 0 || result.length > 1) {
-            console.log(`Wrong number of nodes with id ${id}: {result.length}`)
+            console.log(`Wrong number of nodes with id ${id}: ${result.length}`)
 
             return <></>
         }
@@ -320,21 +371,31 @@ export default function InspectionTab(): JSX.Element {
             </Container>
         )
     }
-    else if (selectionState.selectedNodes.length > 1) {
-        console.log(`Rendering selection: ${selectionState.selectedNodes}`)
-        return (
-            <Container
-                className="shadow bg-white rounded"
-                style={{width: '400px',
-                padding: '0px', top: '50px',
-                right: '50px',
-                position:'absolute'}}>
-                <Tabs>
-                    {ClusterTab(attributeSelectionList, selectionDispatch, clusterAttributes, selectedAttribute, setSelectedAttribute)}
-                </Tabs>
-            </Container>
-        )
+
+    const id = selectionState.selectedEdges[0]
+
+    const result = graphState.edges.data.filter((edge) => {return edge.id === id})
+
+    if (result.length === 0 || result.length > 1) {
+        console.log(`Wrong number of edges with id ${id}: ${result.length}`)
+
+        return <></>
     }
 
-    return <></>
+    const edge = result[0]
+
+    return (
+        <Container
+            className="shadow bg-white rounded"
+            style={{width: '400px',
+            padding: '0px', top: '50px',
+            right: '50px',
+            position:'absolute'}}>
+            <Tabs >
+                <Tab eventKey='Edge' title='Edge'>
+                    {EdgeTab(edge.id, edge.source, edge.target, attributes, setAttributes, graphDispatch)}
+                </Tab>
+            </Tabs>
+        </Container>
+    )
 }
