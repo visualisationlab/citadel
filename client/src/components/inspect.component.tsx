@@ -1,18 +1,14 @@
 
 import React, { useState, useEffect, useContext } from 'react'
 import { Row, Container, InputGroup, Form, Accordion, Table } from 'react-bootstrap'
-import { VisGraph } from '../types';
 
 import Fuse from 'fuse.js'
 
 import { GraphDataContext } from '../components/main.component'
 import { SelectionDataContext } from '../components/main.component'
 
-import { API } from '../services/api.service'
-
 import './home.component.css'
 import { SelectionDataReducerAction } from '../reducers/selection.reducer';
-import { select } from 'd3';
 
 interface InspectTabProps {
     // selectedEdgeID: string,

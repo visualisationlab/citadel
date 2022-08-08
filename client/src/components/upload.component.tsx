@@ -1,4 +1,4 @@
-import React, { useState, useReducer } from 'react'
+import React, { useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { Form, Button, Container, Row, Col } from 'react-bootstrap'
 import { userService } from '../services/user.service';

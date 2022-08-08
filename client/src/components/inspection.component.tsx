@@ -1,16 +1,12 @@
-
-import { dispatch } from 'd3'
-import React, { useContext, useEffect, useState, Dispatch } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { Container, Form, Button, Tabs, Tab, Row, Col, Dropdown } from 'react-bootstrap'
 
 import { SelectionDataContext, UserDataContext } from '../components/main.component'
 import { GraphDataContext } from '../components/main.component'
-import { GraphDataReducerAction, GraphDataState, NodeMapping, EdgeMapping } from '../reducers/graphdata.reducer'
-import { SelectionDataReducerAction, SelectionDataState, SelectionDataReducer } from '../reducers/selection.reducer'
+import { GraphDataReducerAction } from '../reducers/graphdata.reducer'
+import { SelectionDataReducerAction } from '../reducers/selection.reducer'
 
-import { API } from '../services/api.service'
-import { VisGraph } from '../types'
-import { min, max, mean, median, sort, compare} from 'mathjs'
+import { min, max, mean, median } from 'mathjs'
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -133,11 +129,12 @@ function NodeTab(
                                         (e) => {
                                             let newState = {...attributes}
 
-                                            newState[key] = e.target.value
+                                            newState[key] = parseInt(e.target.value)
 
                                             setAttributes(newState)
                                         }
                                     }
+                                    type="text"
                                     value={attributes[key]}
                                     defaultValue={attributes[key]}
                                     placeholder={attributes[key]}></Form.Control>

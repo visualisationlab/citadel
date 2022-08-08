@@ -1,5 +1,5 @@
 import { parentPort } from 'worker_threads'
-import cytoscape from 'cytoscape'
+const cytoscape = require('cytoscape')
 // @ts-ignore
 import fcose from 'cytoscape-fcose'
 // @ts-ignore
@@ -21,7 +21,7 @@ cytoscape.use(cise)
 cytoscape.use(d3Force)
 
 export interface WorkerData {
-    graphData: JSON,
+    graphData: object,
     settings: {name: string, settings: {[key: string]: (number | boolean)}},
     width: number,
     height: number

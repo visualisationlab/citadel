@@ -1,5 +1,7 @@
 // Load env config file in root directory.
-require('dotenv').config({path:__dirname + '/.env'})
+console.log(__dirname + '/../.env')
+
+require('dotenv').config({path:__dirname + '/../.env'})
 
 import { RequestHandler, Request, Response } from "express";
 import { WebSocket } from "ws"
@@ -348,7 +350,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '/../public')));
 
 let getGraphs : RequestHandler = (_, res, next) => {
     fs.readdir("./public/graphs", (err: Error, graphs: string[]) => {

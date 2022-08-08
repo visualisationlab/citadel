@@ -14,9 +14,6 @@ export const EdgeSelected: ComponentStory<typeof InspectTab> = (args) => <Inspec
 export const NodeSelected: ComponentStory<typeof InspectTab> = (args) => <InspectTab {...args}></InspectTab>
 export const Hardcore: ComponentStory<typeof InspectTab> = (args) => <InspectTab {...args}></InspectTab>
 
-let defaultCount = 100
-let hardcoreCount = 1000
-
 Default.args = {
     // nodes: [...Array(defaultCount).keys()].map((index) => {
     //     return {

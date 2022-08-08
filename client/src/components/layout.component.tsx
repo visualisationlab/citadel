@@ -12,9 +12,9 @@ import { VisGraph } from '../types'
 
 import { GraphDataContext } from '../components/main.component'
 import { SelectionDataContext } from "./main.component"
-import { API } from '../services/api.service'
+
 import { Mappings } from '../mappings/module.mappings';
-import Hash from 'object-hash'
+
 
 /**
  * Returns a container, which is updated by reference to contain the graph.
@@ -36,33 +36,33 @@ export default function Layout() {
             return
         }
 
-        if (graphState.nodes.data.length !== animatedNodes.length) {
-            setAnimatedNodes(graphState.nodes.data)
+        // if (graphState.nodes.data.length !== animatedNodes.length) {
+        //     setAnimatedNodes(graphState.nodes.data)
 
-            return
-        }
+        //     return
+        // }
 
-        let newNodes = [...animatedNodes]
+        let newNodes = [...graphState.nodes.data]
 
-        let animate = false
+        let animate = true
 
         const PARAM = 1
         const CONV_SPEED = 0.2
 
-        for (let i = 0; i < animatedNodes.length; i++) {
-            let dist = Math.sqrt(Math.pow(animatedNodes[i].x - graphState.nodes.data[i].x, 2) + Math.pow(animatedNodes[i].y - graphState.nodes.data[i].y, 2))
+        // for (let i = 0; i < animatedNodes.length; i++) {
+        //     let dist = Math.sqrt(Math.pow(animatedNodes[i].x - graphState.nodes.data[i].x, 2) + Math.pow(animatedNodes[i].y - graphState.nodes.data[i].y, 2))
 
-            if (dist > PARAM) {
-                animate = true
+        //     if (dist > PARAM) {
+        //         animate = true
 
-                newNodes[i].x += (graphState.nodes.data[i].x - animatedNodes[i].x) * CONV_SPEED
-                newNodes[i].y += (graphState.nodes.data[i].y - animatedNodes[i].y) * CONV_SPEED
-            }
-        }
+        //         newNodes[i].x += (graphState.nodes.data[i].x - animatedNodes[i].x) * CONV_SPEED
+        //         newNodes[i].y += (graphState.nodes.data[i].y - animatedNodes[i].y) * CONV_SPEED
+        //     }
+        // }
 
-        if (animate) {
-            setAnimatedNodes(newNodes)
-        }
+        // if (animate) {
+        //     setAnimatedNodes(newNodes)
+        // }
 
         let hashedNodes = newNodes.map((node) => {
             node.visualAttributes.alpha = 1
@@ -78,12 +78,14 @@ export default function Layout() {
             }
 
             node.visualAttributes.radius = 16
+
             if (graphState.nodes.mapping.generators.radius.attribute !== '') {
                 const mappingState = graphState.nodes.mapping.generators.radius
 
                 const mapFun = Mappings.getMapFunction(mappingState.fun)
 
                 if (mapFun !== null && Object.keys(node.attributes).includes(mappingState.attribute.toString())) {
+                    console.log(node.attributes[mappingState.attribute])
                     const val = mapFun(node.attributes[mappingState.attribute], mappingState.data as any)
                     console.log(val)
                     node.visualAttributes.radius = graphState.nodes.mapping.settings.minRadius + val * graphState.nodes.mapping.settings.maxRadius
@@ -102,11 +104,15 @@ export default function Layout() {
             node.visualAttributes.fillColour = [0, 0, 0]
 
             if (graphState.nodes.mapping.generators.colour.attribute !== '') {
+                console.log('HERE')
+
                 const mappingState = graphState.nodes.mapping.generators.colour
 
                 const mapFun = Mappings.getMapFunction(mappingState.fun)
-
+                console.log(Object.keys(node.attributes))
                 if (mapFun !== null && Object.keys(node.attributes).includes(mappingState.attribute.toString())) {
+                    console.log(node.attributes[mappingState.attribute])
+                    console.log(mapFun(node.attributes[mappingState.attribute],  mappingState.data as any))
                     node.visualAttributes.fillColour = [mapFun(node.attributes[mappingState.attribute], mappingState.data as any), 0, 0]
                 }
             }
@@ -142,6 +148,7 @@ export default function Layout() {
                 const mapFun = Mappings.getMapFunction(mappingState.fun)
 
                 if (mapFun !== null && Object.keys(edge.attributes).includes(mappingState.attribute.toString())) {
+
                     edge.visualAttributes.fillColour = [mapFun(edge.attributes[mappingState.attribute], mappingState.data as any), 0, 0]
                 }
             }

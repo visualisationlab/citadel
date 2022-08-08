@@ -1,10 +1,6 @@
 {
     "name": "visgraph",
     "private": true,
-    "workspaces": [
-        "./client",
-        "./server"
-    ],
     "dependencies": {
         "typescript": "^4.7.4"
     }

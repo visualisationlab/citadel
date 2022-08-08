@@ -122,7 +122,7 @@ export module Session {
     }
 
     async function parseSetMessage(message: SetMessage) {
-        await new  ((resolve) => {
+        await new Promise((resolve) => {
             switch (message.contents.attribute) {
                 case 'layout':
                     const session = sessionData[message.sid]

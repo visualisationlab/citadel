@@ -1,7 +1,5 @@
-import React, {useEffect, useState, useReducer, createContext, Reducer } from 'react'
-import { VisGraph } from '../types'
+import React, {useEffect, useReducer, createContext, Reducer } from 'react'
 
-import { Button } from 'react-bootstrap'
 import './home.component.css'
 
 import Navigator from './navigator.component'
