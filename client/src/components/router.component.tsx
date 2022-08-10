@@ -4,7 +4,7 @@ import { SessionReducer } from '../reducers/sessiondata.reducer'
 
 import { UserDataContext } from '../components/main.component'
 
-import { ServerMessage } from '../services/websocket.service'
+import { MessageTypes } from '../services/websocket.service'
 
 import { VisGraph } from '../types'
 import { GraphDataReducerAction } from '../reducers/graphdata.reducer'
@@ -23,7 +23,7 @@ export module Router {
         graphDataDispatch = props.graphDataDispatch
     }
 
-    export function route(message: ServerMessage) {
+    export function route(message: MessageTypes.OutMessage) {
         if (!sessionDataDispatch || !graphDataDispatch) {
             return
         }
@@ -33,7 +33,9 @@ export module Router {
                 const messageData: {
                     nodes: VisGraph.CytoNode[]
                     edges: VisGraph.CytoEdge[] | undefined
-                } = message.contents as any
+                } = (message as any).data
+
+                console.log(messageData)
 
                 const nodes: VisGraph.GraphNode[] = messageData.nodes.map((node: VisGraph.CytoNode) => {
                     return {
@@ -90,11 +92,9 @@ export module Router {
                 })
 
                 break
-            case 'info':
-                sessionDataDispatch({attribute: 'all', value: message.contents as any})
+            case 'session':
+                sessionDataDispatch({attribute: 'all', value: message.sessionState as any})
                 break
-            case 'layouts':
-                sessionDataDispatch({attribute: 'layouts', value: message.contents as any})
         }
     }
 }

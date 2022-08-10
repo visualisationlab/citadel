@@ -6,11 +6,7 @@ import { userService } from '../services/user.service';
 import { API } from '../services/api.service'
 import './home.component.css'
 
-export interface Simulator {
-    id: string,
-    generating: boolean,
-    options: { [key: string]: string },
-}
+import { Simulator } from '../reducers/sessiondata.reducer'
 
 interface SimulatorTabProps {
     simulators: Simulator[]
@@ -47,82 +43,6 @@ function renderOrderButtons(order: number, simulatorCount: number): JSX.Element 
     </Col></>
 }
 
-function renderSimulator(simulator: Simulator, order: number, simulatorCount: number): JSX.Element {
-    return (
-        <Row>
-            {renderOrderButtons(order, simulatorCount)}
-            <Col md={{
-                span: 8,
-            }}>
-                <Card bg='light'>
-                    <Card.Header>
-                        <Row>
-                            <Col sm={10}>
-                                {simulator.id}
-                            </Col>
-                            <Col sm={2}>
-                                {simulator.generating &&
-                                    <Spinner animation="border" role="status"></Spinner>
-                                }
-                            </Col>
-                        </Row>
-                    </Card.Header>
-                    <Card.Text>
-                    <ListGroup variant='flush'>
-                    <ListGroup.Item >
-                        IP address: XYZ
-                    </ListGroup.Item>
-                    <ListGroup.Item>
-                        Updates: 23
-                    </ListGroup.Item>
-                    <ListGroup.Item>
-                        <Row>
-                            <Col sm={4}>
-                                <ButtonGroup>
-                                    <ToggleButton
-                                        key={0}
-                                        id='sim-on'
-                                        type='radio'
-                                        checked={true}
-                                        value={'enable'}
-                                        variant='outline-success'
-                                        >
-                                        On
-                                    </ToggleButton>
-                                    <ToggleButton
-                                        key={0}
-                                        id='sim-off'
-                                        type='radio'
-                                        checked={false}
-                                        value={'disable'}
-                                        variant='outline-danger'
-                                        >
-                                        Off
-                                    </ToggleButton>
-                                </ButtonGroup>
-                            </Col>
-                            <Col sm={4}>
-                                    <Button>
-                                        Edit
-                                    </Button>
-                                </Col>
-                            {order === simulatorCount - 1 &&
-                                <Col sm={4}>
-                                    <Button variant={simulator.generating ? 'outline-danger' : 'outline-success'}>
-                                        {simulator.generating ? 'Stop' : 'Start'}
-                                    </Button>
-                                </Col>
-                            }
-                        </Row>
-                    </ListGroup.Item>
-                    </ListGroup>
-                    </Card.Text>
-                </Card>
-            </Col>
-        </Row>
-    )
-}
-
 export function SimulatorTab(
     props: SimulatorTabProps) {
 
@@ -141,9 +61,6 @@ export function SimulatorTab(
                 </Card>
             </Col>
         </Row>
-        {props.simulators.map((simulator, index) => {
-            return renderSimulator(simulator, index, props.simulators.length)
-        })}
         <Row>
             <Col sm={2}>
                 <Button variant='outline-success'>
@@ -152,7 +69,7 @@ export function SimulatorTab(
             </Col>
         </Row>
         <Row>
-            <Button onClick={() => {API.step()}}>
+            <Button onClick={() => {API.step(1)}}>
                 Step
             </Button>
         </Row>

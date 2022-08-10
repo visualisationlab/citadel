@@ -1,58 +1,148 @@
-// Load env config file in root directory.
-console.log(__dirname + '/../.env')
-
 require('dotenv').config({path:__dirname + '/../.env'})
 
-import { RequestHandler, Request, Response } from "express";
-import { WebSocket } from "ws"
-import express from 'express'
-
+import express, { RequestHandler, Request, Response } from 'express'
 import { body } from 'express-validator'
 
-import { Session } from './sessions'
+import { WebSocket, WebSocketServer } from 'ws'
 import { networkInterfaces } from 'os'
+
+import { Session } from './session.class'
+import { IncomingMessage } from 'http'
+import uid from 'uid-safe'
+import { rm, createWriteStream, unlink } from 'fs'
+import { get } from 'http'
 
 const path = require('path');
 const cors = require('cors');
 const fs = require('fs');
 
-const { WebSocketServer } = require("ws")
+// import { server, onOpen, onClose, onMessage, onError } from './socket'
 
-import { server, onOpen, onClose, onMessage, onError } from './socket'
+if (process.env.WSCLIENTPORT === undefined) {
+    throw new Error('WSCLIENTPORT not set in ENV')
+}
 
-server.on('connection', (socket: WebSocket, req) => {
-    const type = onOpen(socket, req)
+const server = new WebSocketServer({
+    port: parseInt(process.env.WSCLIENTPORT),
+    clientTracking: true,
+    perMessageDeflate: true
+})
 
-    if (type === null) {
-        console.log('Connection failed')
+let sessions: {[sid: string]: (Session | null)} = {}
 
-        return
+server.on('connection', (socket: WebSocket, req: IncomingMessage) => {
+    if (req.url === undefined) {
+        socket.close()
     }
 
-    socket.on('close', (code, reason) => onClose(socket, req, code, reason))
+    try {
+        const url = new URL(req.url!, `ws://${req.headers.host}`)
+        const sid = url.searchParams.get('sid')
 
-    socket.on('message', (data, isBinary) => onMessage(socket, type, data, isBinary))
+        const apiKey = url.searchParams.get('key')
 
-    socket.on('error', (err) => onError(socket, req, err))
+        let userID: string | null = null
+
+        if (sid === null) {
+            socket.close()
+
+            return
+        }
+
+        if (sessions[sid] === undefined || sessions[sid] === null) {
+
+            socket.close()
+
+            return
+        }
+
+        const session = sessions[sid]!
+
+        if (apiKey !== null) {
+            session.registerSimulator(apiKey, socket)
+        }
+        else {
+            userID = session.addUser(socket)
+        }
+
+        socket.on('close', (code, reason) => {
+            console.log(code)
+            console.log(reason)
+            if (sessions[sid] === undefined || sessions[sid] === null || (userID === null && apiKey === null)) {
+                return
+            }
+
+            if (userID) {
+                session.removeUser(userID)
+                return
+            }
+
+            session.deRegisterSimulator(apiKey!)
+        })
+
+        socket.on('message', (data, isBinary) => {
+
+            if (isBinary) {
+                throw new Error(`BINARY! HELP!`)
+            }
+
+            try {
+                let message = JSON.parse(data.toString())
+
+                console.log(message)
+
+                if (message === null) {
+                    throw new Error('Object is null')
+                }
+
+
+                if (sessions[message.sid] === null || sessions[message.sid] === undefined) {
+                    socket.close()
+
+                    return
+                }
+
+                session.addMessage(message)
+            } catch (e) {
+                console.log(`Error '${e}' when parsing message`)
+
+                return
+            }
+        })
+        // socket.on('error', (err) => onError(socket, req, err))
+    } catch (e) {
+        console.log(e)
+
+        socket.close()
+    }
 })
 
 server.on('close', () => {
-    console.log('Web Client server closed')
+    Object.keys(sessions).forEach((key) => {
+        const session = sessions[key]
+
+        if (session === null) {
+            return
+        }
+
+        session.destroy()
+    })
 })
 
-server.on('error ', (error: Error) => {
-    console.log(`Web Client server error: ${error}`)
-})
+setInterval(() => {
+    Object.keys(sessions).filter((key) => {
+        const session = sessions[key]
 
-setInterval(Session.checkSessions, 5000)
+        if (session === null) {
+            return false
+        }
 
-const unityServer = new WebSocketServer({
-    port: process.env.WSUNITYPORT
-})
-
-// const clientServer = new WebSocketServer({
-//     port: process.env.WSCLIENTPORT
-// })
+        return session.hasExpired()
+    }).forEach((key) => {
+        console.log(`CLOSING SESSION ${key}`)
+        sessions[key]!.destroy()
+    })
+}, 5000)
 
 const nInterface = networkInterfaces()['wlp3s0'];
 
@@ -105,70 +195,70 @@ function sendPacket(socket: WebSocket, packet: Packet): void {
     socket.send(JSON.stringify(packet));
 }
 
-unityServer.on("connection", (socket: WebSocket) => {
-    // Require a connection with ID message.
-    socket.on("message", (data) => {
-        let unityData = null;
+// unityServer.on("connection", (socket: WebSocket) => {
+//     // Require a connection with ID message.
+//     socket.on("message", (data) => {
+//         let unityData = null;
 
-        // Attempt to parse data sent by a Unity client.
-        try {
-            unityData = JSON.parse(Buffer.from(data.toString()).toString());
-        } catch (e) {
-            console.log(e)
+//         // Attempt to parse data sent by a Unity client.
+//         try {
+//             unityData = JSON.parse(Buffer.from(data.toString()).toString());
+//         } catch (e) {
+//             console.log(e)
 
-            socket.close();
-            return;
-        }
+//             socket.close();
+//             return;
+//         }
 
-        // Check if ID matches.
-        if (!Object.keys(clientSessions).includes(unityData.id.toString()) &&
-            unityData.id !== 0) {
+//         // Check if ID matches.
+//         if (!Object.keys(clientSessions).includes(unityData.id.toString()) &&
+//             unityData.id !== 0) {
 
-            sendPacket(socket, {
-                type: MessageType.ERROR,
-                content: "Client ID does not exist.",
-                id: 0
-            });
+//             sendPacket(socket, {
+//                 type: MessageType.ERROR,
+//                 content: "Client ID does not exist.",
+//                 id: 0
+//             });
 
-            socket.close();
+//             socket.close();
 
-            return;
-        } else if (unityData.id == 0) {
-            unityData.id = idCounter - 1;
-            logMessage(idCounter - 1, "ID defaulting to most recent session");
-        }
+//             return;
+//         } else if (unityData.id == 0) {
+//             unityData.id = idCounter - 1;
+//             logMessage(idCounter - 1, "ID defaulting to most recent session");
+//         }
 
-        // Check if ID is already being used by Unity session.
-        /*if (Object.keys(unitySessions).includes(unityData.id.toString())) {
-            socket.send(JSON.stringify({
-                type: messageType.ERROR,
-                content: "Session already in use.",
-                id: -1
-            }));
+//         // Check if ID is already being used by Unity session.
+//         /*if (Object.keys(unitySessions).includes(unityData.id.toString())) {
+//             socket.send(JSON.stringify({
+//                 type: messageType.ERROR,
+//                 content: "Session already in use.",
+//                 id: -1
+//             }));
 
-            socket.close();
-            return;
-        }*/
+//             socket.close();
+//             return;
+//         }*/
 
-        sendPacket(socket, {
-            type: MessageType.SUCCESS,
-            content: "Connected to client with session ID " + unityData.id,
-            id: unityData.id
-        });
+//         sendPacket(socket, {
+//             type: MessageType.SUCCESS,
+//             content: "Connected to client with session ID " + unityData.id,
+//             id: unityData.id
+//         });
 
-        unitySessions[unityData.id] = socket;
+//         unitySessions[unityData.id] = socket;
 
-        sendPacket(clientSessions[unityData.id], {
-            type: MessageType.INITIAL,
-            content: "",
-            id: unityData.id
-        });
-    });
+//         sendPacket(clientSessions[unityData.id], {
+//             type: MessageType.INITIAL,
+//             content: "",
+//             id: unityData.id
+//         });
+//     });
 
-    socket.on("close", () => {
-        logMessage(0, "Connection to Unity socket closed")
-    });
-});
+//     socket.on("close", () => {
+//         logMessage(0, "Connection to Unity socket closed")
+//     });
+// });
 
 // Handles connection with client instances.
 // clientServer.on("connection", (socket: WebSocket) => {
@@ -384,10 +474,69 @@ app.get('/graphs', getGraphs, (req: Request, res: Response) => {
 })
 
 app.post('/urls', body('url').trim().unescape(),  (req, res) => {
-    Session.genSession(req.body.url, (sid) => {
-        res.json(sid)
+    let url = req.body.url
+
+    uid(4, (err, sid) => {
+        if (err) throw err
+
+        const dest = './cache/' + sid
+
+        rm(dest, () => {
+            let file = createWriteStream(dest)
+
+            try {
+                get(url, (response) => {
+                    let data = ''
+
+                    response.on('data', (chunk) => {
+                        data += chunk
+                        file.write(chunk)
+                    })
+
+                    response.on('end', () => {
+                        try {
+
+                            const json = JSON.parse(data)
+
+                            const session = new Session(sid, ((sid) => {
+                                sessions[sid] = null
+                            }), url, json.nodes, json.edges)
+
+                            sessions[sid] = session
+
+                        } catch (e) {
+                            console.error(e)
+                            rm(dest, () => {})
+
+                            sid = ''
+
+                            return
+                        }
+
+                        console.log(`Started new session with SID ${sid}`)
+                        file.close(() => res.json(sid))
+                    })
+                }).on('error', (err) => {
+                    unlink(dest, (err) => {
+                        if (err === null) {
+                            return
+                        }
+
+                        // throw new Error(err.message)
+                    })
+
+                    // throw new Error(err.message)
+                })
+            } catch (e) {
+                // console.log(e)
+            }
+        })
     })
 })
+    // Session.genSession(req.body.url, (sid) => {
+    //     res.json(sid)
+    // })
+// })
 
 app.get('/sessions', getSessions, (req: Request, res: Response) => {
     res.json(res.locals.sessions);

@@ -1,5 +1,5 @@
 /// <reference types="react" />
-import { Simulator } from './simulate.component';
+import { Simulator } from '../reducers/sessiondata.reducer';
 import './home.component.css';
 interface NavigatorProps {
     simulators: Simulator[];

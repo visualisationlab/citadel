@@ -2,9 +2,11 @@ import React, {useState} from 'react'
 import { Tabs, Tab, Container, Collapse, Button } from 'react-bootstrap'
 import MappingTab from './mapping.component'
 import SessionTab from './session.component'
-import { SimulatorTab, Simulator} from './simulate.component'
+import { SimulatorTab } from './simulate.component'
 import InspectTab from './inspect.component'
 import { VisGraph } from '../types'
+
+import { Simulator } from '../reducers/sessiondata.reducer'
 
 import './home.component.css'
 

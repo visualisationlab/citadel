@@ -6,6 +6,14 @@ export interface SessionState {
     sid: string;
     layouts: LayoutInfo[];
 }
+export interface Simulator {
+    key: string | null;
+    user: string;
+    state: 'disconnected' | 'idle' | 'running';
+    options: {
+        [key: string]: string;
+    };
+}
 declare type AvailableLayout = 'null' | 'random' | 'cose' | 'grid' | 'circle' | 'breadthfirst' | 'cose';
 declare type LayoutSetting = {
     name: string;

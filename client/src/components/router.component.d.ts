@@ -1,6 +1,6 @@
 import { Dispatch } from 'react';
 import { SessionReducer } from '../reducers/sessiondata.reducer';
-import { ServerMessage } from '../services/websocket.service';
+import { MessageTypes } from '../services/websocket.service';
 import { GraphDataReducerAction } from '../reducers/graphdata.reducer';
 interface RouterProps {
     sessionDataDispatch: Dispatch<SessionReducer>;
@@ -8,6 +8,6 @@ interface RouterProps {
 }
 export declare module Router {
     function setup(props: RouterProps): void;
-    function route(message: ServerMessage): void;
+    function route(message: MessageTypes.OutMessage): void;
 }
 export {};

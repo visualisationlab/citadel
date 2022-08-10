@@ -7,6 +7,13 @@ export interface SessionState {
     layouts: LayoutInfo[]
 }
 
+export interface Simulator {
+    key: string | null,
+    user: string,
+    state: 'disconnected' | 'idle' | 'running',
+    options: { [key: string]: string },
+}
+
 type AvailableLayout =
         | 'null'
         | 'random'
