@@ -135,7 +135,6 @@ export module Cyto {
     }
 
     export async function setLayout(cy: cytoscape.Core, settings: Session.LayoutSettings) {
-
         return new Promise((layoutResolve) => {
             if (!(Cyto.getAvailableLayouts().map((layoutInfo) => {return layoutInfo.name}).includes(settings.name as AvailableLayout))) {
                 return

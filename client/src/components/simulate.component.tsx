@@ -1,160 +1,287 @@
-import React, { useState, useReducer } from 'react'
-import { useHistory } from 'react-router-dom'
-import { Tabs, Tab, Container, Row, Col, Button, Card, ListGroup, ButtonGroup, ToggleButton, Spinner } from 'react-bootstrap'
+import React, { useState, useEffect, useContext } from 'react'
+import { Tabs, Tab, Container, Row, Col, Button, Card, ListGroup, Dropdown, ToggleButton, ProgressBar, Spinner, Form, CloseButton, InputGroup } from 'react-bootstrap'
 import { userService } from '../services/user.service';
+import { UserDataContext } from '../components/main.component'
 
 import { API } from '../services/api.service'
 import './home.component.css'
 
-export interface Simulator {
-    id: string,
-    generating: boolean,
-    options: { [key: string]: string },
-}
+import { Simulator, SimulatorParam } from '../reducers/sessiondata.reducer'
 
-interface SimulatorTabProps {
-    simulators: Simulator[]
-}
+import { Router } from './router.component'
 
-function renderOrderButtons(order: number, simulatorCount: number): JSX.Element {
-    let jsx: JSX.Element[] = []
+function renderSimulatorSettings(key: string, params: SimulatorParam[], setSimOptionsSelection: React.Dispatch<React.SetStateAction<string | null>>) {
 
-    if (simulatorCount === 1) {
-        return <>
-        <Col sm={4}>{jsx}</Col>
-        </>
-    }
-
-    if (order !== 0) {
-        jsx.push(
-            <Button variant='outline-primary'>
-                Up
-            </Button>
-        )
-    }
-
-    if (order !== simulatorCount - 1) {
-        jsx.push(
-            <Button variant='outline-primary'>
-                Down
-            </Button>
-        )
-    }
-
-    return <>
-    <Col sm={4}>
-        {jsx}
-    </Col></>
-}
-
-function renderSimulator(simulator: Simulator, order: number, simulatorCount: number): JSX.Element {
     return (
-        <Row>
-            {renderOrderButtons(order, simulatorCount)}
-            <Col md={{
-                span: 8,
-            }}>
-                <Card bg='light'>
-                    <Card.Header>
-                        <Row>
-                            <Col sm={10}>
-                                {simulator.id}
-                            </Col>
-                            <Col sm={2}>
-                                {simulator.generating &&
-                                    <Spinner animation="border" role="status"></Spinner>
-                                }
-                            </Col>
-                        </Row>
-                    </Card.Header>
-                    <Card.Text>
-                    <ListGroup variant='flush'>
-                    <ListGroup.Item >
-                        IP address: XYZ
-                    </ListGroup.Item>
-                    <ListGroup.Item>
-                        Updates: 23
-                    </ListGroup.Item>
-                    <ListGroup.Item>
-                        <Row>
-                            <Col sm={4}>
-                                <ButtonGroup>
-                                    <ToggleButton
-                                        key={0}
-                                        id='sim-on'
-                                        type='radio'
-                                        checked={true}
-                                        value={'enable'}
-                                        variant='outline-success'
-                                        >
-                                        On
-                                    </ToggleButton>
-                                    <ToggleButton
-                                        key={0}
-                                        id='sim-off'
-                                        type='radio'
-                                        checked={false}
-                                        value={'disable'}
-                                        variant='outline-danger'
-                                        >
-                                        Off
-                                    </ToggleButton>
-                                </ButtonGroup>
-                            </Col>
-                            <Col sm={4}>
-                                    <Button>
-                                        Edit
-                                    </Button>
+        <>
+            <Row>
+                <Col md={{span: 2}}>
+                    <CloseButton onClick={()=>{setSimOptionsSelection(null)}}>
+
+                    </CloseButton>
+                </Col>
+            </Row>
+
+            <ListGroup>
+                {params.map((param) => {
+                    let inputField = <></>
+
+                    switch (param.type) {
+                        case 'boolean':
+                            inputField = (
+                                <Dropdown onSelect={(item) => {
+                                    Router.setSimulatorSettings(key, params.map((paramIter) => {
+                                        if (paramIter.attribute === param.attribute) {
+                                            paramIter.value = item === 'true'
+                                        }
+
+                                        return paramIter
+                                    }))
+                                }}>
+                                    <Dropdown.Toggle>{param.value === true ? 'True' : 'False'}</Dropdown.Toggle>
+                                    <Dropdown.Menu>
+                                        <Dropdown.Item key='true' eventKey={'true'} active={param.value}>True</Dropdown.Item>
+                                        <Dropdown.Item key='false' eventKey={'false'} active={!param.value}>False</Dropdown.Item>
+                                    </Dropdown.Menu>
+                                </Dropdown>
+                            )
+                            break
+                        case 'integer':
+                            inputField = (
+                                <Form.Control
+                                    type='number'
+                                    value={param.value}
+                                    onChange={(e) => {
+                                        let num = Number(e.target.value)
+
+                                        if (!Number.isInteger(num)) {
+                                            return
+                                        }
+
+                                        Router.setSimulatorSettings(key, params.map((paramIter) => {
+                                            if (paramIter.attribute === param.attribute) {
+                                                paramIter.value = num
+                                            }
+
+                                            return paramIter
+                                        }))
+                                    }}
+                                >
+
+                                </Form.Control>
+                            )
+                            break
+                        case 'float':
+                            inputField = (
+                                <Form.Control
+                                    type='number'
+                                    step={0.1}
+                                    value={param.value}
+                                    onChange={(e) => {
+                                        let num = parseFloat(e.target.value)
+
+                                        if (isNaN(num)) {
+                                            return
+                                        }
+
+                                        Router.setSimulatorSettings(key, params.map((paramIter) => {
+                                            if (paramIter.attribute === param.attribute) {
+                                                paramIter.value = num
+                                            }
+
+                                            return paramIter
+                                        }))
+                                    }}
+                                >
+
+                                </Form.Control>
+                            )
+                            break
+                        case 'string':
+                            inputField = (
+                                <Form.Control
+                                    type='string'
+                                    value={param.value}
+                                    onChange={(e) => {
+                                        if (e.target.value === '') {
+                                            return
+                                        }
+
+                                        Router.setSimulatorSettings(key, params.map((paramIter) => {
+                                            if (paramIter.attribute === param.attribute) {
+                                                paramIter.value = e.target.value
+                                            }
+
+                                            return paramIter
+                                        }))
+                                    }}
+                                >
+
+                                </Form.Control>
+                            )
+
+                    }
+
+                    return (
+                        <ListGroup.Item>
+                            <Row>
+
+                                <Col>
+                                    {param.attribute}
                                 </Col>
-                            {order === simulatorCount - 1 &&
-                                <Col sm={4}>
-                                    <Button variant={simulator.generating ? 'outline-danger' : 'outline-success'}>
-                                        {simulator.generating ? 'Stop' : 'Start'}
-                                    </Button>
+                                <Col>
+                                    {param.type}
                                 </Col>
-                            }
-                        </Row>
-                    </ListGroup.Item>
-                    </ListGroup>
-                    </Card.Text>
-                </Card>
-            </Col>
-        </Row>
+                                <Col>
+                                    {inputField}
+                                </Col>
+                                <Col>
+                                    {param.value !== param.defaultValue &&
+                                        <Button variant='primary' onClick={() => {
+                                            Router.setSimulatorSettings(key, params.map((paramIter) => {
+                                                if (paramIter.attribute === param.attribute) {
+                                                    paramIter.value = paramIter.defaultValue
+                                                }
+
+                                                return paramIter
+                                            }))
+                                        }}>Reset</Button>
+                                    }
+                                </Col>
+                            </Row>
+                        </ListGroup.Item>
+                    )
+                })}
+            </ListGroup>
+        </>
     )
 }
 
-export function SimulatorTab(
-    props: SimulatorTabProps) {
+export function SimulatorTab() {
+    const { state,  } = useContext(UserDataContext)
 
-    return <Container fluid>
-        <Row >
-            <Col md={{
-                span: 8,
-                offset: 4
-                }}>
-                <Card bg='secondary' text='white'>
-                    <Card.Header>Server</Card.Header>
-                    <Card.Text>
-                    Some quick example text to build on the card title and make up the
-                    bulk of the card's content.
-                    </Card.Text>
-                </Card>
-            </Col>
-        </Row>
-        {props.simulators.map((simulator, index) => {
-            return renderSimulator(simulator, index, props.simulators.length)
-        })}
-        <Row>
-            <Col sm={2}>
-                <Button variant='outline-success'>
-                    Add
-                </Button>
-            </Col>
-        </Row>
-        <Row>
-            <Button onClick={() => {API.step()}}>
-                Step
-            </Button>
-        </Row>
-    </Container>
+    const [ selectedSim, setSelectedSim ] = useState('')
+    const [ simOptionsSelection, setSimOptionsSelection ] = useState<string | null>(null)
+    const [ stepCount, setStepCount ] = useState(1)
+
+    useEffect(() => {
+        if (simOptionsSelection === null) {
+            return
+        }
+
+        if (state?.simulators.filter((sim) => {
+            return (sim.key === simOptionsSelection && (sim.state === 'generating' || sim.state === 'idle'))
+        }).length === 0) {
+            setSimOptionsSelection(null)
+        }
+    }, [simOptionsSelection, state?.simulators])
+
+    if (!state) {
+        return <></>
+    }
+
+    const sims = state?.simulators.map((sim, index) => {
+        let buttonVariant = 'outline-secondary'
+
+        if (sim.state === 'generating') {
+            buttonVariant = 'outline-primary'
+        } else if (sim.state === 'disconnected') {
+            buttonVariant = 'outline-danger'
+        }
+
+        return (
+            <ListGroup.Item>
+                <Row>
+                    <Col md={{span: 1}}>
+                        { sim.key !== null &&
+                            <Form.Check
+                                checked={selectedSim === sim.key}
+                                type='radio'
+                                onChange={(() => {
+                                    if (sim.key === null)
+                                        return
+
+                                    setSelectedSim(sim.key)
+                            })}></Form.Check>
+                        }
+                    </Col>
+                    <Col md={{span: 2}}>
+                        {sim.username}
+                    </Col>
+                    <Col md={{span: 2}}>
+                        {sim.key}
+                    </Col>
+                    <Col md={{span: 2}}>
+                        {sim.title}
+                    </Col>
+                    <Col md={{span: 1}}>
+                        {
+                            sim.options.length > 0 &&
+
+                            <Button onClick={()=> {setSimOptionsSelection(sim.key)}}>Options</Button>
+                        }
+                    </Col>
+                    <Col md={{span: 2, offset: 1}}><Button disabled variant={buttonVariant}>{sim.state}</Button></Col>
+                </Row>
+            </ListGroup.Item>
+        )
+    })
+
+    console.log(state.simState)
+    const disabled = stepCount <= 0 || selectedSim === '' || state.state !== 'idle'
+
+    const res = simOptionsSelection === null ? (
+        <>
+            <Row>
+                <ListGroup>
+                    {sims}
+                    <ListGroup.Item>
+                            <Row>
+                                <Col md={{
+                                    span: 3,
+                                    offset: 9
+                                }}>
+                                    <Button onClick={() => {API.addSim()}}
+                                        variant='outline-success'>
+                                        Add
+                                    </Button>
+                                </Col>
+                            </Row>
+                        </ListGroup.Item>
+                </ListGroup>
+            </Row>
+            <Row>
+                <Col md={{span: 2}}>
+                    <Form.Control
+                        type='number'
+                        value={stepCount}
+                        onChange={(e) => {
+                            if (parseInt(e.target.value) > 0 && parseInt(e.target.value) < 1000)
+                                setStepCount(parseInt(e.target.value))
+                        }}></Form.Control>
+                </Col>
+                <Col>
+                    <Button
+                        disabled={disabled}
+                        onClick={() => {
+                            if (!disabled)
+                                API.step(stepCount, selectedSim, state.simulators.filter((sim) => {return sim.key === selectedSim})[0].options)
+                        }}>
+                        Step
+                    </Button>
+                </Col>
+                <Col>
+                        {state.simState.stepMax > 0 &&
+                            <ProgressBar animated now={state.simState.step / state.simState.stepMax * 100}></ProgressBar>
+                        }
+                </Col>
+            </Row>
+        </>
+    ) : renderSimulatorSettings(simOptionsSelection, state.simulators.filter((sim) => {return sim.key === simOptionsSelection})[0].options, setSimOptionsSelection)
+
+    return (
+        <Container fluid>
+                {res}
+        </Container>
+    )
 }

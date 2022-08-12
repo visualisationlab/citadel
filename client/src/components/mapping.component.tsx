@@ -1,11 +1,11 @@
 
 import React, { useContext, useReducer, useEffect, Dispatch } from 'react'
-import { Accordion, Row, Col, Dropdown, Form, ListGroup, OverlayTrigger, Button, Card, Tooltip, ButtonGroup, DropdownButton, Container } from 'react-bootstrap'
+import { Accordion, Row, Col, Dropdown, Form, ListGroup, OverlayTrigger, Button, Card, Tooltip, ButtonGroup, DropdownButton, Container, Spinner } from 'react-bootstrap'
 
 import { UserDataContext } from '../components/main.component'
 import { GraphDataContext } from '../components/main.component'
 import { GraphDataReducerAction, GraphDataState, NodeMapping, EdgeMapping } from '../reducers/graphdata.reducer'
-import { LayoutInfo } from '../reducers/sessiondata.reducer'
+import { LayoutInfo, ServerState } from '../reducers/sessiondata.reducer'
 
 import { LayoutSettingsReducer, LayoutSettingsState, LayoutSettingsReducerAction } from '../reducers/layoutsettings.reducer'
 
@@ -166,7 +166,12 @@ function edgeMapping(graphState: GraphDataState, dispatch: Dispatch<GraphDataRed
 }
 
 function layoutMapping(layouts: string[], layoutInfo: LayoutSettingsState,
-    layoutSettingsDispatch: React.Dispatch<LayoutSettingsReducerAction>) {
+    layoutSettingsDispatch: React.Dispatch<LayoutSettingsReducerAction>,
+    serverState: ServerState) {
+
+    if (serverState === 'disconnected' || serverState === 'busy') {
+        return <Spinner animation="border"></Spinner>
+    }
 
     const selectedLayout = layoutInfo?.layouts.filter((layout) => {
         return (layout.name === layoutInfo.selectedLayout)
@@ -365,7 +370,11 @@ export default function MappingTab() {
         <Accordion defaultActiveKey='nodemap' alwaysOpen>
             {nodeMapping(graphState, graphDispatch)}
             {edgeMapping(graphState, graphDispatch)}
-            {layoutMapping(state.layouts.map((layout) => {return layout.name}), layoutSettingsState, layoutSettingsReducer)}
+            {layoutMapping(
+                state.layouts.map((layout) => {return layout.name}),
+                layoutSettingsState,
+                layoutSettingsReducer,
+                state.state)}
         </Accordion>
     )
 }

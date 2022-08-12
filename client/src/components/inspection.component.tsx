@@ -129,7 +129,7 @@ function NodeTab(
                                         (e) => {
                                             let newState = {...attributes}
 
-                                            newState[key] = parseInt(e.target.value)
+                                            newState[key] = e.target.value
 
                                             setAttributes(newState)
                                         }
@@ -245,7 +245,7 @@ export default function InspectionTab(): JSX.Element {
             return
         }
 
-        if (selectionState.selectedNodes.length > 1) {
+        if (selectionState.selectedNodes.length > 0) {
             if (selectionState.selectedNodes.length > 1) {
                 const filteredResult = graphState.nodes.data
                     .filter((node) => { return selectionState.selectedNodes.includes(node.id)})
@@ -303,6 +303,8 @@ export default function InspectionTab(): JSX.Element {
         }
 
         const id = selectionState.selectedEdges[0]
+
+        console.log(graphState.edges.data)
 
         const result = graphState.edges.data.filter((edge) => {return edge.id === id})
 

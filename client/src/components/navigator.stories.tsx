@@ -19,6 +19,6 @@ export const Primary: ComponentStory<typeof Navigator> = (args) => <Navigator {.
 Primary.args = {
     ...MappingStories.Primary.args,
     ...SessionStories.Primary.args,
-    ...SimulateStories.Three.args,
+    // ...SimulateStories.Three.args,
     ...inspectStories.Default.args
 }

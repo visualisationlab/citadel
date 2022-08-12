@@ -38,7 +38,13 @@ export default function Main() {
         expirationDate: new Date(),
         graphURL: '',
         sid: '',
-        layouts: []
+        layouts: [],
+        state: 'idle',
+        simulators: [],
+        simState: {
+            step: 0,
+            stepMax: 0
+        }
     })
 
     let [graphData, graphDataDispatch] = useReducer<Reducer<GraphDataState, GraphDataReducerAction>>(GraphDataReducer, {
@@ -100,7 +106,7 @@ export default function Main() {
             <GraphDataContext.Provider value={{ graphState: graphData, graphDispatch: graphDataDispatch }}>
                 <UserDataContext.Provider value={{ state: sessionData, dispatch: sessionDataDispatch}}>
                         <Navigator
-                            simulators={[]}
+                            disconnected = {sessionData.state === 'disconnected'}
                             // nodes={graphData.nodes}
                             // edges={graphData.edges}
 

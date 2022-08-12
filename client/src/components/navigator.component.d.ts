@@ -1,8 +1,7 @@
 /// <reference types="react" />
-import { Simulator } from './simulate.component';
 import './home.component.css';
 interface NavigatorProps {
-    simulators: Simulator[];
+    disconnected: boolean;
 }
 export default function Navigator(props: NavigatorProps): JSX.Element;
 export {};

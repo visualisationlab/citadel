@@ -2,9 +2,10 @@
   "name": "visgraph-server",
   "version": "0.0.0",
   "private": true,
+  "type": "commonjs",
   "main": "app.js",
   "scripts": {
-    "start": "npx tsc; node lib/app.js",
+    "start": "npx tsc; node --experimental-modules lib/app.js",
     "compile": ""
   },
   "dependencies": {

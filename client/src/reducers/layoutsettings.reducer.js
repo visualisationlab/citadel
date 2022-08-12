@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.LayoutSettingsReducer = void 0;
-function LayoutSettingsReducer(state, action) {
+export function LayoutSettingsReducer(state, action) {
     switch (action.attribute) {
         case 'selectedLayout':
             if (state === null) {
@@ -63,4 +60,3 @@ function LayoutSettingsReducer(state, action) {
             return Object.assign({}, state);
     }
 }
-exports.LayoutSettingsReducer = LayoutSettingsReducer;

@@ -1,15 +1,12 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.GraphDataReducer = void 0;
-const module_mappings_1 = require("../mappings/module.mappings");
-const api_service_1 = require("../services/api.service");
+import { Mappings } from '../mappings/module.mappings';
+import { API } from '../services/api.service';
 function updateNodeMapping(state) {
     Object.keys(state.nodes.mapping.generators).forEach((key) => {
         const mapping = state.nodes.mapping.generators[key];
         if (mapping.attribute === '') {
             return state;
         }
-        const dataFun = module_mappings_1.Mappings.getDataFunction(mapping.fun);
+        const dataFun = Mappings.getDataFunction(mapping.fun);
         if (dataFun == null) {
             return state;
         }
@@ -35,7 +32,7 @@ function updateEdgeMapping(state) {
         if (mapping.attribute === '') {
             return state;
         }
-        const dataFun = module_mappings_1.Mappings.getDataFunction(mapping.fun);
+        const dataFun = Mappings.getDataFunction(mapping.fun);
         if (dataFun == null) {
             return state;
         }
@@ -78,7 +75,7 @@ function updateData(state, action) {
                 return node;
             });
             state.nodes.data = newNodes;
-            api_service_1.API.updateGraph(state);
+            API.updateGraph(state);
             return Object.assign({}, updateNodeMapping(state));
     }
     return state;
@@ -110,7 +107,7 @@ function setData(state, action) {
             }
     }
 }
-function GraphDataReducer(state, action) {
+export function GraphDataReducer(state, action) {
     switch (action.type) {
         case 'set':
             return setData(state, action);
@@ -118,4 +115,3 @@ function GraphDataReducer(state, action) {
             return updateData(state, action);
     }
 }
-exports.GraphDataReducer = GraphDataReducer;

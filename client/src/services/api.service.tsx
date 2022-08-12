@@ -1,32 +1,57 @@
 import { GraphDataState } from '../reducers/graphdata.reducer'
 import { LayoutState } from '../reducers/layoutsettings.reducer'
+import { SimulatorParam } from '../reducers/sessiondata.reducer'
 import { VisGraph } from '../types'
 import { websocketService } from './websocket.service'
 
 export module API {
     let sid: null | string = null
+    let userID: null | string = null
 
     export function setSID(newSID: string) {
         sid = newSID
     }
 
-    export function step() {
-        if (sid === null) {
+    export function setUserID(newUserID: string) {
+        userID = newUserID
+    }
+
+    export function addSim() {
+        if (sid === null || userID === null) {
             return
         }
 
-        websocketService.sendMessage({
-            type: 'set',
-            contents: {
-                attribute: 'sim',
-                value: 1
-            },
-            sid: sid
+        websocketService.sendSetMessage({
+            userID: userID,
+            sessionID: sid,
+            messageType: 'set',
+            dataType: 'simulatorInstance',
+            messageSource: 'user',
+            params: null
+        })
+    }
+
+    export function step(stepCount: number, apiKey: string, params: SimulatorParam[]) {
+        if (sid === null || userID === null) {
+            return
+        }
+
+        websocketService.sendSetMessage({
+            userID: userID,
+            sessionID: sid,
+            messageType: 'set',
+            dataType: 'simulator',
+            messageSource: 'user',
+            params: {
+                stepCount: stepCount,
+                params: params,
+                apiKey: apiKey
+            }
         })
     }
 
     export function updateGraph(graphState: GraphDataState) {
-        if (sid === null) {
+        if (sid === null || userID === null) {
             return
         }
 
@@ -52,74 +77,70 @@ export module API {
             }
         })
 
-        websocketService.sendMessage({
-            type: 'set',
-            contents: {
-                attribute: 'data',
-                value: {
-                    nodes: nodes,
-                    edges: edges
-                }
+        websocketService.sendSetMessage({
+            messageType: 'set',
+            dataType: 'graphState',
+            params: {
+                nodes: nodes,
+                edges: edges
             },
-            sid: sid
+            sessionID: sid,
+            userID: userID,
+            messageSource: 'user'
         })
     }
 
     export function updateUsername(name: string) {
-        if (sid === null) {
+        if (sid === null || name === '' || userID === null) {
+            console.log(name)
             return
         }
+        console.log('here')
 
-        if (name === '') {
-            return
-        }
-
-        console.log(`Updating username`)
-
-        websocketService.sendMessage({
-            type: 'set',
-            contents: {
-                attribute: 'username',
-                value: name
+        websocketService.sendSetMessage({
+            messageType: 'set',
+            dataType: 'username',
+            params: {
+                username: name
             },
-            sid: sid
+            sessionID: sid,
+            userID: userID,
+            messageSource: 'user'
         })
     }
 
     export function getInfo() {
-        if (sid === null) {
+        if (sid === null || userID === null) {
             return
         }
 
-        console.log(`Getting info`)
-
-        websocketService.sendMessage({
-            type: 'get',
-            contents: {
-                attribute: 'info'
-            },
-            sid: sid
+        websocketService.sendGetMessage({
+            userID: userID,
+            sessionID: sid,
+            messageType: 'get',
+            dataType: 'sessionState',
+            messageSource: 'user',
         })
     }
 
     export function getLayouts() {
-        if (sid === null) {
+        if (sid === null || userID === null) {
             return
         }
 
         console.log(`Getting layout`)
 
-        websocketService.sendMessage({
-            type: 'get',
-            contents: {
-                attribute: 'layouts'
-            },
-            sid: sid
+        websocketService.sendGetMessage({
+            userID: userID,
+            sessionID: sid,
+            messageType: 'get',
+            dataType: 'layouts',
+            messageSource: 'user',
         })
     }
 
     export function setLayout(layout: LayoutState) {
-        if (sid === null) {
+        if (sid === null || userID === null) {
             return
         }
 
@@ -134,15 +155,15 @@ export module API {
             res[setting.name] = setting.value
         })
 
-        websocketService.sendMessage({
-            type: 'set',
-            contents: {
-                attribute: 'layout',
-                value: {
-                    settings: {name: layout.name, settings: res}
-                }
+        websocketService.sendSetMessage({
+            messageType: 'set',
+            dataType: 'layout',
+            params: {
+                layout: layout
             },
-            sid: sid
+            sessionID: sid,
+            userID: userID,
+            messageSource: 'user'
         })
     }
 }
