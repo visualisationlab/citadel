@@ -1,3 +1,4 @@
+export declare type ServerState = 'disconnected' | 'idle' | 'busy';
 export interface SessionState {
     userName: string;
     users: string[];
@@ -5,6 +6,35 @@ export interface SessionState {
     graphURL: string;
     sid: string;
     layouts: LayoutInfo[];
+    state: ServerState;
+    simulators: Simulator[];
+    simState: {
+        step: number;
+        stepMax: number;
+    };
+}
+export declare type SimulatorParam = {
+    attribute: string;
+    type: 'boolean';
+    defaultValue: boolean;
+    value: boolean;
+} | {
+    attribute: string;
+    type: 'integer' | 'float';
+    defaultValue: number;
+    value: number;
+} | {
+    attribute: string;
+    type: 'string';
+    defaultValue: string;
+    value: string;
+};
+export interface Simulator {
+    key: string | null;
+    username: string;
+    title: string;
+    state: 'disconnected' | 'idle' | 'generating' | 'connecting';
+    options: SimulatorParam[];
 }
 declare type AvailableLayout = 'null' | 'random' | 'cose' | 'grid' | 'circle' | 'breadthfirst' | 'cose';
 declare type LayoutSetting = {
@@ -26,13 +56,17 @@ export interface LayoutInfo {
 }
 export declare type SessionReducer = {
     attribute: 'all';
-    value: SessionState;
+    value: any;
 } | {
     attribute: 'username';
     value: string;
 } | {
-    attribute: 'layouts';
-    value: LayoutInfo[];
+    attribute: 'state';
+    value: ServerState;
+} | {
+    attribute: 'simulatorSettings';
+    key: string;
+    params: SimulatorParam[];
 };
 export declare function SessionDataReducer(state: SessionState, action: SessionReducer): SessionState;
 export {};

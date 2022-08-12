@@ -4,55 +4,131 @@ import { VisGraph } from '../types'
 import { Router } from '../components/router.component'
 import { API } from '../services/api.service'
 
-type Request =
-    | 'info'
+export type LayoutSetting =
+    |   {
+            name: string,
+            description: string,
+            type: 'number',
+            defaultValue: number
+        }
+    |   {
+            name: string,
+            description: string,
+            type: 'boolean',
+            defaultValue: boolean
+        }
 
-interface ClientMessage {
-    type:   | 'transform'
-            | 'get'
-            | 'set',
-    sid: string,
-    contents: Object
+export interface LayoutInfo {
+    name: string,
+    description: string,
+    link: string,
+    settings: LayoutSetting[]
 }
 
-export interface ServerMessage {
-    type:   | 'data'
-            | 'info'
-            | 'layouts',
-    contents: Object
+type Simulator = {
+    readonly apikey: string | null,
+    readonly userID: string,
+    socket: WebSocket,
+    params: any,
+    state: 'disconnected' | 'idle' | 'generating'
 }
 
-interface TransformMessage extends ClientMessage {
-    type: 'transform',
-    contents: {
-        x: number,
-        y: number,
-        k: number
+export module MessageTypes {
+    type SessionState = 'idle' | 'busy'
+
+    export type CloseReason =
+        | {code: 1001, reason: 'Session end'}
+        | {code: 1002, reason: 'Protocol error'}
+        | {code: 1003, reason: 'Unsupported data'}
+        | {code: 1004, reason: 'Session timeout'}
+
+    export interface OutMessage {
+        sessionID: string,
+        sessionState: SessionState,
+        type: 'data' | 'session' | 'uid'
     }
-}
 
-interface RequestMessage extends ClientMessage {
-    type: 'get',
-    contents: {
-        type: Request
+    export interface InMessage {
+        sessionID: string,
+        userID: string,
+        messageSource: 'simulator' | 'user'
+        messageType: 'get' | 'set'
+        apiKey?: string
+        data?: any
+        dataType?: any
     }
-}
 
-interface DataMessage extends ServerMessage {
-    type: 'data',
-    contents: {
-        nodes: VisGraph.CytoNode[]
-        edges: VisGraph.CytoEdge[]
+    export interface SimulatorMessage {
+        sessionID: string,
+        apiKey: string,
+        messageSource: 'simulator',
+        data: {
+            nodes: any,
+            edges: any,
+            params: any
+        }
     }
-}
 
-interface InfoMessage extends ServerMessage {
-    type: 'info',
-    contents: {
-        sid: string,
-        expirationDate: Date,
-        users: string[],
-        graphURL: string
+    export type GetType = 'graphState' | 'sessionState' | 'layouts' | 'apiKey' | 'QR'
+    export type SetType = 'graphState' | 'simulator' | 'simulatorInstance' | 'layout' | 'username'
+
+    export interface GetMessage extends InMessage {
+        messageSource: 'user'
+        messageType: 'get'
+        userID: string,
+        dataType: GetType
+    }
+
+    export interface SetMessage extends InMessage {
+        messageSource: 'user'
+        messageType: 'set'
+        userID: string,
+        dataType: SetType
+        params: any
+    }
+
+    export interface SetSimulatorMessage extends InMessage {
+        messageSource: 'user'
+        messageType: 'set'
+        userID: string,
+        dataType: 'simulator'
+        params: {
+            stepCount: number,
+            apikey: string
+        }
+    }
+
+    export interface SetSimulatorInstanceMessage extends InMessage {
+        messageSource: 'user'
+        messageType: 'set'
+        userID: string,
+        dataType: 'simulatorInstance'
+    }
+
+    export interface SessionStateMessage extends OutMessage {
+        userID: string,
+        type: 'session',
+        data: {
+            url: string,
+            users: {
+
+            },
+            simulators: Simulator[],
+            layoutInfo: LayoutInfo[]
+        }
+    }
+
+    export interface DataStateMessage extends OutMessage {
+        type: 'data',
+        data: {
+            nodes: any
+            edges: any
+        }
+    }
+
+    export interface UIDMessage extends OutMessage {
+        type: 'uid',
+        data: string
     }
 }
 
@@ -62,39 +138,6 @@ const WSURL = process.env.REACT_APP_WSURL + ':' +
 
 class WebsocketService {
     ws: WebSocket | null = null
-    // transform: VisGraph.Transform = {'k': 1, 'x': 0, 'y': 0}
-    // width: number = window.innerWidth
-    // height: number = window.innerHeight
-    // sid: string | null = null
-
-    // updateFunction: ((nodes: VisGraph.GraphNode[], edges: VisGraph.Edge[]) => void) | null = null
-    // sidUpdateFunction: ((sid: string) => (void)) | null = null
-
-    // setGraphUpdateFunction(fun: (nodes: VisGraph.GraphNode[], edges: VisGraph.Edge[]) => void) {
-    //     this.updateFunction = fun
-
-    //     this.ws?.close()
-
-    //     this.ws = null
-
-    //     this.checkConnection()
-    // }
-
-    // setSidUpdateFunction(fun: (sid: string) => (void)) {
-    //     this.sidUpdateFunction = fun
-
-    //     if (this.sid === null) {
-    //         return
-    //     }
-
-    //     this.requestInfo({
-    //         type: 'request',
-    //         contents: {
-    //             type: 'info'
-    //         },
-    //         sid: this.sid
-    //     })
-    // }
 
     checkConnection() {
         const currentURL = new URL(window.location.href)
@@ -112,7 +155,7 @@ class WebsocketService {
         this.connect(splitString[2])
     }
 
-    parseServerMessage(message: ServerMessage) {
+    parseServerMessage(message: MessageTypes.OutMessage) {
         Router.route(message)
     }
 
@@ -125,10 +168,9 @@ class WebsocketService {
 
         // Handles incoming messages from server.
         this.ws.onmessage = (msg) => {
-            // console.log(msg.data)
 
             try {
-                const messageData: ServerMessage = JSON.parse(msg.data)
+                const messageData: MessageTypes.OutMessage = JSON.parse(msg.data)
 
                 API.setSID(sid)
 
@@ -140,17 +182,15 @@ class WebsocketService {
 
                 return
             }
-            // (msg.data).then((buffer) => {
-            //     console.log(buffer)
-            //     // const decompressedData = unpack(new Uint8Array(buffer))
-
-            //     // Attempt to parse data sent by a server.
-            // })
         }
+
+        this.ws.onclose = (() => {
+            Router.setState('disconnected')
+        })
     }
 
     // Sends messages to server.
-    sendMessage(message: ClientMessage) {
+    sendSetMessage(message: MessageTypes.SetMessage) {
         if (this.ws === null) {
             return
         }
@@ -161,16 +201,23 @@ class WebsocketService {
             return
         }
 
-        console.log('sending')
+        console.log('here')
+
         this.ws.send(JSON.stringify(message))
     }
 
-    requestInfo(message: RequestMessage) {
-        this.sendMessage(message)
-    }
+    sendGetMessage(message: MessageTypes.GetMessage) {
+        if (this.ws === null) {
+            return
+        }
 
-    updateTransform(message: TransformMessage) {
-        this.sendMessage(message);
+        if (this.ws.readyState === WebSocket.CLOSED
+            || this.ws.readyState === WebSocket.CLOSING
+            || this.ws.readyState === WebSocket.CONNECTING) {
+            return
+        }
+
+        this.ws.send(JSON.stringify(message))
     }
 }
 

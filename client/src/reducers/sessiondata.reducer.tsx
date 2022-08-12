@@ -1,10 +1,54 @@
+export type ServerState = 'disconnected' | 'idle' | 'busy'
+
 export interface SessionState {
     userName: string,
     users: string[],
     expirationDate: Date,
     graphURL: string,
     sid: string,
-    layouts: LayoutInfo[]
+    layouts: LayoutInfo[],
+    state: ServerState,
+    simulators: Simulator[],
+    simState: {
+        step: number,
+        stepMax: number
+    }
+}
+
+type ServerSimulator = {
+    readonly apikey: string | null,
+    username: string,
+    title: string,
+    params: SimulatorParam[],
+    state: 'disconnected' | 'idle' | 'generating' | 'connecting'
+}
+
+export type SimulatorParam =
+    {
+        attribute: string,
+        type: 'boolean'
+        defaultValue: boolean,
+        value: boolean
+    }
+    | {
+        attribute: string,
+        type: 'integer' | 'float',
+        defaultValue: number,
+        value: number
+    }
+    | {
+        attribute: string,
+        type: 'string',
+        defaultValue: string,
+        value: string
+    }
+
+export interface Simulator {
+    key: string | null,
+    username: string,
+    title: string,
+    state: 'disconnected' | 'idle' | 'generating' | 'connecting',
+    options: SimulatorParam[],
 }
 
 type AvailableLayout =
@@ -38,21 +82,76 @@ export interface LayoutInfo {
 }
 
 export type SessionReducer =
-    | { attribute: 'all', value: SessionState}
+    | { attribute: 'all', value: any}
     | { attribute: 'username', value: string}
-    | { attribute: 'layouts', value: LayoutInfo[]}
+    | { attribute: 'state', value: ServerState}
+    | { attribute: 'simulatorSettings', key: string, params: SimulatorParam[]}
 
 export function SessionDataReducer(state: SessionState, action: SessionReducer): SessionState {
     switch (action.attribute) {
         case 'all':
-            action.value.layouts = state.layouts
-            return {...action.value}
+            return {
+                userName: action.value.data.users.filter((userData: {
+                    userID: string, username: string
+                }) => {
+                    return userData.userID === action.value.userID
+                })[0].username,
+                users: action.value.data.users.map((userData: {
+                    userID: string, username: string
+                }) => {
+                    return userData.username
+                }),
+                expirationDate: action.value.data.expirationDate,
+                graphURL: action.value.data.url,
+                sid: action.value.sessionID,
+                layouts: action.value.data.layoutInfo,
+                state: action.value.sessionState,
+                simulators: action.value.data.simulators.map((sim: ServerSimulator, index: number) => {
+                    if (index >= state.simulators.length ||
+                        (state.simulators[index].state === 'disconnected'
+                            || state.simulators[index].state === 'connecting'
+                            || state.simulators[index].state === 'generating'
+                            || sim.state === 'disconnected')) {
+
+                        return {
+                            key: sim.apikey,
+                            title: sim.title,
+                            username: sim.username,
+                            state: sim.state,
+                            options: sim.params.map((param) => {
+                                return {
+                                    ...param,
+                                    value: param.defaultValue
+                                }
+                            })
+                        }
+                    }
+
+                    return {...state.simulators[index], username: sim.username, state: sim.state}
+                }),
+                simState: {
+                    step: action.value.data.simState.step,
+                    stepMax: action.value.data.simState.stepMax,
+                }
+            }
+        case 'state':
+            state.state = action.value
+
+            return {...state}
         case 'username':
             state.userName = action.value
 
             return {...state}
-        case 'layouts':
-            state.layouts = action.value
+        case 'simulatorSettings':
+            console.log(action.params)
+            state.simulators = state.simulators.map((sim) => {
+                if (sim.key === action.key)
+                    sim.options = action.params
+
+                return sim
+                })
+
+            console.log(state.simulators)
 
             return {...state}
     }

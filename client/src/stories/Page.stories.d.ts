@@ -1,6 +1,4 @@
-import React from 'react';
-import { ComponentStory, ComponentMeta } from '@storybook/react';
-declare const _default: ComponentMeta<React.VFC<{}>>;
+declare const _default: import("@storybook/csf").ComponentAnnotations<import("@storybook/react").ReactFramework, any>;
 export default _default;
-export declare const LoggedOut: ComponentStory<React.VFC<{}>>;
-export declare const LoggedIn: ComponentStory<React.VFC<{}>>;
+export declare const LoggedOut: import("@storybook/csf").AnnotatedStoryFn<import("@storybook/react").ReactFramework, any>;
+export declare const LoggedIn: import("@storybook/csf").AnnotatedStoryFn<import("@storybook/react").ReactFramework, any>;

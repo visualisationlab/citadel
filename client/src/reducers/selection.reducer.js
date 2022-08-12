@@ -1,6 +1,3 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.SelectionDataReducer = void 0;
 function resetState(state) {
     if (state.selectedEdges.length === 0 && state.selectedNodes.length === 0) {
         return state;
@@ -42,7 +39,7 @@ function setState(type, value, mode) {
         selectionMode: mode
     };
 }
-function SelectionDataReducer(state, action) {
+export function SelectionDataReducer(state, action) {
     if (action.type === 'reset') {
         return resetState(state);
     }
@@ -83,4 +80,3 @@ function SelectionDataReducer(state, action) {
             return setState(action.attribute, addValue(state.selectedEdges, action.id), 'multi');
     }
 }
-exports.SelectionDataReducer = SelectionDataReducer;

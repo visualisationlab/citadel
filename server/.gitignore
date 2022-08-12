@@ -4,7 +4,7 @@
 *.md
 cache
 
-
+.vscode
 
 # Logs
 logs
