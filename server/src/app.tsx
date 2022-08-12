@@ -66,8 +66,6 @@ server.on('connection', (socket: WebSocket, req: IncomingMessage) => {
         }
 
         socket.on('close', (code, reason) => {
-            console.log(code)
-            console.log(reason)
             if (sessions[sid] === undefined || sessions[sid] === null || (userID === null && apiKey === null)) {
                 return
             }
@@ -89,14 +87,13 @@ server.on('connection', (socket: WebSocket, req: IncomingMessage) => {
             try {
                 let message = JSON.parse(data.toString())
 
-                console.log(message)
-
                 if (message === null) {
                     throw new Error('Object is null')
                 }
 
 
-                if (sessions[message.sid] === null || sessions[message.sid] === undefined) {
+                if (sessions[message.sessionID] === null || sessions[message.sessionID] === undefined) {
+                    console.log('CLOSING!')
                     socket.close()
 
                     return

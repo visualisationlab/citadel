@@ -1,32 +1,30 @@
+/// <reference types="node" />
 import { WebSocket } from 'ws';
+import { Worker } from 'worker_threads';
 declare type SessionState = 'idle' | 'busy';
-declare type Simulator = {
-    readonly apikey: string | null;
-    readonly userID: string;
-    socket: WebSocket;
-    params: any;
-    state: 'disconnected' | 'idle' | 'generating';
+declare type SimulatorParam = {
+    attribute: string;
+    type: 'boolean';
+    defaultValue: boolean;
+    value: boolean;
+} | {
+    attribute: string;
+    type: 'integer' | 'float';
+    defaultValue: number;
+    value: number;
+} | {
+    attribute: string;
+    type: 'string';
+    defaultValue: string;
+    value: string;
 };
 export declare module MessageTypes {
-    type CloseReason = {
-        code: 1001;
-        reason: 'Session end';
-    } | {
-        code: 1002;
-        reason: 'Protocol error';
-    } | {
-        code: 1003;
-        reason: 'Unsupported data';
-    } | {
-        code: 1004;
-        reason: 'Session timeout';
-    };
-    interface OutMessage {
+    export interface OutMessage {
         sessionID: string;
         sessionState: SessionState;
-        type: 'data' | 'session';
+        type: 'data' | 'session' | 'uid';
     }
-    interface InMessage {
+    export interface InMessage {
         sessionID: string;
         userID: string;
         messageSource: 'simulator' | 'user';
@@ -34,49 +32,110 @@ export declare module MessageTypes {
         apiKey?: string;
         data?: any;
         dataType?: any;
+        title?: string;
     }
-    interface SimulatorMessage {
+    export interface RegisterSimulatorMessage extends InMessage {
         sessionID: string;
-        apiKey: string;
         messageSource: 'simulator';
-        data: {
+        messageType: 'set';
+        dataType: 'register';
+        apiKey: string;
+        params: SimulatorParam[];
+    }
+    export interface SimulatorDataMessage extends InMessage {
+        sessionID: string;
+        messageSource: 'simulator';
+        messageType: 'set';
+        dataType: 'data';
+        apiKey: string;
+        params: {
             nodes: any;
             edges: any;
             params: any;
         };
     }
-    type GetType = 'graphState' | 'sessionState' | 'layouts' | 'apiKey' | 'QR';
-    type SetType = 'graphState' | 'simulator' | 'layout' | 'username';
-    interface GetMessage extends InMessage {
+    export type GetType = 'graphState' | 'sessionState' | 'layouts' | 'apiKey' | 'QR';
+    export type SetType = 'graphState' | 'simulator' | 'simulatorInstance' | 'layout' | 'username';
+    export interface GetMessage extends InMessage {
         messageSource: 'user';
         messageType: 'get';
         userID: string;
         dataType: GetType;
     }
-    interface SetMessage extends InMessage {
+    export interface SetMessage extends InMessage {
         messageSource: 'user';
         messageType: 'set';
         userID: string;
         dataType: SetType;
         params: any;
     }
-    interface SessionStateMessage extends OutMessage {
+    export interface SetUsernameMessage extends InMessage {
+        messageSource: 'user';
+        messageType: 'set';
+        userID: string;
+        dataType: 'username';
+        params: {
+            username: string;
+        };
+    }
+    export interface SetSimulatorMessage extends InMessage {
+        messageSource: 'user';
+        messageType: 'set';
+        userID: string;
+        dataType: 'simulator';
+        params: {
+            stepCount: number;
+            apiKey: string;
+        };
+    }
+    export interface SetSimulatorInstanceMessage extends InMessage {
+        messageSource: 'user';
+        messageType: 'set';
+        userID: string;
+        dataType: 'simulatorInstance';
+    }
+    type ServerSimulator = {
+        readonly apikey: string | null;
+        username: string;
+        params: SimulatorParam[];
+        title: string;
+        state: 'disconnected' | 'idle' | 'generating' | 'connecting';
+    };
+    export interface SessionStateMessage extends OutMessage {
         userID: string;
         type: 'session';
         data: {
             url: string;
             users: {};
-            simulators: Simulator[];
+            simulators: ServerSimulator[];
+            simState: {
+                step: number;
+                stepMax: number;
+            };
             layoutInfo: LayoutInfo[];
+            expirationDate: Date;
         };
     }
-    interface DataStateMessage extends OutMessage {
+    export interface DataStateMessage extends OutMessage {
         type: 'data';
         data: {
             nodes: any;
             edges: any;
         };
     }
+    export interface SimulatorSetMessage extends OutMessage {
+        type: 'data';
+        data: {
+            nodes: any;
+            edges: any;
+            params: SimulatorParam[];
+        };
+    }
+    export interface UIDMessage extends OutMessage {
+        type: 'uid';
+        data: string;
+    }
+    export {};
 }
 declare type AvailableLayout = 'null' | 'random' | 'cose' | 'grid' | 'circle' | 'breadthfirst' | 'cose' | 'fcose' | 'cola' | 'cise' | 'spread' | 'd3-force';
 export declare type LayoutSetting = {
@@ -96,6 +155,12 @@ export interface LayoutInfo {
     link: string;
     settings: LayoutSetting[];
 }
+declare type LayoutSettings = {
+    name: string;
+    settings: {
+        [key: string]: number | boolean;
+    };
+};
 export declare class Session {
     private readonly URL;
     private readonly sessionID;
@@ -106,6 +171,7 @@ export declare class Session {
     private simulators;
     private messageQueue;
     private readonly destroyFun;
+    private simState;
     constructor(sid: string, destroyFun: (sid: string) => void, url: string, nodes: {
         [key: string]: any;
     }[], edges: {
@@ -114,12 +180,16 @@ export declare class Session {
     private setState;
     private parseSimulatorMessage;
     private parseGetMessage;
+    private parseSetMessage;
     private parseUserMessage;
+    layoutTimer(resolve: any, worker: Worker, signal: AbortSignal): Promise<void>;
+    setLayout(settings: LayoutSettings): Promise<unknown>;
     private processMessage;
     private getMessage;
     addMessage(message: MessageTypes.InMessage): void;
     private pruneSessions;
     private sendGraphState;
+    sendSimulatorMessage(): void;
     private getSimulatorInfo;
     private sendSessionState;
     registerSimulator(apiKey: string, socket: WebSocket): void;

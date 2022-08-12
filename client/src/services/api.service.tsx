@@ -1,5 +1,6 @@
 import { GraphDataState } from '../reducers/graphdata.reducer'
 import { LayoutState } from '../reducers/layoutsettings.reducer'
+import { SimulatorParam } from '../reducers/sessiondata.reducer'
 import { VisGraph } from '../types'
 import { websocketService } from './websocket.service'
 
@@ -15,7 +16,22 @@ export module API {
         userID = newUserID
     }
 
-    export function step(stepCount: number) {
+    export function addSim() {
+        if (sid === null || userID === null) {
+            return
+        }
+
+        websocketService.sendSetMessage({
+            userID: userID,
+            sessionID: sid,
+            messageType: 'set',
+            dataType: 'simulatorInstance',
+            messageSource: 'user',
+            params: null
+        })
+    }
+
+    export function step(stepCount: number, apiKey: string, params: SimulatorParam[]) {
         if (sid === null || userID === null) {
             return
         }
@@ -27,7 +43,9 @@ export module API {
             dataType: 'simulator',
             messageSource: 'user',
             params: {
-                stepCount: stepCount
+                stepCount: stepCount,
+                params: params,
+                apiKey: apiKey
             }
         })
     }
@@ -74,12 +92,14 @@ export module API {
 
     export function updateUsername(name: string) {
         if (sid === null || name === '' || userID === null) {
+            console.log(name)
             return
         }
+        console.log('here')
 
         websocketService.sendSetMessage({
             messageType: 'set',
-            dataType: 'graphState',
+            dataType: 'username',
             params: {
                 username: name
             },

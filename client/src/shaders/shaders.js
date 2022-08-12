@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Shaders = void 0;
-var Shaders;
+export var Shaders;
 (function (Shaders) {
     Shaders.circleShader = `
         float ringWidth = 0.45;
@@ -40,4 +37,4 @@ var Shaders;
             gl_FragColor = t;
         }
     `;
-})(Shaders = exports.Shaders || (exports.Shaders = {}));
+})(Shaders || (Shaders = {}));

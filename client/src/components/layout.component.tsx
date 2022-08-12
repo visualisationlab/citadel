@@ -85,9 +85,9 @@ export default function Layout() {
                 const mapFun = Mappings.getMapFunction(mappingState.fun)
 
                 if (mapFun !== null && Object.keys(node.attributes).includes(mappingState.attribute.toString())) {
-                    console.log(node.attributes[mappingState.attribute])
+
                     const val = mapFun(node.attributes[mappingState.attribute], mappingState.data as any)
-                    console.log(val)
+
                     node.visualAttributes.radius = graphState.nodes.mapping.settings.minRadius + val * graphState.nodes.mapping.settings.maxRadius
                 }
             }
@@ -104,15 +104,12 @@ export default function Layout() {
             node.visualAttributes.fillColour = [0, 0, 0]
 
             if (graphState.nodes.mapping.generators.colour.attribute !== '') {
-                console.log('HERE')
+
 
                 const mappingState = graphState.nodes.mapping.generators.colour
 
                 const mapFun = Mappings.getMapFunction(mappingState.fun)
-                console.log(Object.keys(node.attributes))
                 if (mapFun !== null && Object.keys(node.attributes).includes(mappingState.attribute.toString())) {
-                    console.log(node.attributes[mappingState.attribute])
-                    console.log(mapFun(node.attributes[mappingState.attribute],  mappingState.data as any))
                     node.visualAttributes.fillColour = [mapFun(node.attributes[mappingState.attribute], mappingState.data as any), 0, 0]
                 }
             }

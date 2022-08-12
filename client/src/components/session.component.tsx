@@ -37,6 +37,7 @@ function renderSettings(
 
     return (
         <Container>
+
             <Row>
                 <InputGroup>
                     <InputGroup.Text>Username</InputGroup.Text>
@@ -101,6 +102,14 @@ export default function SessionTab() {
         )
     }
 
+    let sessionVariant = 'primary'
+
+    if (state.state === 'busy') {
+        sessionVariant = 'secondary'
+    } else if (state.state === 'disconnected') {
+        sessionVariant = 'danger'
+    }
+
     return (
         <Container>
             <Row>
@@ -108,8 +117,16 @@ export default function SessionTab() {
                 {renderUsers(state.userName, state.users)}
             </Row>
             <Row>
+                <h3>Session State</h3><Button variant={sessionVariant} disabled>{state.state}</Button>
+            </Row>
+            <Row>
                 <h3>Settings</h3>
-                {renderSettings(state.userName, state.expirationDate, state.graphURL, state.sid, newUserName, setNewUserName)}
+                {renderSettings(
+                    state.userName,
+                    state.expirationDate,
+                    state.graphURL,
+                    state.sid,
+                    newUserName, setNewUserName)}
             </Row>
         </Container>
     )

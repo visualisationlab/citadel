@@ -1,13 +1,14 @@
 import { Dispatch, useContext } from 'react'
 
-import { SessionReducer } from '../reducers/sessiondata.reducer'
+import { ServerState, SessionReducer, SimulatorParam } from '../reducers/sessiondata.reducer'
 
 import { UserDataContext } from '../components/main.component'
 
-import { MessageTypes } from '../services/websocket.service'
+import { MessageTypes, websocketService } from '../services/websocket.service'
 
 import { VisGraph } from '../types'
 import { GraphDataReducerAction } from '../reducers/graphdata.reducer'
+import { API } from '../services/api.service'
 
 interface RouterProps {
     sessionDataDispatch: Dispatch<SessionReducer>,
@@ -93,8 +94,24 @@ export module Router {
 
                 break
             case 'session':
-                sessionDataDispatch({attribute: 'all', value: message.sessionState as any})
+                sessionDataDispatch({attribute: 'all', value: message as any})
                 break
+            case 'uid':
+                API.setUserID((message as MessageTypes.UIDMessage).data)
         }
+    }
+
+    export function setState(state: ServerState) {
+        if (!sessionDataDispatch)
+            return
+
+        sessionDataDispatch({attribute: 'state', value: state})
+    }
+
+    export function setSimulatorSettings(key: string, params: SimulatorParam[]) {
+        if (!sessionDataDispatch)
+            return
+
+        sessionDataDispatch({attribute: 'simulatorSettings', key: key, params: params})
     }
 }

@@ -45,7 +45,7 @@ export module MessageTypes {
     export interface OutMessage {
         sessionID: string,
         sessionState: SessionState,
-        type: 'data' | 'session'
+        type: 'data' | 'session' | 'uid'
     }
 
     export interface InMessage {
@@ -70,7 +70,7 @@ export module MessageTypes {
     }
 
     export type GetType = 'graphState' | 'sessionState' | 'layouts' | 'apiKey' | 'QR'
-    export type SetType = 'graphState' | 'simulator' | 'layout'
+    export type SetType = 'graphState' | 'simulator' | 'simulatorInstance' | 'layout' | 'username'
 
     export interface GetMessage extends InMessage {
         messageSource: 'user'
@@ -85,6 +85,24 @@ export module MessageTypes {
         userID: string,
         dataType: SetType
         params: any
+    }
+
+    export interface SetSimulatorMessage extends InMessage {
+        messageSource: 'user'
+        messageType: 'set'
+        userID: string,
+        dataType: 'simulator'
+        params: {
+            stepCount: number,
+            apikey: string
+        }
+    }
+
+    export interface SetSimulatorInstanceMessage extends InMessage {
+        messageSource: 'user'
+        messageType: 'set'
+        userID: string,
+        dataType: 'simulatorInstance'
     }
 
     export interface SessionStateMessage extends OutMessage {
@@ -106,6 +124,11 @@ export module MessageTypes {
             nodes: any
             edges: any
         }
+    }
+
+    export interface UIDMessage extends OutMessage {
+        type: 'uid',
+        data: string
     }
 }
 
@@ -160,6 +183,10 @@ class WebsocketService {
                 return
             }
         }
+
+        this.ws.onclose = (() => {
+            Router.setState('disconnected')
+        })
     }
 
     // Sends messages to server.
@@ -173,6 +200,8 @@ class WebsocketService {
             || this.ws.readyState === WebSocket.CONNECTING) {
             return
         }
+
+        console.log('here')
 
         this.ws.send(JSON.stringify(message))
     }

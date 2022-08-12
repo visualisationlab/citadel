@@ -8,10 +8,12 @@ import { VisGraph } from '../types'
 
 import { Simulator } from '../reducers/sessiondata.reducer'
 
+import { GrCircleAlert } from 'react-icons/gr'
+
 import './home.component.css'
 
 interface NavigatorProps {
-    simulators: Simulator[]
+    disconnected: boolean
 }
 
 export default function Navigator(
@@ -35,12 +37,12 @@ export default function Navigator(
 
                 </Tab> */}
                 <Tab eventKey='Simulate' title='Simulate'>
-                    <SimulatorTab simulators={props.simulators} />
+                    <SimulatorTab />
                 </Tab>
                 <Tab eventKey='Search' title='Search'>
                     <InspectTab />
                 </Tab>
-                <Tab eventKey='Session' title='Session'>
+                <Tab eventKey='Session' title={props.disconnected ? <GrCircleAlert></GrCircleAlert> : 'Session'} >
                     <SessionTab />
                 </Tab>
             </Tabs>
