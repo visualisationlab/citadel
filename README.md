@@ -9,7 +9,30 @@ Visgraph allows users to analyze and edit graphs through the web browser. It off
 
 
 ## Installation
-TODO
+Pull the repo.
+
+Run npm install in root directory.
+
+Run npm install in server directory, add .env file in server directory containing definitions for:
+- CLIENTPORT
+- SERVERPORT
+- WSCLIENTPORT
+
+Change line 10: self to this in /node_modules/cytoscape_fcose/cytoscape-fcose.js
+
+Start server with npm start.
+
+Run npm install in client directory.
+
+Add .env file in client directory containing definitions for:
+REACT_APP_SERVERPORT
+REACT_APP_CLIENTPORT
+REACT_APP_WEBSOCKETPORT
+REACT_APP_URL (ex. "http://localhost")
+REACT_APP_WSURL (ex. "ws://192.168.0.199")
+
+Update node_modules for port you want to run on. E.g. 3000, 8064, etc.
+
 ## Usage
 TODO
 ## Support
