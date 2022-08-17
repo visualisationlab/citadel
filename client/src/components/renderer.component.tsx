@@ -36,7 +36,7 @@ const app = new PIXI.Application({
     antialias: true
 })
 
-const circleTexture = PIXI.Texture.from('http://192.168.0.199:3001/node2.png')
+const circleTexture = PIXI.Texture.from('http://chimay.science.uva.nl:8060/node2.png')
 
 app.stage.sortableChildren = true;
 
