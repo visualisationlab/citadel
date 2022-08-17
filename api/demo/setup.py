@@ -7,6 +7,7 @@ import random
 
 import networkx as nx
 import json
+
 def simulate(nodes, edges, params):
     # Set infection_rate attribute for each node.
     for node in nodes:

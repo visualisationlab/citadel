@@ -1,6 +1,7 @@
 import { Mappings } from '../mappings/module.mappings';
 import { API } from '../services/api.service';
 function updateNodeMapping(state) {
+    console.log('Updating node mapping');
     Object.keys(state.nodes.mapping.generators).forEach((key) => {
         const mapping = state.nodes.mapping.generators[key];
         if (mapping.attribute === '') {
@@ -24,6 +25,7 @@ function updateNodeMapping(state) {
             console.log(`Error! ${e}`);
         }
     });
+    console.log('Done node mapping');
     return Object.assign({}, state);
 }
 function updateEdgeMapping(state) {
@@ -58,7 +60,6 @@ function updateData(state, action) {
     }
     switch (action.object) {
         case 'node':
-            console.log(action);
             const result = state.nodes.data.filter((node) => { return node.id === action.value.id; });
             if (result.length === 0 || result.length > 1) {
                 console.log(`Wrong number of nodes with id ${action.value.id}: {result.length}`);

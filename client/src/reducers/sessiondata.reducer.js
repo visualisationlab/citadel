@@ -13,6 +13,8 @@ export function SessionDataReducer(state, action) {
                 sid: action.value.sessionID,
                 layouts: action.value.data.layoutInfo,
                 state: action.value.sessionState,
+                graphIndex: action.value.data.graphIndex,
+                graphIndexCount: action.value.data.graphIndexCount,
                 simulators: action.value.data.simulators.map((sim, index) => {
                     if (index >= state.simulators.length ||
                         (state.simulators[index].state === 'disconnected'

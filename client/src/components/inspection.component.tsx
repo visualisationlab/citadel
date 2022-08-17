@@ -3,8 +3,9 @@ import { Container, Form, Button, Tabs, Tab, Row, Col, Dropdown } from 'react-bo
 
 import { SelectionDataContext, UserDataContext } from '../components/main.component'
 import { GraphDataContext } from '../components/main.component'
-import { GraphDataReducerAction } from '../reducers/graphdata.reducer'
+import { GraphDataReducerAction, GraphDataState } from '../reducers/graphdata.reducer'
 import { SelectionDataReducerAction } from '../reducers/selection.reducer'
+import { API } from '../services/api.service'
 
 import { min, max, mean, median } from 'mathjs'
 import {
@@ -108,7 +109,8 @@ function NodeTab(
     id: string,
     attributes: {[id: string] : any},
     setAttributes: React.Dispatch<React.SetStateAction<{[id: string]: any}>>,
-    graphDispatch: React.Dispatch<GraphDataReducerAction>) {
+    graphDispatch: React.Dispatch<GraphDataReducerAction>,
+    graphState: GraphDataState) {
 
     return (
         <>
@@ -158,6 +160,16 @@ function NodeTab(
                     </Col>
                 </Row>
             </Row>
+            <Row>
+                <Col>
+                    <Button variant='outline-danger'
+                        onClick={() => {
+                            API.removeNode(id, graphState)
+                        }}>
+                        Remove Node
+                    </Button>
+                </Col>
+            </Row>
         </>
     )
 }
@@ -172,7 +184,8 @@ function EdgeTab(
     target: string,
     attributes: {[id: string] : any},
     setAttributes: React.Dispatch<React.SetStateAction<{[id: string]: any}>>,
-    graphDispatch: React.Dispatch<GraphDataReducerAction>) {
+    graphDispatch: React.Dispatch<GraphDataReducerAction>,
+    graphState: GraphDataState) {
 
     return (
         <>
@@ -222,6 +235,16 @@ function EdgeTab(
                         }} type='submit'>Update</Button>
                     </Col>
                 </Row>
+            </Row>
+            <Row>
+                <Col>
+                    <Button variant='outline-danger'
+                        onClick={() => {
+                            API.removeEdge(id, graphState)
+                        }}>
+                            Remove edge
+                    </Button>
+                </Col>
             </Row>
         </>
     )
@@ -367,7 +390,7 @@ export default function InspectionTab(): JSX.Element {
                 position:'absolute'}}>
                 <Tabs >
                     <Tab eventKey='Node' title='Node'>
-                        {NodeTab(node.id, attributes, setAttributes, graphDispatch)}
+                        {NodeTab(node.id, attributes, setAttributes, graphDispatch, graphState)}
                     </Tab>
                 </Tabs>
             </Container>
@@ -395,7 +418,7 @@ export default function InspectionTab(): JSX.Element {
             position:'absolute'}}>
             <Tabs >
                 <Tab eventKey='Edge' title='Edge'>
-                    {EdgeTab(edge.id, edge.source, edge.target, attributes, setAttributes, graphDispatch)}
+                    {EdgeTab(edge.id, edge.source, edge.target, attributes, setAttributes, graphDispatch, graphState)}
                 </Tab>
             </Tabs>
         </Container>

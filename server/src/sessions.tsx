@@ -142,6 +142,7 @@ export module Session {
                 case 'data':
                     Cyto.loadJson(getCytoSession(message.sid), message.contents.value.nodes, message.contents.value.edges)
                     resolve('')
+                    break
                 case 'sim':
                     console.log('starting sim')
                     startSim(message)

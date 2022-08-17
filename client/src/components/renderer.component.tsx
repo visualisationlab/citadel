@@ -653,6 +653,7 @@ export function Renderer({
     selectionDispatch
     }: RendererProps) {
 
+    console.log('Render start')
     if (!startupFlag) {
         setupRendering()
 
@@ -779,6 +780,7 @@ export function Renderer({
         })
     }
 
+    console.log('Rendered nodes')
 
     if (edgesShouldUpdate) {
         renderedEdges = edges.map((edge) => {
@@ -848,6 +850,12 @@ export function Renderer({
     if (renderedNodes.length !== 0) {
         updateNodePositions(nodes)
 
+        setTransformCallback(updateTransform)
+
+        window.addEventListener('beforeunload', cleanMemory);
+
+        console.log('Render end')
+
         return {
             destroy: () => {
                 window.removeEventListener('beforeunload', cleanMemory);
@@ -859,6 +867,7 @@ export function Renderer({
 
     window.addEventListener('beforeunload', cleanMemory);
 
+    console.log('Render end')
     return {
         destroy: () => {
             renderedNodes.forEach((node) => {

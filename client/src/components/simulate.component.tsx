@@ -11,7 +11,6 @@ import { Simulator, SimulatorParam } from '../reducers/sessiondata.reducer'
 import { Router } from './router.component'
 
 function renderSimulatorSettings(key: string, params: SimulatorParam[], setSimOptionsSelection: React.Dispatch<React.SetStateAction<string | null>>) {
-
     return (
         <>
             <Row>
@@ -23,7 +22,7 @@ function renderSimulatorSettings(key: string, params: SimulatorParam[], setSimOp
             </Row>
 
             <ListGroup>
-                {params.map((param) => {
+                {params.map((param, index) => {
                     let inputField = <></>
 
                     switch (param.type) {
@@ -123,9 +122,8 @@ function renderSimulatorSettings(key: string, params: SimulatorParam[], setSimOp
                     }
 
                     return (
-                        <ListGroup.Item>
+                        <ListGroup.Item key={index}>
                             <Row>
-
                                 <Col>
                                     {param.attribute}
                                 </Col>
@@ -190,8 +188,8 @@ export function SimulatorTab() {
         }
 
         return (
-            <ListGroup.Item>
-                <Row>
+            <ListGroup.Item key={index}>
+                <Row >
                     <Col md={{span: 1}}>
                         { sim.key !== null &&
                             <Form.Check
@@ -274,6 +272,31 @@ export function SimulatorTab() {
                         {state.simState.stepMax > 0 &&
                             <ProgressBar animated now={state.simState.step / state.simState.stepMax * 100}></ProgressBar>
                         }
+                </Col>
+            </Row>
+            <Row>
+                <Col>
+                    <Button onClick={() => {
+                        API.setGraphIndex(0)
+                    }}>First</Button>
+                </Col>
+                <Col>
+                    <Button onClick={() => {
+                        API.setGraphIndex(state.graphIndex - 1)
+                    }}>Previous</Button>
+                </Col>
+                <Col>
+                    {state.graphIndex + 1} / {state.graphIndexCount}
+                </Col>
+                <Col>
+                <Button onClick={() => {
+                    API.setGraphIndex(state.graphIndex + 1)
+                }}>Next</Button>
+                </Col>
+                <Col>
+                <Button onClick={() => {
+                    API.setGraphIndex(state.graphIndexCount - 1)
+                }}>Last</Button>
                 </Col>
             </Row>
         </>

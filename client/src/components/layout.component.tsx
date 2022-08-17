@@ -36,6 +36,8 @@ export default function Layout() {
             return
         }
 
+        console.log(`Layout start`)
+
         // if (graphState.nodes.data.length !== animatedNodes.length) {
         //     setAnimatedNodes(graphState.nodes.data)
 
@@ -172,12 +174,16 @@ export default function Layout() {
                 }
             }
 
+
+
             return {
                 ...edge,
                 // hash: Hash(edge)
                 hash: 'abc'
             }
         })
+
+        console.log(`layout end`)
 
         const { destroy } = Renderer({
             container: containerRef.current!,

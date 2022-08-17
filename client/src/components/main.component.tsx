@@ -41,6 +41,8 @@ export default function Main() {
         layouts: [],
         state: 'idle',
         simulators: [],
+        graphIndex: 0,
+        graphIndexCount: 1,
         simState: {
             step: 0,
             stepMax: 0

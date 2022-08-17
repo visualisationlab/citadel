@@ -29,9 +29,9 @@ export interface GraphDataState {
                 };
             };
             settings: {
-                colours: VisGraph.Colour[];
-                minRadius: number;
-                maxRadius: number;
+                'colours': VisGraph.Colour[];
+                'minRadius': number;
+                'maxRadius': number;
             };
         };
     };
@@ -56,9 +56,9 @@ export interface GraphDataState {
                 };
             };
             settings: {
-                colours: VisGraph.Colour[];
-                minWidth: number;
-                maxWidth: number;
+                'colours': VisGraph.Colour[];
+                'minWidth': number;
+                'maxWidth': number;
             };
         };
     };

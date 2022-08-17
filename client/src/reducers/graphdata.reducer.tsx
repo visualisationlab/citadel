@@ -20,9 +20,9 @@ export interface GraphDataState {
             }
 
             settings: {
-                colours: VisGraph.Colour[]
-                minRadius: number
-                maxRadius: number
+                'colours': VisGraph.Colour[]
+                'minRadius': number
+                'maxRadius': number
             }
         }
     },
@@ -36,9 +36,9 @@ export interface GraphDataState {
             }
 
             settings: {
-                colours: VisGraph.Colour[]
-                minWidth: number
-                maxWidth: number
+                'colours': VisGraph.Colour[]
+                'minWidth': number
+                'maxWidth': number
             }
         }
     }
@@ -60,6 +60,7 @@ export type GraphDataReducerAction =
     } }
 
 function updateNodeMapping(state: GraphDataState): GraphDataState {
+    console.log('Updating node mapping')
     Object.keys(state.nodes.mapping.generators).forEach((key) => {
         const mapping = state.nodes.mapping.generators[key as keyof typeof state.nodes.mapping.generators]
 
@@ -88,6 +89,8 @@ function updateNodeMapping(state: GraphDataState): GraphDataState {
             console.log(`Error! ${e}`)
         }
     })
+
+    console.log('Done node mapping')
 
     return {...state}
 }
@@ -132,7 +135,6 @@ function updateData(state: GraphDataState, action: GraphDataReducerAction): Grap
 
     switch (action.object) {
         case 'node':
-            console.log(action)
             const result = state.nodes.data.filter((node) => {return node.id === action.value.id})
 
             if (result.length === 0 || result.length > 1) {
