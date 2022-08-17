@@ -55,7 +55,7 @@ export declare module MessageTypes {
         };
     }
     export type GetType = 'graphState' | 'sessionState' | 'layouts' | 'apiKey' | 'QR';
-    export type SetType = 'graphState' | 'simulator' | 'simulatorInstance' | 'layout' | 'username';
+    export type SetType = 'graphState' | 'simulator' | 'simulatorInstance' | 'layout' | 'username' | 'graphIndex';
     export interface GetMessage extends InMessage {
         messageSource: 'user';
         messageType: 'get';
@@ -106,6 +106,8 @@ export declare module MessageTypes {
         type: 'session';
         data: {
             url: string;
+            graphIndex: number;
+            graphIndexCount: number;
             users: {};
             simulators: ServerSimulator[];
             simState: {
@@ -162,8 +164,9 @@ declare type LayoutSettings = {
     };
 };
 export declare class Session {
-    private readonly URL;
+    private readonly sourceURL;
     private readonly sessionID;
+    private readonly localAddress;
     private expirationDate;
     private cy;
     private sessionState;
@@ -172,12 +175,17 @@ export declare class Session {
     private messageQueue;
     private readonly destroyFun;
     private simState;
-    constructor(sid: string, destroyFun: (sid: string) => void, url: string, nodes: {
+    private graphHistory;
+    private graphIndex;
+    constructor(sid: string, destroyFun: (sid: string) => void, sourceURL: string, nodes: {
         [key: string]: any;
     }[], edges: {
         [key: string]: any;
-    }[]);
+    }[], localAddress: string);
     private setState;
+    private storeCurrentGraphState;
+    private appendGraphState;
+    private loadGraphState;
     private parseSimulatorMessage;
     private parseGetMessage;
     private parseSetMessage;

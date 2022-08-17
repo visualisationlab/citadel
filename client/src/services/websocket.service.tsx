@@ -70,7 +70,7 @@ export module MessageTypes {
     }
 
     export type GetType = 'graphState' | 'sessionState' | 'layouts' | 'apiKey' | 'QR'
-    export type SetType = 'graphState' | 'simulator' | 'simulatorInstance' | 'layout' | 'username'
+    export type SetType = 'graphState' | 'simulator' | 'simulatorInstance' | 'layout' | 'username' | 'graphIndex'
 
     export interface GetMessage extends InMessage {
         messageSource: 'user'

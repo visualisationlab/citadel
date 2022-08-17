@@ -9,6 +9,8 @@ export interface SessionState {
     layouts: LayoutInfo[],
     state: ServerState,
     simulators: Simulator[],
+    graphIndex: number,
+    graphIndexCount: number,
     simState: {
         step: number,
         stepMax: number
@@ -106,6 +108,8 @@ export function SessionDataReducer(state: SessionState, action: SessionReducer):
                 sid: action.value.sessionID,
                 layouts: action.value.data.layoutInfo,
                 state: action.value.sessionState,
+                graphIndex: action.value.data.graphIndex,
+                graphIndexCount: action.value.data.graphIndexCount,
                 simulators: action.value.data.simulators.map((sim: ServerSimulator, index: number) => {
                     if (index >= state.simulators.length ||
                         (state.simulators[index].state === 'disconnected'

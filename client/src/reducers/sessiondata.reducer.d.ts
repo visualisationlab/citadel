@@ -8,6 +8,8 @@ export interface SessionState {
     layouts: LayoutInfo[];
     state: ServerState;
     simulators: Simulator[];
+    graphIndex: number;
+    graphIndexCount: number;
     simState: {
         step: number;
         stepMax: number;

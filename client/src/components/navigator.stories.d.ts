@@ -1,5 +1,5 @@
-import { ComponentStory } from '@storybook/react';
+import { ComponentStory, ComponentMeta } from '@storybook/react';
 import Navigator from './navigator.component';
-declare const _default: import("@storybook/csf").ComponentAnnotations<import("@storybook/react").ReactFramework, any>;
+declare const _default: ComponentMeta<typeof Navigator>;
 export default _default;
 export declare const Primary: ComponentStory<typeof Navigator>;

@@ -50,6 +50,38 @@ export module API {
         })
     }
 
+    export function removeNode(nodeID: string, graphState: GraphDataState) {
+        if (sid === null || userID === null) {
+            return
+        }
+
+        const newState = {...graphState}
+
+        newState.nodes.data = graphState.nodes.data.filter((node) => {
+            return node.id !== nodeID
+        })
+
+        newState.edges.data = graphState.edges.data.filter((edge) => {
+            return (edge.source !== nodeID && edge.target !== nodeID)
+        })
+
+        updateGraph(newState)
+    }
+
+    export function removeEdge(edgeID: string, graphState: GraphDataState) {
+        if (sid === null || userID === null) {
+            return
+        }
+
+        const newState = {...graphState}
+
+        newState.edges.data = graphState.edges.data.filter((edge) => {
+            return (edge.id !== edgeID)
+        })
+
+        updateGraph(newState)
+    }
+
     export function updateGraph(graphState: GraphDataState) {
         if (sid === null || userID === null) {
             return
@@ -160,6 +192,25 @@ export module API {
             dataType: 'layout',
             params: {
                 layout: layout
+            },
+            sessionID: sid,
+            userID: userID,
+            messageSource: 'user'
+        })
+    }
+
+    export function setGraphIndex(index: number) {
+        if (sid === null || userID === null) {
+            return
+        }
+
+        console.log(`Setting index to ${index}`)
+
+        websocketService.sendSetMessage({
+            messageType: 'set',
+            dataType: 'graphIndex',
+            params: {
+                index: index
             },
             sessionID: sid,
             userID: userID,

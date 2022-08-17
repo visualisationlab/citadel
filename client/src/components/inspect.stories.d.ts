@@ -1,6 +1,6 @@
-import { ComponentStory } from '@storybook/react';
+import { ComponentStory, ComponentMeta } from '@storybook/react';
 import InspectTab from './inspect.component';
-declare const _default: import("@storybook/csf").ComponentAnnotations<import("@storybook/react").ReactFramework, any>;
+declare const _default: ComponentMeta<typeof InspectTab>;
 export default _default;
 export declare const Default: ComponentStory<typeof InspectTab>;
 export declare const EdgeSelected: ComponentStory<typeof InspectTab>;

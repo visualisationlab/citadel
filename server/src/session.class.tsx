@@ -3,6 +3,9 @@ import cytoscape from 'cytoscape'
 import { WebSocket } from 'ws';
 import { Worker } from 'worker_threads'
 import { setTimeout } from 'timers/promises'
+import { gzip, gunzip } from 'node:zlib'
+import { gzipSync } from 'zlib';
+import QRCode from 'qrcode'
 
 type SessionState = 'idle' | 'busy'
 
@@ -10,7 +13,14 @@ type User = {
     readonly userID: string,
     socket: WebSocket,
     username: string,
-    apikeys: string[]
+    apikeys: string[],
+    headsetIDs: string[]
+}
+
+type Headset = {
+    readonly headsetID: string,
+    socket: WebSocket,
+    readonly userID: string
 }
 
 type SimulatorParam =
@@ -83,7 +93,7 @@ export module MessageTypes {
     }
 
     export type GetType = 'graphState' | 'sessionState' | 'layouts' | 'apiKey' | 'QR'
-    export type SetType = 'graphState' | 'simulator' | 'simulatorInstance' | 'layout' | 'username'
+    export type SetType = 'graphState' | 'simulator' | 'simulatorInstance' | 'layout' | 'username' | 'graphIndex'
 
     export interface GetMessage extends InMessage {
         messageSource: 'user'
@@ -141,6 +151,8 @@ export module MessageTypes {
         type: 'session',
         data: {
             url: string,
+            graphIndex: number,
+            graphIndexCount: number,
             users: {
 
             },
@@ -217,6 +229,7 @@ type LayoutSettings = {
     settings: {[key: string]: number | boolean}
 }
 
+/* Returns layout information to be sent to client. */
 function getAvailableLayouts(): LayoutInfo[] {
     return [
         {
@@ -404,11 +417,15 @@ type SimState = {
 }
 
 export class Session {
-    private readonly URL: string
+    private readonly sourceURL: string
     private readonly sessionID: string
+
+    private readonly localAddress: string
 
     private expirationDate: Date
     private cy: cytoscape.Core
+
+    /* Server idle/busy. */
     private sessionState: SessionState
 
     private users: User[]
@@ -416,8 +433,10 @@ export class Session {
 
     private messageQueue: MessageTypes.InMessage[]
 
+    /* Session destructor function. */
     private readonly destroyFun: (sid: string) => void
 
+    /* Simulation state. */
     private simState: SimState = {
         step: 0,
         stepMax: 0,
@@ -425,26 +444,41 @@ export class Session {
         params: []
     }
 
+    /* Stores graph slices for timeline. */
+    private graphHistory: string[]
+    private graphIndex = 0
+
     constructor(sid: string,
                 destroyFun: (sid: string) => void,
-                url: string,
+                sourceURL: string,
                 nodes: {[key: string]: any}[],
-                edges: {[key: string]: any}[]) {
-        this.URL = url
+                edges: {[key: string]: any}[],
+                localAddress: string) {
+
+        this.localAddress = localAddress
+        this.sourceURL = sourceURL
         this.destroyFun = destroyFun
         this.sessionID = sid
         let expDate = new Date()
 
+        /* Session expires in six hours. */
         expDate.setHours(expDate.getHours() + 6)
 
         this.expirationDate = expDate
 
+        /* Load graph data. */
+        const data = this.parseJson(nodes, edges)
+
+        /* Compress graph state and store it. */
+        this.graphHistory = [gzipSync(JSON.stringify(data)).toString('base64')]
+
+        /* Startup cytoscape session. */
         this.cy = cytoscape({
             headless: true,
             styleEnabled: true,
         })
 
-        this.cy.json(this.parseJson(nodes, edges))
+        this.cy.json(data)
 
         this.users = []
         this.simulators = []
@@ -452,19 +486,77 @@ export class Session {
         this.sessionState = 'idle'
     }
 
+    /* Sets session state. */
     private setState(state: SessionState) {
         this.sessionState = state
 
         this.sendSessionState()
     }
 
+    /* Stores current graph state in timeline history at current index. */
+    private async storeCurrentGraphState() {
+        const data = this.cy.json()
+
+        return new Promise((resolve) => {gzip(JSON.stringify(data), (err, buffer) => {
+            if (err) {
+                console.log(`Error while zipping current instance: ${err.message}`)
+                resolve(err.message)
+                return
+            }
+
+            this.graphHistory[this.graphIndex] = buffer.toString('base64')
+
+            resolve('')
+        })})
+    }
+
+    /* Adds new slice at end of graph timeline. Takes stringified JSON as input.*/
+    private async appendGraphState(data: string) {
+        return new Promise((resolve) => {gzip(data, (err, buffer) => {
+            if (err) {
+                console.log(`Error while zipping current instance: ${err.message}`)
+                resolve(err.message)
+                return
+            }
+
+            this.graphHistory.push(buffer.toString('base64'))
+
+            resolve('')
+        })})
+    }
+
+    /* Load slice into timeline at index. */
+    private async loadGraphState(index: number) {
+        console.log(`Loading state ${index}`)
+
+        return new Promise((resolve) => {gunzip(Buffer.from(this.graphHistory[index], 'base64'), (err, buffer) => {
+            if (err) {
+                console.log(`Error while zipping current instance: ${err.message}`)
+                resolve('Error')
+                return
+            }
+
+            const data = JSON.parse(buffer.toString())
+
+            // Reset graph state.
+            this.cy.elements().remove()
+
+            this.cy.json(this.parseJson(data.elements.nodes, data.elements.edges))
+
+            this.graphIndex = index
+
+            resolve('Resolved')
+        })})
+    }
+
+    /* Parse message sent by simulator. */
     private parseSimulatorMessage(message: MessageTypes.InMessage,
         resolve: (value: () => void | PromiseLike<() => void>) => void,
         reject: (reason?: any) => void) {
 
         switch (message.dataType) {
             case 'register':
-                console.log(message)
+                /* Register new simulator. */
                 this.simulators.forEach((sim) => {
                     if (sim.apikey === message.apiKey) {
                         sim.title = message.title!
@@ -476,49 +568,64 @@ export class Session {
                 resolve(() => {
                     this.sendSessionState()
                 })
+                break
             case 'data':
-                const msg = (message as MessageTypes.SimulatorDataMessage)
-                this.cy.json(this.parseJson(msg.params.nodes, msg.params.edges))
+                /* Process new data message. */
+                this.storeCurrentGraphState().then(() => {
+                    const msg = (message as MessageTypes.SimulatorDataMessage)
 
-                this.simState = {
-                    ...this.simState,
-                    step: this.simState.step + 1,
-                }
+                    const data = this.parseJson(msg.params.nodes, msg.params.edges)
 
-                if (this.simState.step >= this.simState.stepMax) {
-                    this.simulators.forEach((sim) => {
-                        if (sim.apikey === this.simState.apiKey) {
-                            sim.state = 'idle'
+                    // Append new slice.
+                    this.appendGraphState(JSON.stringify(data)).then(() => {
+                        this.graphIndex = this.graphHistory.length - 1
+
+                        this.cy.json(data)
+
+                        // Update sim state.
+                        this.simState = {
+                            ...this.simState,
+                            step: this.simState.step + 1,
                         }
+
+                        // If simulation is done, reset state.
+                        if (this.simState.step >= this.simState.stepMax) {
+                            this.simulators.forEach((sim) => {
+                                if (sim.apikey === this.simState.apiKey) {
+                                    sim.state = 'idle'
+                                }
+                            })
+
+                            this.simState = {
+                                step: 0,
+                                stepMax: 0,
+                                apiKey: null,
+                                params: msg.params.params
+                            }
+
+                            this.sessionState = 'idle'
+                        } else {
+                            // Otherwise send new message to sim.
+                            this.sendSimulatorMessage()
+                        }
+
+                        resolve(() => {
+                            this.sendSessionState()
+                            this.sendGraphState()
+                        })
                     })
-
-                    this.simState = {
-                        step: 0,
-                        stepMax: 0,
-                        apiKey: null,
-                        params: msg.params.params
-                    }
-
-                    this.sessionState = 'idle'
-                } else {
-                    this.sendSimulatorMessage()
-                }
-
-                resolve(() => {
-                    this.sendSessionState()
-                    this.sendGraphState()
                 })
         }
     }
 
+    /* Parse get message from client. */
     private parseGetMessage(message: MessageTypes.GetMessage,
         resolve: (value: () => void | PromiseLike<() => void>) => void,
         reject: (reason?: any) => void) {
 
         switch (message.dataType) {
             case 'QR':
-                reject('Not Implemented')
-                return
+                break
             case 'graphState':
                 resolve(() => {
                     this.sendGraphState()
@@ -535,6 +642,7 @@ export class Session {
         }
     }
 
+    /* Parse set message from client. */
     private parseSetMessage(message: MessageTypes.SetMessage,
         resolve: (value: () => void | PromiseLike<() => void>) => void,
         reject: (reason?: any) => void) {
@@ -566,6 +674,7 @@ export class Session {
 
                 break
             case 'simulatorInstance':
+                // Request new simulator instance.
                 this.simulators.push({
                     apikey: uid.sync(4),
                     userID: message.userID,
@@ -581,6 +690,7 @@ export class Session {
 
                 break
             case 'simulator':
+                // Start new simulation on existing sim.
                 if (this.sessionState !== 'idle') {
                     reject('Session is currently busy')
                     return
@@ -595,16 +705,43 @@ export class Session {
 
                 this.sessionState = 'busy'
 
+                // Discard timeline slices after current index pos.
+                this.graphHistory.splice(this.graphIndex + 1, this.graphHistory.length - (this.graphIndex + 1))
+
                 resolve(() => {
                     this.sendSessionState()
                     this.sendSimulatorMessage()
                 })
                 break
             case 'graphState':
+                // Update server graph state.
                 this.cy.json(this.parseJson(message.params.nodes, message.params.edges))
 
                 resolve(() => {
                     this.sendGraphState()
+                })
+                break
+            case 'graphIndex':
+                // Set new timeline index.
+                if (message.params.index < 0 || message.params.index >= this.graphHistory.length) {
+                    reject(`Graph index ${message.params.index} out of bounds`)
+
+                    return
+                }
+
+                this.sessionState = 'busy'
+
+                this.sendSessionState()
+
+                this.storeCurrentGraphState().then(() => {
+                    this.loadGraphState(message.params.index).then(() => {
+                        resolve(() => {
+                            this.sessionState = 'idle'
+
+                            this.sendSessionState()
+                            this.sendGraphState()
+                        })
+                    })
                 })
         }
     }
@@ -703,7 +840,7 @@ export class Session {
                     // Log an error and close the session.
                     console.log(error)
 
-                    this.destroy()
+                    // this.destroy()
                 }
             )
     }
@@ -804,13 +941,15 @@ export class Session {
                 userID: user.userID,
                 type: 'session',
                 data: {
-                    url: this.URL,
+                    url: this.sourceURL,
                     users: this.users.map((user) => {
                         return {
                             username: user.username,
                             userID: user.userID
                         }
                     }),
+                    graphIndex: this.graphIndex,
+                    graphIndexCount: this.graphHistory.length,
                     simulators: this.getSimulatorInfo(user.userID).map((sim) => {
                         return {
                             apikey: sim.apikey,
@@ -857,8 +996,6 @@ export class Session {
             }
         })
 
-        console.log(this.simulators)
-
         this.sendSessionState()
     }
 
@@ -871,7 +1008,8 @@ export class Session {
             userID: userID,
             socket: socket,
             username: username,
-            apikeys: []
+            apikeys: [],
+            headsetIDs: []
         })
 
         const msg: MessageTypes.UIDMessage = {
@@ -954,9 +1092,6 @@ export class Session {
 
                     if (edgeKeys.includes('target')) {
                         edge['data']['target'] = edge['target'].toString()
-                    }
-                    if (index === 0) {
-                        console.log(edge)
                     }
 
                     return edge

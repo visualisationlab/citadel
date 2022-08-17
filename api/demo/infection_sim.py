@@ -21,7 +21,7 @@ def simulate(nodes, edges, params):
 
         if (inf_rate > 0):
             if (inf_rate < 5):
-                node['data']['infection_rate'] = inf_rate + 0.1
+                node['data']['infection_rate'] = inf_rate + random.randint(0, 1) / 10
                 continue
 
         else:
