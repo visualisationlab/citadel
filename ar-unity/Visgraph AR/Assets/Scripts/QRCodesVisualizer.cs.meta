@@ -1,0 +1,12 @@
+fileFormatVersion: 2
+guid: eb7b9e02c4b24de49b10d9819aacaac1
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - qrCodePrefab: {fileID: 1200717071578424, guid: 20bd7b70e3d5c074884c96f67f9623b7, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
