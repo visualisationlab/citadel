@@ -2,6 +2,8 @@
 
 The Visgraph API allows users to attach python scripts to a running session and perform changes on the graph from the web client.
 
+[Link to PyPI](https://pypi.org/project/visgraph/)
+
 ## Usage
 
 Copy visgraph.py to your project directory.
