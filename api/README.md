@@ -6,7 +6,7 @@ The Visgraph API allows users to attach python scripts to a running session and 
 
 ## Usage
 
-Copy visgraph.py to your project directory.
+Install with `pip install visgraph`.
 
 See setup.py and infection_sim.py for example usage.
 
