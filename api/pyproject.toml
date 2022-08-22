@@ -1,0 +1,32 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "visgraph"
+description = "Visgraph API allows the user to interface with a visgraph session using python scripts."
+readme = "README.md"
+license = ""
+keywords = [
+    "computational",
+    "modeling",
+    "network",
+    "visualization",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "importlib-metadata; python_version<\"3.8\"",
+    "requests",
+    "websockets",
+]
+dynamic = ["version"]
+
+[tool.hatch.version]
+path = "visgraph_api/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/visgraph_api",
+]
