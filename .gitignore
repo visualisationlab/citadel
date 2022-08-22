@@ -5,3 +5,5 @@
 cache
 node_modules
 .vscode
+*.egg-info/*
+*.__pycache__/*
