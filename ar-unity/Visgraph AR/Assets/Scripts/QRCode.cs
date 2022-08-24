@@ -26,7 +26,7 @@ namespace QRTracking
         private TextMesh QRTimeStamp;
         private TextMesh QRSize;
         private GameObject QRInfo;
-        private ToolTipSpawner ToolTipSpawner;
+        private CustomToolTipSpawner customToolTipSpawner;
         
         private bool validURI = false;
         private bool launch = false;
@@ -45,7 +45,6 @@ namespace QRTracking
 
             PhysicalSize = qrCode.PhysicalSideLength;
             CodeText = qrCode.Data;
-            
 
             qrCodeCube = gameObject.transform.Find("Cube").gameObject;
             QRInfo = gameObject.transform.Find("QRInfo").gameObject;
@@ -55,12 +54,12 @@ namespace QRTracking
             QRVersion = QRInfo.transform.Find("QRVersion").gameObject.GetComponent<TextMesh>();
             QRTimeStamp = QRInfo.transform.Find("QRTimeStamp").gameObject.GetComponent<TextMesh>();
             QRSize = QRInfo.transform.Find("QRSize").gameObject.GetComponent<TextMesh>();
-            ToolTipSpawner = qrCodeCube.GetComponent<ToolTipSpawner>();
-            ToolTipSpawner.toolTipText = CodeText;
+            customToolTipSpawner = qrCodeCube.GetComponent<CustomToolTipSpawner>();
+            customToolTipSpawner.toolTipText = CodeText;
 
-            QRID.text = "Id:" + qrCode.Id.ToString();
-            QRNodeID.text = "NodeId:" + qrCode.SpatialGraphNodeId.ToString();
-            QRText.text = CodeText;
+            //QRID.text = "Id:" + qrCode.Id.ToString();
+            //QRNodeID.text = "NodeId:" + qrCode.SpatialGraphNodeId.ToString();
+            //QRText.text = CodeText;
 
             if (System.Uri.TryCreate(CodeText, System.UriKind.Absolute,out uriResult))
             {
@@ -68,11 +67,11 @@ namespace QRTracking
                 QRText.color = Color.blue;
             }
 
-            QRVersion.text = "Ver: " + qrCode.Version;
-            QRSize.text = "Size:" + qrCode.PhysicalSideLength.ToString("F04") + "m";
-            QRTimeStamp.text = "Time:" + qrCode.LastDetectedTime.ToString("MM/dd/yyyy HH:mm:ss.fff");
-            QRTimeStamp.color = Color.yellow;
-            Debug.Log("Id= " + qrCode.Id + "NodeId= " + qrCode.SpatialGraphNodeId + " PhysicalSize = " + PhysicalSize + " TimeStamp = " + qrCode.SystemRelativeLastDetectedTime.Ticks + " QRVersion = " + qrCode.Version + " QRData = " + CodeText);
+            //QRVersion.text = "Ver: " + qrCode.Version;
+            //QRSize.text = "Size:" + qrCode.PhysicalSideLength.ToString("F04") + "m";
+            //QRTimeStamp.text = "Time:" + qrCode.LastDetectedTime.ToString("MM/dd/yyyy HH:mm:ss.fff");
+            //QRTimeStamp.color = Color.yellow;
+            //Debug.Log("Id= " + qrCode.Id + "NodeId= " + qrCode.SpatialGraphNodeId + " PhysicalSize = " + PhysicalSize + " TimeStamp = " + qrCode.SystemRelativeLastDetectedTime.Ticks + " QRVersion = " + qrCode.Version + " QRData = " + CodeText);
         }
 
         void UpdatePropertiesDisplay()

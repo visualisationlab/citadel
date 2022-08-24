@@ -10,7 +10,7 @@ using Microsoft.MixedReality.Toolkit.UI;
 /// Applies its follow settings to the spawned ToolTip's ToolTipConnector component
 /// </summary>
 [AddComponentMenu("Scripts/MRTK/SDK/ToolTipSpawner")]
-public class ToolTipSpawner : PrefabSpawner
+public class CustomToolTipSpawner : PrefabSpawner
 {
     private enum SettingsMode
     {
@@ -50,6 +50,8 @@ public class ToolTipSpawner : PrefabSpawner
     [SerializeField]
     private Transform anchor = null;
 
+    
+
     protected override void SpawnableActivated(GameObject spawnable)
     {
         var toolTip = spawnable.GetComponent<ToolTip>();
@@ -57,6 +59,8 @@ public class ToolTipSpawner : PrefabSpawner
         toolTip.ToolTipText = toolTipText;
         var connector = toolTip.GetComponent<ToolTipConnector>();
         connector.Target = (anchor != null) ? anchor.gameObject : gameObject;
+
+        spawnable.transform.parent = transform.parent;
 
         switch (settingsMode)
         {
