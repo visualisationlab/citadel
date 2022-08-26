@@ -81,6 +81,7 @@ namespace QRTracking
         {
             IsSupported = QRCodeWatcher.IsSupported();
             capabilityTask = QRCodeWatcher.RequestAccessAsync();
+            
             accessStatus = await capabilityTask;
             capabilityInitialized = true;
         }

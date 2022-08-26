@@ -23,7 +23,7 @@ public class WindowManager : MonoBehaviour
         }
     }
 
-    private void CloseAllWindows()
+    public void CloseAllWindows()
     {
         while (windows.Count > 0)
         {
@@ -40,7 +40,7 @@ public class WindowManager : MonoBehaviour
 
             if (windowScript.windowID == windowID)
             {
-                if (windowScript.windowID == WindowID.NodeMapping || windowScript.windowID == WindowID.EdgeMapping)
+                if (windowScript.windowID == WindowID.NodeMapping || windowScript.windowID == WindowID.EdgeMapping || windowScript.windowID == WindowID.Session)
                 {
                     CloseAllWindows();
                 }

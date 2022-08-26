@@ -33,6 +33,8 @@ namespace QRTracking
         private System.Uri uriResult;
         private long lastTimeStamp = 0;
 
+        public SessionManager SessionManager;
+
         // Use this for initialization
         void Start()
         {
@@ -114,6 +116,7 @@ namespace QRTracking
 
         public void OnInputClicked()
         {
+            Debug.Log(CodeText);
             if (validURI)
             {
                 launch = true;

@@ -11,6 +11,9 @@ namespace QRTracking
     {
         public GameObject qrCodePrefab;
 
+        [SerializeField]
+        SessionManager sessionManager;
+
         private System.Collections.Generic.SortedDictionary<System.Guid, GameObject> qrCodesObjectsList;
         private bool clearExisting = false;
 
@@ -48,6 +51,7 @@ namespace QRTracking
             QRCodesManager.Instance.QRCodeAdded += Instance_QRCodeAdded;
             QRCodesManager.Instance.QRCodeUpdated += Instance_QRCodeUpdated;
             QRCodesManager.Instance.QRCodeRemoved += Instance_QRCodeRemoved;
+
             if (qrCodePrefab == null)
             {
                 throw new System.Exception("Prefab not assigned");
@@ -100,13 +104,34 @@ namespace QRTracking
                     var action = pendingActions.Dequeue();
                     if (action.type == ActionData.Type.Added)
                     {
+                        foreach (var key in qrCodesObjectsList.Keys)
+                        {
+                            if (qrCodesObjectsList[key] != null)
+                            {
+                                Destroy(qrCodesObjectsList[key]);
+                            }
+                        }
+
+                        qrCodesObjectsList.Clear();
+
                         GameObject qrCodeObject = Instantiate(qrCodePrefab, new Vector3(0, 0, 0), Quaternion.identity);
                         qrCodeObject.GetComponent<SpatialGraphCoordinateSystem>().Id = action.qrCode.SpatialGraphNodeId;
                         qrCodeObject.GetComponent<QRCode>().qrCode = action.qrCode;
+                        qrCodeObject.GetComponent<QRCode>().SessionManager = sessionManager;
                         qrCodesObjectsList.Add(action.qrCode.Id, qrCodeObject);
                     }
                     else if (action.type == ActionData.Type.Updated)
                     {
+                        foreach (var key in qrCodesObjectsList.Keys)
+                        {
+                            if (qrCodesObjectsList[key] != null)
+                            {
+                                Destroy(qrCodesObjectsList[key]);
+                            }
+                        }
+
+                        qrCodesObjectsList.Clear();
+
                         if (!qrCodesObjectsList.ContainsKey(action.qrCode.Id))
                         {
                             GameObject qrCodeObject = Instantiate(qrCodePrefab, new Vector3(0, 0, 0), Quaternion.identity);

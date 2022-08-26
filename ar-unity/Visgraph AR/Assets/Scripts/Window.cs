@@ -5,7 +5,8 @@ using UnityEngine;
 public enum WindowID
 {
     NodeMapping,
-    EdgeMapping
+    EdgeMapping,
+    Session
 }
 
 public class Window : MonoBehaviour
