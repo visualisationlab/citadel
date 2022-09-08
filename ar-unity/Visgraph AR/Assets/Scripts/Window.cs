@@ -6,7 +6,8 @@ public enum WindowID
 {
     NodeMapping,
     EdgeMapping,
-    Session
+    Session,
+    ConfigureNodeMapping
 }
 
 public class Window : MonoBehaviour
@@ -28,6 +29,5 @@ public class Window : MonoBehaviour
     public void Close()
     {
         closeWindow();
-        gameObject.SetActive(false);
     }
 }

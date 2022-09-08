@@ -17,10 +17,22 @@ public class WindowManager : MonoBehaviour
 
         prevWindow.closeWindow -= PopWindow;
 
+        foreach (Transform child in prevWindow.transform)
+        {
+            child.gameObject.SetActive(false);
+        }
+
         if (windows.Count > 0)
         {
-            windows.Peek().gameObject.SetActive(true);
+            windows.Peek().closeWindow += PopWindow;
+
+            foreach (Transform child in windows.Peek().transform)
+            {
+                child.gameObject.SetActive(true);
+            }
         }
+
+        
     }
 
     public void CloseAllWindows()
@@ -45,13 +57,28 @@ public class WindowManager : MonoBehaviour
                     CloseAllWindows();
                 }
 
+                if (windows.Count > 0)
+                {
+                    windows.Peek().closeWindow -= PopWindow;
+                }
+
                 windows.Push(windowScript);
 
                 windowScript.closeWindow += PopWindow;
 
-                window.gameObject.SetActive(true);
+                foreach (Transform child in window.transform)
+                {
+                    child.gameObject.SetActive(true);
+                }
 
                 return;
+            }
+            else
+            {
+                foreach (Transform child in window.transform)
+                {
+                    child.gameObject.SetActive(false);
+                }
             }
         }
     }

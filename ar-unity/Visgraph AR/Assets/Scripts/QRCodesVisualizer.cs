@@ -102,6 +102,7 @@ namespace QRTracking
                 while (pendingActions.Count > 0)
                 {
                     var action = pendingActions.Dequeue();
+
                     if (action.type == ActionData.Type.Added)
                     {
                         foreach (var key in qrCodesObjectsList.Keys)
@@ -114,10 +115,15 @@ namespace QRTracking
 
                         qrCodesObjectsList.Clear();
 
-                        GameObject qrCodeObject = Instantiate(qrCodePrefab, new Vector3(0, 0, 0), Quaternion.identity);
+                        if ((System.DateTimeOffset.Now - action.qrCode.LastDetectedTime).Duration() > System.TimeSpan.FromSeconds(10))
+                        {
+                            return;
+                        }
+
+                        GameObject qrCodeObject = Instantiate(qrCodePrefab, new Vector3(0, 0, 0), Quaternion.identity, gameObject.transform);
                         qrCodeObject.GetComponent<SpatialGraphCoordinateSystem>().Id = action.qrCode.SpatialGraphNodeId;
                         qrCodeObject.GetComponent<QRCode>().qrCode = action.qrCode;
-                        qrCodeObject.GetComponent<QRCode>().SessionManager = sessionManager;
+                        qrCodeObject.GetComponent<QRCode>().sessionManager = sessionManager;
                         qrCodesObjectsList.Add(action.qrCode.Id, qrCodeObject);
                     }
                     else if (action.type == ActionData.Type.Updated)
@@ -134,9 +140,10 @@ namespace QRTracking
 
                         if (!qrCodesObjectsList.ContainsKey(action.qrCode.Id))
                         {
-                            GameObject qrCodeObject = Instantiate(qrCodePrefab, new Vector3(0, 0, 0), Quaternion.identity);
+                            GameObject qrCodeObject = Instantiate(qrCodePrefab, new Vector3(0, 0, 0), Quaternion.identity, gameObject.transform);
                             qrCodeObject.GetComponent<SpatialGraphCoordinateSystem>().Id = action.qrCode.SpatialGraphNodeId;
                             qrCodeObject.GetComponent<QRCode>().qrCode = action.qrCode;
+                            qrCodeObject.GetComponent<QRCode>().sessionManager = sessionManager;
                             qrCodesObjectsList.Add(action.qrCode.Id, qrCodeObject);
                         }
                     }

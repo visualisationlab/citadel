@@ -91,6 +91,7 @@ namespace QRTracking
             try
             {
                 qrTracker = new QRCodeWatcher();
+                
                 IsTrackerRunning = false;
                 qrTracker.Added += QRCodeWatcher_Added;
                 qrTracker.Updated += QRCodeWatcher_Updated;

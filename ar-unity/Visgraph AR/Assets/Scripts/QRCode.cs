@@ -33,7 +33,7 @@ namespace QRTracking
         private System.Uri uriResult;
         private long lastTimeStamp = 0;
 
-        public SessionManager SessionManager;
+        public SessionManager sessionManager;
 
         // Use this for initialization
         void Start()
@@ -74,6 +74,7 @@ namespace QRTracking
             //QRTimeStamp.text = "Time:" + qrCode.LastDetectedTime.ToString("MM/dd/yyyy HH:mm:ss.fff");
             //QRTimeStamp.color = Color.yellow;
             //Debug.Log("Id= " + qrCode.Id + "NodeId= " + qrCode.SpatialGraphNodeId + " PhysicalSize = " + PhysicalSize + " TimeStamp = " + qrCode.SystemRelativeLastDetectedTime.Ticks + " QRVersion = " + qrCode.Version + " QRData = " + CodeText);
+            //OnInputClicked();
         }
 
         void UpdatePropertiesDisplay()
@@ -99,6 +100,7 @@ namespace QRTracking
         void Update()
         {
             UpdatePropertiesDisplay();
+
             if (launch)
             {
                 launch = false;
@@ -110,16 +112,37 @@ namespace QRTracking
         {
 #if WINDOWS_UWP
             // Launch the URI
-            UnityEngine.WSA.Launcher.LaunchUri(uriResult.ToString(), true);
+            //UnityEngine.WSA.Launcher.LaunchUri(uriResult.ToString(), true);
 #endif
         }
 
         public void OnInputClicked()
         {
             Debug.Log(CodeText);
-            if (validURI)
+
+            if (System.Uri.TryCreate(CodeText, System.UriKind.Absolute, out uriResult))
             {
-                launch = true;
+                var port = uriResult.Port.ToString();
+                var host = uriResult.Host;
+                var queryStrings = uriResult.Query.Replace("?", string.Empty).Split('&');
+
+                var queries = new Dictionary<string, string>();
+
+                foreach (var queryString in queryStrings)
+                {
+                    var splitQuery = queryString.Split('=');
+
+                    queries[splitQuery[0]] = splitQuery[1];
+                }
+
+                if (queries.TryGetValue("sid", out string sid)
+                    && queries.TryGetValue("headsetKey", out string headsetKey)
+                    && queries.TryGetValue("userID", out string userID))
+                {
+                    sessionManager.Connect(host, port, sid, headsetKey, userID, qrCodeCube.transform);
+                }
+
+                //websocket = new WebSocket($"ws://{URL}:{port}?sid={sid}&headsetKey={headsetKey}&userID={userID}");
             }
 // eventData.Use(); // Mark the event as used, so it doesn't fall through to other handlers.
         }

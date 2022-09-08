@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: QRCodeMaterial
+  m_Name: NodeMaterial
   m_Shader: {fileID: 4800000, guid: 5bdea20278144b11916d77503ba1467a, type: 3}
   m_ShaderKeywords: _ALPHAPREMULTIPLY_ON _DIRECTIONAL_LIGHT _HOVER_LIGHT _SPECULAR_HIGHLIGHTS
   m_LightmapFlags: 4
@@ -106,7 +106,7 @@ Material:
     - _FadeMinValue: 0
     - _FluentLightIntensity: 1
     - _GlossMapScale: 1
-    - _Glossiness: 0.478
+    - _Glossiness: 0.442
     - _GlossyReflections: 1
     - _HoverLight: 1
     - _IgnoreZScale: 0
@@ -117,7 +117,7 @@ Material:
     - _IridescenceAngle: -0.78
     - _IridescenceIntensity: 0.5
     - _IridescenceThreshold: 0.05
-    - _Metallic: 0.27
+    - _Metallic: 0.617
     - _MipmapBias: -2
     - _Mode: 3
     - _NearLightFade: 0
@@ -158,7 +158,7 @@ Material:
     - _ZWrite: 0
     m_Colors:
     - _ClippingBorderColor: {r: 1, g: 0.2, b: 0, a: 1}
-    - _Color: {r: 0, g: 0.46900558, b: 1, a: 0.84313726}
+    - _Color: {r: 0.23642753, g: 0.49100316, b: 0.6509434, a: 0.7882353}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _EmissiveColor: {r: 0, g: 0, b: 0, a: 1}
     - _EnvironmentColorX: {r: 1, g: 0, b: 0, a: 1}

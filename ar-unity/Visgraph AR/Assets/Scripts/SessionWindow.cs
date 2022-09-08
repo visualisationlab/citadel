@@ -4,6 +4,9 @@ using UnityEngine;
 using Microsoft.MixedReality.Toolkit.Utilities;
 using Microsoft.MixedReality.Toolkit.UI;
 using TMPro;
+using Newtonsoft.Json;
+
+
 
 public class SessionWindow : MonoBehaviour
 {
@@ -25,8 +28,9 @@ public class SessionWindow : MonoBehaviour
     [SerializeField]
     private SessionManager sessionManager;
 
-    private void Awake()
+    private void OnEnable()
     {
+        Debug.Log("Here Session");
         sessionManager.updateSessionState += UpdateValues;
     }
 
@@ -34,22 +38,16 @@ public class SessionWindow : MonoBehaviour
     {
         sessionURL.text = $"Session URL: {sessionData.sessionURL}";
         timelineState.text = $"Timeline: {sessionData.graphIndex + 1} / {sessionData.graphIndexCount}";
-        sessionState.text = $"Session state: {sessionData.sessionState}";
-        sessionState.text = $"Session state: {sessionData.sessionState}";
+        //sessionState.text = $"Session state: {sessionData.sessionState}";
+        
         expirationState.text = $"Expires in: {sessionData.expirationDate}";
     }
 
-    
-
-    private void OnDestroy()
+    private void OnDisable()
     {
         sessionManager.updateSessionState -= UpdateValues;
     }
 
-    // Start is called before the first frame update
-    void OnEnable()
-    {
-    }
 
     // Update is called once per frame
     void Update()
