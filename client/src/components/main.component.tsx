@@ -1,4 +1,4 @@
-import React, {useEffect, useReducer, createContext, Reducer } from 'react'
+import React, {useEffect, useReducer, createContext, Reducer, useState } from 'react'
 
 import './home.component.css'
 
@@ -13,7 +13,10 @@ import { websocketService } from '../services/websocket.service'
 
 import { Router } from './router.component'
 
+import { QR } from '../services/qrcode.service'
+
 import { API } from '../services/api.service'
+
 import InspectionTab from './inspection.component'
 
 export const UserDataContext = createContext({
@@ -46,7 +49,11 @@ export default function Main() {
         simState: {
             step: 0,
             stepMax: 0
-        }
+        },
+        websocketPort: '3000',
+        sessionURL: '',
+        headsets: [],
+        playmode: false
     })
 
     let [graphData, graphDataDispatch] = useReducer<Reducer<GraphDataState, GraphDataReducerAction>>(GraphDataReducer, {
@@ -93,14 +100,34 @@ export default function Main() {
         selectionMode: 'single'
     })
 
+    const [qrCode, setqrCode] = useState('')
+
     useEffect(() => {
+
+
+        window.addEventListener('resize', () => {
+            API.setWindowSize(window.innerWidth, window.innerHeight)
+        })
+
         websocketService.checkConnection()
+
+
         Router.setup({
             sessionDataDispatch: sessionDataDispatch,
             graphDataDispatch: graphDataDispatch
         })
-        API.getLayouts()
+
+        QR.registerFun(setqrCode)
+
+        API.setWindowSize(window.innerWidth, window.innerHeight)
+
     }, [])
+
+    if (qrCode !== '') {
+        return (
+            <img style={{margin: '10px'}} src={qrCode} alt='QRcode'></img>
+        )
+    }
 
     return (
         <>

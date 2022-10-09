@@ -6,12 +6,15 @@ export function SessionDataReducer(state, action) {
                     return userData.userID === action.value.userID;
                 })[0].username,
                 users: action.value.data.users.map((userData) => {
-                    return userData.username;
+                    return { userName: userData.username, headsetCount: userData.headsetCount };
                 }),
                 expirationDate: action.value.data.expirationDate,
                 graphURL: action.value.data.url,
                 sid: action.value.sessionID,
                 layouts: action.value.data.layoutInfo,
+                headsets: action.value.data.headsets,
+                websocketPort: action.value.data.websocketPort,
+                sessionURL: action.value.data.sessionURL,
                 state: action.value.sessionState,
                 graphIndex: action.value.data.graphIndex,
                 graphIndexCount: action.value.data.graphIndexCount,
@@ -36,7 +39,8 @@ export function SessionDataReducer(state, action) {
                 simState: {
                     step: action.value.data.simState.step,
                     stepMax: action.value.data.simState.stepMax,
-                }
+                },
+                playmode: action.value.data.playmode
             };
         case 'state':
             state.state = action.value;

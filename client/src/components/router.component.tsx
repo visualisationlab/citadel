@@ -10,6 +10,7 @@ import { VisGraph } from '../types'
 import { GraphDataReducerAction } from '../reducers/graphdata.reducer'
 import { API } from '../services/api.service'
 
+import { QR } from '../services/qrcode.service'
 interface RouterProps {
     sessionDataDispatch: Dispatch<SessionReducer>,
     graphDataDispatch: Dispatch<GraphDataReducerAction>
@@ -98,6 +99,11 @@ export module Router {
                 break
             case 'uid':
                 API.setUserID((message as MessageTypes.UIDMessage).data)
+
+                break
+            case 'headset':
+                QR.clearQR()
+                API.sendPan()
         }
     }
 

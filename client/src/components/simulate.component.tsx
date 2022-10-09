@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react'
+import React, { useState, useEffect, useContext, useRef } from 'react'
 import { Tabs, Tab, Container, Row, Col, Button, Card, ListGroup, Dropdown, ToggleButton, ProgressBar, Spinner, Form, CloseButton, InputGroup } from 'react-bootstrap'
 import { userService } from '../services/user.service';
 import { UserDataContext } from '../components/main.component'
@@ -9,6 +9,8 @@ import './home.component.css'
 import { Simulator, SimulatorParam } from '../reducers/sessiondata.reducer'
 
 import { Router } from './router.component'
+
+import { GrPlay, GrPause } from 'react-icons/gr'
 
 function renderSimulatorSettings(key: string, params: SimulatorParam[], setSimOptionsSelection: React.Dispatch<React.SetStateAction<string | null>>) {
     return (
@@ -162,6 +164,9 @@ export function SimulatorTab() {
     const [ simOptionsSelection, setSimOptionsSelection ] = useState<string | null>(null)
     const [ stepCount, setStepCount ] = useState(1)
 
+    const textRef = useRef(null)
+    const sessionRef = useRef(null)
+
     useEffect(() => {
         if (simOptionsSelection === null) {
             return
@@ -224,12 +229,114 @@ export function SimulatorTab() {
             </ListGroup.Item>
         )
     })
-
-    console.log(state.simState)
     const disabled = stepCount <= 0 || selectedSim === '' || state.state !== 'idle'
+
+    const simulatorControl = state.graphIndexCount > 1 ? (
+        <Row>
+            <Col>
+                <Button onClick={() => {
+                    API.setGraphIndex(0)
+                }}>First</Button>
+            </Col>
+            <Col>
+                <Button onClick={() => {
+                    API.setGraphIndex(state.graphIndex - 1)
+                }}>Previous</Button>
+            </Col>
+            <Col>
+                {state.graphIndex + 1} / {state.graphIndexCount}
+            </Col>
+            <Col>
+            <Button onClick={() => {
+                API.setGraphIndex(state.graphIndex + 1)
+            }}>Next</Button>
+            </Col>
+            <Col>
+            <Button onClick={() => {
+                API.setGraphIndex(state.graphIndexCount - 1)
+            }}>Last</Button>
+            </Col>
+        </Row>
+    ) : <></>
+
+    var playbutton = (<></>)
+
+    if (state.playmode) {
+        playbutton = (
+            <Col>
+                <Button onClick={() => {
+                    API.pause()
+                }}>
+                    <GrPause></GrPause>
+                </Button>
+            </Col>
+        )
+    }
+
+    if (!state.playmode && state.graphIndexCount > 1) {
+        playbutton = (
+            <Col>
+                <Button onClick={() => {
+                    API.play()
+                }}
+                disabled={disabled}>
+                    <GrPlay></GrPlay>
+                </Button>
+            </Col>
+        )
+    }
 
     const res = simOptionsSelection === null ? (
         <>
+            <Row>
+                    <Col md={{span: 12}}>
+                            <InputGroup>
+                                <InputGroup.Text>Simulator URL:</InputGroup.Text>
+                                <Form.Control
+                                    readOnly
+                                    value={state.sessionURL} ref={sessionRef}/>
+                                <Button variant="outline-secondary"
+                                    id="button-copy"
+                                    onClick={() => {
+                                        if (window.isSecureContext && navigator.clipboard) {
+                                            navigator.clipboard.writeText(state.websocketPort)
+                                        } else {
+                                            // @ts-ignore
+                                            sessionRef.current.select()
+
+                                            document.execCommand('copy')
+                                        }
+                                    }}>
+                                    Copy
+                                </Button>
+                            </InputGroup>
+                        </Col>
+                </Row>
+                <Row>
+
+                    <Col md={{span: 6}}>
+                        <InputGroup>
+                            <InputGroup.Text>Simulator port:</InputGroup.Text>
+                            <Form.Control
+                                readOnly
+                                value={state.websocketPort} ref={textRef}/>
+                            <Button variant="outline-secondary"
+                                id="button-copy"
+                                onClick={() => {
+                                    if (window.isSecureContext && navigator.clipboard) {
+                                        navigator.clipboard.writeText(state.websocketPort)
+                                    } else {
+                                        // @ts-ignore
+                                        textRef.current.select()
+
+                                        document.execCommand('copy')
+                                    }
+                                }}>
+                                Copy
+                            </Button>
+                        </InputGroup>
+                    </Col>
+                </Row>
             <Row>
                 <ListGroup>
                     {sims}
@@ -249,6 +356,7 @@ export function SimulatorTab() {
                 </ListGroup>
             </Row>
             <Row>
+                {playbutton}
                 <Col md={{span: 2}}>
                     <Form.Control
                         type='number'
@@ -274,31 +382,7 @@ export function SimulatorTab() {
                         }
                 </Col>
             </Row>
-            <Row>
-                <Col>
-                    <Button onClick={() => {
-                        API.setGraphIndex(0)
-                    }}>First</Button>
-                </Col>
-                <Col>
-                    <Button onClick={() => {
-                        API.setGraphIndex(state.graphIndex - 1)
-                    }}>Previous</Button>
-                </Col>
-                <Col>
-                    {state.graphIndex + 1} / {state.graphIndexCount}
-                </Col>
-                <Col>
-                <Button onClick={() => {
-                    API.setGraphIndex(state.graphIndex + 1)
-                }}>Next</Button>
-                </Col>
-                <Col>
-                <Button onClick={() => {
-                    API.setGraphIndex(state.graphIndexCount - 1)
-                }}>Last</Button>
-                </Col>
-            </Row>
+            {simulatorControl}
         </>
     ) : renderSimulatorSettings(simOptionsSelection, state.simulators.filter((sim) => {return sim.key === simOptionsSelection})[0].options, setSimOptionsSelection)
 

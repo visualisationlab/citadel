@@ -1,0 +1,23 @@
+Visgraph AR
+###########
+
+Visgraph AR is a tool for visualizing and analyzing networks in 3D using the
+Hololens 2 headset developed by Microsoft. It is a research project developed
+for a Bachelor's thesis and afterwards further expanded and improved under supervision
+of dr. Rob Belleman at the UvA Visualisation Lab.
+
+Setup
+*****
+The application needs access to the camera (for QR recognition) and networking capabilities.
+Developers can load the application onto the Hololens 2 using Visual Studio. It is
+designed to run independently from a PC and connects to an active Visgraph
+session by scanning a QR code. The user generates the QR code by navigating to the
+**Session Tab** in the Visgraph application and clicking the **Add Headset** button, and
+afterwards, **Connect** to show the QR code.
+
+QR Code Recognition
+*******************
+
+
+Interface
+*********

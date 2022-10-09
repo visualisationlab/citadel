@@ -8,6 +8,8 @@ import { VisGraph } from '../types'
 import { SelectionDataReducerAction, SelectionDataState } from "../reducers/selection.reducer"
 import { selection } from "d3"
 
+import { API } from '../services/api.service'
+
 interface RenderedNode extends VisGraph.HashedGraphNode {
     gfx: PIXI.Sprite
 }
@@ -36,7 +38,7 @@ const app = new PIXI.Application({
     antialias: true
 })
 
-const circleTexture = PIXI.Texture.from('http://chimay.science.uva.nl:8060/node2.png')
+const circleTexture = PIXI.Texture.from('http://146.50.62.57:3001/node2.png')
 
 app.stage.sortableChildren = true;
 
@@ -49,6 +51,7 @@ let renderedEdges: VisGraph.RenderedEdge[] = []
 // Stack for sprites.
 let nodeCache: PIXI.Sprite[] = []
 let renderedNodes: RenderedNode[] = []
+let nodeIndex = 0
 
 let pan = true
 let startupFlag = false
@@ -60,6 +63,8 @@ let selectionBox = {
     x1: 0,
     y1: 0
 }
+
+const animationSpeed = 0.08
 
 const edgeStartingCount = 10000
 const nodeStartingCount = 5000
@@ -80,7 +85,10 @@ let transformHandler = (event: any) => {}
 
 let selectionRect = new PIXI.Graphics()
 
+let animatorTriggered = false
 
+let start : DOMHighResTimeStamp | null = null
+let previousTimestep : DOMHighResTimeStamp | null = null
 
 /**
  * Transforms nodes and lines on zoom/pan.
@@ -108,6 +116,7 @@ function setTransformCallback(transformUpdate: () => void) {
                                     (event.transform.y - prevTransform.y)  )
             selectionRect.endFill()
             app.stage.addChild(selectionRect)
+
             return
         }
 
@@ -116,6 +125,8 @@ function setTransformCallback(transformUpdate: () => void) {
         transformK = event.transform.k
 
         transformUpdate()
+        API.setPan(transformX, transformY, transformK)
+
     }
 
     d3.select('.render')
@@ -376,10 +387,8 @@ function renderBackground(stage: PIXI.Container,
 }
 
 function getNode(): PIXI.Sprite {
-    let pop = nodeCache.pop()
-
-    if (pop !== undefined && pop !== null) {
-        return pop
+    if (nodeIndex < nodeCache.length) {
+        return nodeCache[nodeIndex++]
     }
 
     const container = new PIXI.Container()
@@ -394,7 +403,7 @@ function getNode(): PIXI.Sprite {
         nodeCache.push(nodeSprite)
     }
 
-    return nodeCache.pop()!
+    return nodeCache[nodeIndex++]
 }
 
 function getEdge(): PIXI.Sprite {
@@ -424,12 +433,7 @@ function getEdge(): PIXI.Sprite {
 }
 
 function cleanRenderedNodes() {
-
-    renderedNodes.forEach((node) => {
-        nodeCache.push(node.gfx)
-
-        node.gfx.alpha = 0
-    })
+    nodeIndex = 0
 
     renderedNodes = []
 }
@@ -440,8 +444,6 @@ function cleanRenderedEdges() {
             return
         }
 
-        edge.gfx.alpha = 0
-
         edgeCache.push(edge.gfx)
     })
 
@@ -451,6 +453,10 @@ function cleanRenderedEdges() {
 function checkRenderedNodes(nodes: VisGraph.HashedGraphNode[]): boolean {
     cleanRenderedNodes()
     if (nodes.length !== renderedNodes.length) {
+
+        renderedNodes.forEach((node) => {
+            node.gfx.alpha = 0
+        })
 
         return true
     }
@@ -467,6 +473,16 @@ function checkRenderedNodes(nodes: VisGraph.HashedGraphNode[]): boolean {
 }
 
 function checkRenderedEdges(edges: VisGraph.HashedEdge[]): boolean {
+    if (edges.length !== renderedEdges.length) {
+        renderedEdges.forEach((edge) => {
+            if (edge.gfx === null)  {
+                return
+            }
+
+            edge.gfx.alpha = 0
+        })
+
+    }
     cleanRenderedEdges()
     if (edges.length !== renderedEdges.length) {
 
@@ -532,11 +548,12 @@ function updateNodePositions(nodes: VisGraph.HashedGraphNode[]) {
         node.x = nodes[index].x
         node.y = nodes[index].y
 
-        node.gfx.x = nodes[index].x * transformK + transformX
-        node.gfx.y = nodes[index].y * transformK + transformY
+        // node.gfx.x = nodes[index].x * transformK + transformX
+        // node.gfx.y = nodes[index].y * transformK + transformY
 
         node.gfx.scale.x = (node.visualAttributes.radius) / 16 * transformK
         node.gfx.scale.y = (node.visualAttributes.radius) / 16 * transformK
+
         nodeDict[node.id] = node
     })
 
@@ -555,36 +572,40 @@ function updateNodePositions(nodes: VisGraph.HashedGraphNode[]) {
         edge.sourceNode = source
         edge.targetNode = target
             // Calculate the angles to get the circle border location.
-        let angle = Math.atan2(target.y - source.y, target.x - source.x);
+        // let angle = Math.atan2(target.y - source.y, target.x - source.x);
 
-        let sinSource = Math.sin(angle) * source.visualAttributes.radius;
-        let cosSource = Math.cos(angle) * source.visualAttributes.radius;
+        // let sinSource = Math.sin(angle) * source.visualAttributes.radius;
+        // let cosSource = Math.cos(angle) * source.visualAttributes.radius;
 
-        let sinTarget = Math.sin(angle) * target.visualAttributes.radius;
-        let cosTarget = Math.cos(angle) * target.visualAttributes.radius;
+        // let sinTarget = Math.sin(angle) * target.visualAttributes.radius;
+        // let cosTarget = Math.cos(angle) * target.visualAttributes.radius;
 
-        let sourceX = (source.x + cosSource) * transformK;
-        let sourceY = (source.y + sinSource) * transformK;
+        // let sourceX = (source.x + cosSource) * transformK;
+        // let sourceY = (source.y + sinSource) * transformK;
 
-        let targetX = (target.x - cosTarget) * transformK;
-        let targetY = (target.y - sinTarget) * transformK;
+        // let targetX = (target.x - cosTarget) * transformK;
+        // let targetY = (target.y - sinTarget) * transformK;
 
-        let dx = targetX - sourceX;
-        let dy = targetY - sourceY;
+        // let dx = targetX - sourceX;
+        // let dy = targetY - sourceY;
 
-        let lineLength = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+        // let lineLength = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
 
-        let nx = dx / lineLength;
-        let ny = dy / lineLength;
+        // let nx = dx / lineLength;
+        // let ny = dy / lineLength;
 
-        let wingLength = 5 * transformK;
+        // let wingLength = 5 * transformK;
 
-        edge.gfx.x = (source.x + cosSource) * transformK + transformX
-        edge.gfx.y = (source.y + sinSource) * transformK + transformY
-        edge.gfx.width = lineLength
-        edge.gfx.height = edge.visualAttributes.width * transformK
-        edge.gfx.rotation = angle
+        // edge.gfx.x = (source.x + cosSource) * transformK + transformX
+        // edge.gfx.y = (source.y + sinSource) * transformK + transformY
+        // edge.gfx.width = lineLength
+        // edge.gfx.height = edge.visualAttributes.width * transformK
+        // edge.gfx.rotation = angle
     })
+
+    if (!animatorTriggered) {
+        requestAnimationFrame(animator)
+    }
 }
 
 function updateTransform() {
@@ -638,10 +659,114 @@ function updateTransform() {
 
         edge.gfx.x = (source.x + cosSource) * transformK + transformX
         edge.gfx.y = (source.y + sinSource) * transformK + transformY
+
         edge.gfx.width = lineLength
         edge.gfx.height = edge.visualAttributes.width * transformK
         edge.gfx.rotation = angle
     })
+}
+
+function animator(timestamp: DOMHighResTimeStamp) {
+    animatorTriggered = true
+
+    if (start === null) {
+        start = timestamp
+    }
+
+    const elapsed = timestamp - start;
+    let done = true
+
+    if (previousTimestep !== timestamp) {
+        console.log("Animating")
+
+        let gfxDict: {[key: string]: RenderedNode} = {}
+
+        renderedNodes.forEach((node) => {
+            gfxDict[node.id] = node
+            let gfx = node.gfx
+
+            let targetX = node.x * transformK + transformX
+            let targetY = node.y * transformK + transformY
+
+            console.log(Math.sqrt((gfx.x - targetX) ** 2 + (gfx.y - targetY) ** 2))
+            if (Math.sqrt((gfx.x - targetX) ** 2 + (gfx.y - targetY) ** 2) > 1) {
+                gfx.x += (targetX - gfx.x) *  Math.min(animationSpeed * elapsed, animationSpeed)
+                gfx.y += (targetY - gfx.y) * Math.min(animationSpeed * elapsed, animationSpeed)
+
+                done = false
+
+                gfx.scale.x = (node.visualAttributes.radius / 16) * transformK
+                gfx.scale.y = (node.visualAttributes.radius / 16) * transformK
+            }
+        })
+
+        renderedEdges.forEach((edge) => {
+            let source = gfxDict[edge.source]
+
+            let target = gfxDict[edge.target]
+
+            let gfx = edge.gfx
+
+            if (!gfx)
+                return
+
+            gfx.alpha = edge.visualAttributes.alpha
+
+            // Calculate the angles to get the circle border location.
+            let angle = Math.atan2(target.gfx.y - source.gfx.y, target.gfx.x - source.gfx.x);
+
+            let sinSource = Math.sin(angle) * source.visualAttributes.radius / 16;
+            let cosSource = Math.cos(angle) * source.visualAttributes.radius / 16;
+
+            let sinTarget = Math.sin(angle) * target.visualAttributes.radius  / 16;
+            let cosTarget = Math.cos(angle) * target.visualAttributes.radius  / 16;
+
+            let sourceX = (source.gfx.x + cosSource);
+            let sourceY = (source.gfx.y + sinSource);
+
+            let targetX = (target.gfx.x - cosTarget);
+            let targetY = (target.gfx.y - sinTarget);
+
+            let dx = targetX - sourceX;
+            let dy = targetY - sourceY;
+
+            let lineLength = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+
+            let nx = dx / lineLength;
+            let ny = dy / lineLength;
+
+            let wingLength = 5 * transformK;
+
+            // Rounds to nearest integer larger than zero. Possibly unnecessary due to ROUND_PIXELS.
+            // lineGraphic.lineStyle(Math.round(transform_k * 2) <= 0 ? 1 : Math.round(transform_k * 2), lineColour, alpha);
+
+            // lineGraphic.setTransform(
+            //     (source.x + cosSource) * transform_k,
+            //     (target.x - cosTarget) * transform_k,
+            // )
+
+
+
+            gfx.tint = PIXI.utils.rgb2hex(edge.visualAttributes.fillColour)
+            gfx.width = lineLength
+
+            gfx.height = edge.visualAttributes.width * transformK
+            gfx.x = (source.gfx.x + cosSource)
+            gfx.y = (source.gfx.y + sinSource)
+            gfx.rotation = angle
+        })
+    }
+
+    if (!done) {
+
+        requestAnimationFrame(animator)
+
+        return
+    }
+
+
+
+    animatorTriggered = false
 }
 
 export function Renderer({
@@ -760,11 +885,7 @@ export function Renderer({
             //     }
             // })
 
-            gfx.x = node.x * transformK + transformX
-            gfx.y = node.y * transformK + transformY
 
-            gfx.scale.x = node.visualAttributes.radius * transformK
-            gfx.scale.y = node.visualAttributes.radius * transformK
 
             nodeDict[node.id] = node
 
@@ -778,9 +899,9 @@ export function Renderer({
                 gfx: gfx
             }
         })
-    }
 
-    console.log('Rendered nodes')
+
+    }
 
     if (edgesShouldUpdate) {
         renderedEdges = edges.map((edge) => {
@@ -790,48 +911,7 @@ export function Renderer({
 
             const target = nodeDict[edge.target]
 
-                // Calculate the angles to get the circle border location.
-            let angle = Math.atan2(target.y - source.y, target.x - source.x);
 
-            let sinSource = Math.sin(angle) * source.visualAttributes.radius;
-            let cosSource = Math.cos(angle) * source.visualAttributes.radius;
-
-            let sinTarget = Math.sin(angle) * target.visualAttributes.radius;
-            let cosTarget = Math.cos(angle) * target.visualAttributes.radius;
-
-            let sourceX = (source.x + cosSource) * transformK;
-            let sourceY = (source.y + sinSource) * transformK;
-
-            let targetX = (target.x - cosTarget) * transformK;
-            let targetY = (target.y - sinTarget) * transformK;
-
-            let dx = targetX - sourceX;
-            let dy = targetY - sourceY;
-
-            let lineLength = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
-
-            let nx = dx / lineLength;
-            let ny = dy / lineLength;
-
-            let wingLength = 5 * transformK;
-
-            // Rounds to nearest integer larger than zero. Possibly unnecessary due to ROUND_PIXELS.
-            // lineGraphic.lineStyle(Math.round(transform_k * 2) <= 0 ? 1 : Math.round(transform_k * 2), lineColour, alpha);
-
-            // lineGraphic.setTransform(
-            //     (source.x + cosSource) * transform_k,
-            //     (target.x - cosTarget) * transform_k,
-            // )
-
-            gfx.alpha = edge.visualAttributes.alpha
-
-            gfx.tint = PIXI.utils.rgb2hex(edge.visualAttributes.fillColour)
-            gfx.width = lineLength
-
-            gfx.height = edge.visualAttributes.width * transformK
-            gfx.x = (source.x + cosSource) * transformK + transformX
-            gfx.y = (source.y + sinSource) * transformK + transformY
-            gfx.rotation = angle
 
             return {
                 ...edge,

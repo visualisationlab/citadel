@@ -117,7 +117,8 @@ export default function InspectTab(props: InspectTabProps) {
             const options = {
                 keys: ['id'],
                 shouldSort: false,
-                threshold: 0.4
+                threshold: 0.4,
+                useExtendedSearch: true
             }
 
             const fuse = new Fuse(graphState.nodes.data, options)
