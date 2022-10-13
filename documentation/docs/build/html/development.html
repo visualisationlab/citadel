@@ -73,12 +73,20 @@
 <h1>Developing Visgraph<a class="headerlink" href="#developing-visgraph" title="Permalink to this headline"></a></h1>
 <div class="section" id="frontend">
 <h2>Frontend<a class="headerlink" href="#frontend" title="Permalink to this headline"></a></h2>
+<p>The frontend is written in React and makes heavy use of useContext and
+useReducer (a redux-like reducer system). The application is split up into
+components, reducers, and services. The components are the UI elements (except for router),
+services maintain a set of API calls, either to communicate between components or with the server.
+The reducers are the state management system, and are used to update the state of the application.</p>
 </div>
 <div class="section" id="server">
 <h2>Server<a class="headerlink" href="#server" title="Permalink to this headline"></a></h2>
 </div>
 <div class="section" id="ar-unity">
 <h2>AR (Unity)<a class="headerlink" href="#ar-unity" title="Permalink to this headline"></a></h2>
+<p>The application is written in C# using Unity and the Microsoft Mixed Reality
+Toolkit 2.0. It uses websockets to connect to the backend and receive
+node and edge information, as well as session data.</p>
 </div>
 </div>
 

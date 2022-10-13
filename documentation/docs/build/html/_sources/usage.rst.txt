@@ -1,6 +1,10 @@
 Usage
 #####
 
+Visgraph is designed to do three things: visualize networks collaboratively in a browser, make changes to those networks either manually or via a script,
+and render the networks in 3D using an augmented reality headset. The user can upload a network in two formats: JSON and GraphML. The JSON format
+follows Cytoscape.js, and the GraphML format follows Gephi.
+
 You can upload your datasets to the server using the web interface. When first
 accessing the Visgraph server, the page prompts the user to either enter a URL pointing to the dataset or join an existing visualization session using the session ID.
 A unique session ID identifies each visualization session and multiple
@@ -126,3 +130,7 @@ to find nodes and edges that match the search query. The search box also support
 
 Session
 =======
+
+The **Session Tab** enables the user to change their username for that session, and see other connected users, as well as sesion info such as the original graph URL,
+session ID, and expiration date. Every session expires after six hours by default, at which point the graph information will be lost. The user can also connect an AR headset
+using the connect button.

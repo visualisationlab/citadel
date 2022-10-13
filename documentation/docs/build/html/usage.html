@@ -15,7 +15,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Hosting Visgraph" href="hosting.html" />
+    <link rel="next" title="Visgraph AR" href="ar.html" />
     <link rel="prev" title="Visgraph Documentation" href="index.html" /> 
 </head>
 
@@ -50,7 +50,9 @@
 <li class="toctree-l2"><a class="reference internal" href="#session">Session</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="ar.html">Visgraph AR</a></li>
 <li class="toctree-l1"><a class="reference internal" href="hosting.html">Hosting Visgraph</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Developing Visgraph</a></li>
 </ul>
 
         </div>
@@ -79,6 +81,9 @@
              
   <div class="section" id="usage">
 <h1>Usage<a class="headerlink" href="#usage" title="Permalink to this headline"></a></h1>
+<p>Visgraph is designed to do three things: visualize networks collaboratively in a browser, make changes to those networks either manually or via a script,
+and render the networks in 3D using an augmented reality headset. The user can upload a network in two formats: JSON and GraphML. The JSON format
+follows Cytoscape.js, and the GraphML format follows Gephi.</p>
 <p>You can upload your datasets to the server using the web interface. When first
 accessing the Visgraph server, the page prompts the user to either enter a URL pointing to the dataset or join an existing visualization session using the session ID.
 A unique session ID identifies each visualization session and multiple
@@ -185,6 +190,9 @@ to find nodes and edges that match the search query. The search box also support
 </div>
 <div class="section" id="session">
 <h2>Session<a class="headerlink" href="#session" title="Permalink to this headline"></a></h2>
+<p>The <strong>Session Tab</strong> enables the user to change their username for that session, and see other connected users, as well as sesion info such as the original graph URL,
+session ID, and expiration date. Every session expires after six hours by default, at which point the graph information will be lost. The user can also connect an AR headset
+using the connect button.</p>
 </div>
 </div>
 
@@ -193,7 +201,7 @@ to find nodes and edges that match the search query. The search box also support
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="index.html" class="btn btn-neutral float-left" title="Visgraph Documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="hosting.html" class="btn btn-neutral float-right" title="Hosting Visgraph" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="ar.html" class="btn btn-neutral float-right" title="Visgraph AR" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
