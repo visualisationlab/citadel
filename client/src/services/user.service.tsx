@@ -39,6 +39,7 @@ class UserService {
     }
 
     genSession(url: string) {
+        console.log(url)
         return axios.post(URL + '/urls', { url: url})
     }
 }

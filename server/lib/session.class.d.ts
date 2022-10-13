@@ -1,6 +1,7 @@
 /// <reference types="node" />
 import { WebSocket } from 'ws';
 import { Worker } from 'worker_threads';
+import { Logger } from 'winston';
 declare type SessionState = 'idle' | 'busy';
 declare type SimulatorParam = {
     attribute: string;
@@ -22,7 +23,7 @@ export declare module MessageTypes {
     export interface OutMessage {
         sessionID: string;
         sessionState: SessionState;
-        type: 'data' | 'session' | 'uid';
+        type: 'data' | 'session' | 'uid' | 'headset' | 'pan';
     }
     export interface InMessage {
         sessionID: string;
@@ -55,7 +56,7 @@ export declare module MessageTypes {
         };
     }
     export type GetType = 'graphState' | 'sessionState' | 'layouts' | 'apiKey' | 'QR';
-    export type SetType = 'graphState' | 'simulator' | 'simulatorInstance' | 'layout' | 'username' | 'graphIndex';
+    export type SetType = 'playstate' | 'graphState' | 'simulator' | 'simulatorInstance' | 'layout' | 'username' | 'graphIndex' | 'headset' | 'windowSize' | 'pan';
     export interface GetMessage extends InMessage {
         messageSource: 'user';
         messageType: 'get';
@@ -76,6 +77,16 @@ export declare module MessageTypes {
         dataType: 'username';
         params: {
             username: string;
+        };
+    }
+    export interface SetWindowSizeMessage extends InMessage {
+        messageSource: 'user';
+        messageType: 'set';
+        userID: string;
+        dataType: 'windowSize';
+        params: {
+            width: number;
+            height: number;
         };
     }
     export interface SetSimulatorMessage extends InMessage {
@@ -101,21 +112,41 @@ export declare module MessageTypes {
         title: string;
         state: 'disconnected' | 'idle' | 'generating' | 'connecting';
     };
+    export interface PanStateMessage extends OutMessage {
+        userID: string;
+        type: 'pan';
+        data: {
+            x: number;
+            y: number;
+            k: number;
+        };
+    }
     export interface SessionStateMessage extends OutMessage {
         userID: string;
         type: 'session';
         data: {
             url: string;
+            sessionURL: string;
             graphIndex: number;
             graphIndexCount: number;
-            users: {};
+            users: {
+                username: string;
+                userID: string;
+                headsetCount: number;
+            }[];
             simulators: ServerSimulator[];
+            headsets: {
+                headsetID: string;
+                connected: boolean;
+            }[];
             simState: {
                 step: number;
                 stepMax: number;
             };
             layoutInfo: LayoutInfo[];
-            expirationDate: Date;
+            expirationDate: string;
+            websocketPort: string;
+            playmode: boolean;
         };
     }
     export interface DataStateMessage extends OutMessage {
@@ -124,6 +155,9 @@ export declare module MessageTypes {
             nodes: any;
             edges: any;
         };
+    }
+    export interface HeadsetConnectedMessage extends OutMessage {
+        type: 'headset';
     }
     export interface SimulatorSetMessage extends OutMessage {
         type: 'data';
@@ -167,6 +201,7 @@ export declare class Session {
     private readonly sourceURL;
     private readonly sessionID;
     private readonly localAddress;
+    private readonly websocketPort;
     private expirationDate;
     private cy;
     private sessionState;
@@ -177,14 +212,17 @@ export declare class Session {
     private simState;
     private graphHistory;
     private graphIndex;
+    private logger;
+    private playmode;
     constructor(sid: string, destroyFun: (sid: string) => void, sourceURL: string, nodes: {
         [key: string]: any;
     }[], edges: {
         [key: string]: any;
-    }[], localAddress: string);
+    }[], localAddress: string, websocketPort: string, logger: Logger);
     private setState;
     private storeCurrentGraphState;
     private appendGraphState;
+    private time;
     private loadGraphState;
     private parseSimulatorMessage;
     private parseGetMessage;
@@ -196,11 +234,15 @@ export declare class Session {
     private getMessage;
     addMessage(message: MessageTypes.InMessage): void;
     private pruneSessions;
+    removeHeadset(headsetKey: string): void;
     private sendGraphState;
     sendSimulatorMessage(): void;
     private getSimulatorInfo;
+    private sendHeadsetConnectedMessage;
     private sendSessionState;
+    private sendPanState;
     registerSimulator(apiKey: string, socket: WebSocket): void;
+    registerHeadset(headsetKey: string, userID: string, socket: WebSocket): void;
     deRegisterSimulator(apiKey: string): void;
     addUser(socket: WebSocket): string;
     removeUser(userID: string): void;

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Usage &mdash; Visgraph 0.1 documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Visgraph AR" href="ar.html" />
+    <link rel="prev" title="Visgraph Documentation" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Visgraph
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#mapping">Mapping</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#layout-mapping">Layout Mapping</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#node-mapping">Node Mapping</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#edge-mapping">Edge Mapping</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#simulation">Simulation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#developing-scripts">Developing Scripts</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#search">Search</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#session">Session</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ar.html">Visgraph AR</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hosting.html">Hosting Visgraph</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Developing Visgraph</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Visgraph</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Usage</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/usage.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="usage">
+<h1>Usage<a class="headerlink" href="#usage" title="Permalink to this headline"></a></h1>
+<p>Visgraph is designed to do three things: visualize networks collaboratively in a browser, make changes to those networks either manually or via a script,
+and render the networks in 3D using an augmented reality headset. The user can upload a network in two formats: JSON and GraphML. The JSON format
+follows Cytoscape.js, and the GraphML format follows Gephi.</p>
+<p>You can upload your datasets to the server using the web interface. When first
+accessing the Visgraph server, the page prompts the user to either enter a URL pointing to the dataset or join an existing visualization session using the session ID.
+A unique session ID identifies each visualization session and multiple
+users can connect or disconnect from the same session at any time.</p>
+<div class="section" id="mapping">
+<h2>Mapping<a class="headerlink" href="#mapping" title="Permalink to this headline"></a></h2>
+<p>When successfully loading a dataset the user is shown a full-screen view of the
+visualization. The visualization is composed of two main parts: the nodes and
+edges, and the controls which are used to interact with the visualization. Nodes and edges
+are set out on a 2D plane through a <em>layout</em> algorithm. The current layout algorithm
+can be chosen by navigating to the <strong>Mapping</strong> tab in the controls, and by selecting the
+<strong>Layout Mapping</strong> dropdown menu.</p>
+<div class="section" id="layout-mapping">
+<h3>Layout Mapping<a class="headerlink" href="#layout-mapping" title="Permalink to this headline"></a></h3>
+<p>The layout mapping algorithm sets out the nodes and edges on a 2D plane. Some algorithms (such as circle, null, breadth-first or grid) are deterministic and will always produce
+the same layout for a given dataset. Other <em>force-directed</em>  algorithms (such as fcose, cise or spread) are stochastic and will create a different layout each time they are run, with an undetermined running time. Layout generation is capped at sixty seconds, after which the server will return an error message.</p>
+<p>Each layout algorithm has several parameters, depending on the algorithm. When the user presses the <strong>apply</strong> button, the server generates the layout and updates the visualization.
+The user can then interact with the visualization for all users. While the server generates the layout, users cannot change the attributes of the graph until layout generation finalizes.</p>
+</div>
+<div class="section" id="node-mapping">
+<h3>Node Mapping<a class="headerlink" href="#node-mapping" title="Permalink to this headline"></a></h3>
+<p>Each node in the graph has visual attributes such as size, colour and transparency, which the user can map to data associated with that node in the <strong>Node Mappings</strong> dropdown.
+The user can set these parameters to generate their desired visualization.
+Visual mappings are personal to each user and are not shared with other collaborators in the graph.</p>
+</div>
+<div class="section" id="edge-mapping">
+<h3>Edge Mapping<a class="headerlink" href="#edge-mapping" title="Permalink to this headline"></a></h3>
+<p>Each edge in the graph has visual attributes such as width, colour and transparency, which the user can map to data associated with that edge in the <strong>Edge Mappings</strong> dropdown.
+The user can set these parameters to generate their desired visualization.</p>
+</div>
+</div>
+<div class="section" id="simulation">
+<h2>Simulation<a class="headerlink" href="#simulation" title="Permalink to this headline"></a></h2>
+<p>The <strong>Simulation</strong> tab allows users to add, remove and run existing simulation scripts connected via an API. Each script receives the current data stored in the visualization, and can modify the data in any way. The user can then run the script to update the visualization.
+The script prepends the state to a timeline history and the user can use the timeline controls (First, Previous, Next and Last) to navigate through the timeline. Whenever the user runs a script, it takes the current point in the timeline as the input and removes all subsequent points, replacing them with the updated state.</p>
+<p>A script is connectd by running it using the supplied session ID and API key.
+The <strong>Add</strong> button generates an API key, which is unique to each session.
+Each script can have a set of parameters accessible through the <strong>settings</strong> button next to that script.
+These parameters can be of the <strong>integer</strong>, <strong>float</strong>, <strong>boolean</strong> or <strong>string</strong> type.
+The <strong>step</strong> button runs the selected script for a configurable number of steps.</p>
+<div class="section" id="developing-scripts">
+<h3>Developing Scripts<a class="headerlink" href="#developing-scripts" title="Permalink to this headline"></a></h3>
+<p>Scripts are written in <strong>Python 3</strong>. Visgraph has its own library which can be installed by running:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install visgraph
+</pre></div>
+</div>
+<p>This library contains the function <em>connect</em>, which has the following signature:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span>  <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                    <span class="n">port</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                    <span class="n">sid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                    <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                    <span class="n">startParams</span><span class="p">:</span> <span class="n">json</span><span class="p">,</span>
+                    <span class="n">simulateFunction</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">void</span>
+</pre></div>
+</div>
+<p>The script connects to the session using the <em>url</em>, <em>port</em> and <em>sid</em> parameters.
+The <em>key</em> parameter corresponds to the API key in the interface.
+<em>title</em> is shown to the user when the script connects. The <em>simulateFunction</em> is called each time the user runs the script from the web interface.
+The function has the following signature:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">simulate</span><span class="p">(</span><span class="n">nodes</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="n">nodes</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">params</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>The <em>startParams</em> parameter has the following signature:</p>
+<div class="highlight-JSON notranslate"><div class="highlight"><pre><span></span>[
+    {
+        &#39;attribute&#39;: &#39;floatParam&#39;,
+        &#39;type&#39;: &#39;float&#39;,
+        &#39;defaultValue&#39;: 1.0,
+    },
+    {
+        &#39;attribute&#39;: &#39;defaultValue&#39;,
+        &#39;type&#39;: &#39;integer&#39;,
+        &#39;defaultValue&#39;: 0,
+    },
+    {
+        &#39;attribute&#39;: &#39;stringParam&#39;,
+        &#39;type&#39;: &#39;string&#39;,
+        &#39;defaultValue&#39;: &#39;default&#39;,
+    },
+    {
+        &#39;attribute&#39;: &#39;randomlyInfect&#39;,
+        &#39;type&#39;: &#39;boolean&#39;,
+        &#39;defaultValue&#39;: True,
+    }
+]
+</pre></div>
+</div>
+<p>These are the parameters that the user can set in the web interface. Note that
+these parameters are <em>not updated</em> by the script, only by the user. The API passes the parameters to simulate as a dictionary, with keys corresponding to the <em>attribute</em> field. The
+web interface will automatically generate the appropriate input fields for each
+parameter based on the given type.</p>
+<p><em>Although it would technically be possible to let the script update the parameters, this comes with
+some caveats. Mainly, it could encourage developers to write scripts that
+are incompatible with the web interface. For example, suppose the script updates
+the parameters (which depend on the outputted graph state). In that case, the output may tempt the user to change these parameters from the interface or aspects of the graph, rendering the script broken on subsequent runs.</em></p>
+</div>
+</div>
+<div class="section" id="search">
+<h2>Search<a class="headerlink" href="#search" title="Permalink to this headline"></a></h2>
+<p>The <strong>Search Tab</strong> allows the user to access each node and edge in the network. By clicking on either nodes or edges in the list, the user selects that object in the network.
+If a node is selected, all edges connected to that node are highlighted. If an edge is selected, both nodes connected to that edge are highlighted. The search box uses <em>fuzzy searching</em>
+to find nodes and edges that match the search query. The search box also supports regular expressions.</p>
+</div>
+<div class="section" id="session">
+<h2>Session<a class="headerlink" href="#session" title="Permalink to this headline"></a></h2>
+<p>The <strong>Session Tab</strong> enables the user to change their username for that session, and see other connected users, as well as sesion info such as the original graph URL,
+session ID, and expiration date. Every session expires after six hours by default, at which point the graph information will be lost. The user can also connect an AR headset
+using the connect button.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Visgraph Documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ar.html" class="btn btn-neutral float-right" title="Visgraph AR" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Miles van der Lely.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

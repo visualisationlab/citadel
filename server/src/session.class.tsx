@@ -1,11 +1,14 @@
 import uid from 'uid-safe'
 import cytoscape from 'cytoscape'
-import { WebSocket } from 'ws';
+import { WebSocket } from 'ws'
 import { Worker } from 'worker_threads'
 import { setTimeout } from 'timers/promises'
 import { gzip, gunzip } from 'node:zlib'
-import { gzipSync } from 'zlib';
+import { gzipSync } from 'zlib'
+
 import QRCode from 'qrcode'
+
+import { Logger } from 'winston'
 
 type SessionState = 'idle' | 'busy'
 
@@ -14,13 +17,17 @@ type User = {
     socket: WebSocket,
     username: string,
     apikeys: string[],
-    headsetIDs: string[]
+    headsets: Headset[],
+    width: number,
+    height: number,
+    panX: number,
+    panY: number,
+    panK: number
 }
 
 type Headset = {
     readonly headsetID: string,
-    socket: WebSocket,
-    readonly userID: string
+    socket: WebSocket | null
 }
 
 type SimulatorParam =
@@ -56,7 +63,7 @@ export module MessageTypes {
     export interface OutMessage {
         sessionID: string,
         sessionState: SessionState,
-        type: 'data' | 'session' | 'uid'
+        type: 'data' | 'session' | 'uid' | 'headset' | 'pan'
     }
 
     export interface InMessage {
@@ -93,7 +100,7 @@ export module MessageTypes {
     }
 
     export type GetType = 'graphState' | 'sessionState' | 'layouts' | 'apiKey' | 'QR'
-    export type SetType = 'graphState' | 'simulator' | 'simulatorInstance' | 'layout' | 'username' | 'graphIndex'
+    export type SetType = 'playstate' | 'graphState' | 'simulator' | 'simulatorInstance' | 'layout' | 'username' | 'graphIndex' | 'headset' | 'windowSize' | 'pan'
 
     export interface GetMessage extends InMessage {
         messageSource: 'user'
@@ -117,6 +124,17 @@ export module MessageTypes {
         dataType: 'username'
         params: {
             username: string
+        }
+    }
+
+    export interface SetWindowSizeMessage extends InMessage {
+        messageSource: 'user'
+        messageType: 'set'
+        userID: string
+        dataType: 'windowSize'
+        params: {
+            width: number,
+            height: number
         }
     }
 
@@ -146,23 +164,42 @@ export module MessageTypes {
         state: 'disconnected' | 'idle' | 'generating' | 'connecting'
     }
 
+    export interface PanStateMessage extends OutMessage {
+        userID: string,
+        type: 'pan',
+        data: {
+            x: number,
+            y: number,
+            k: number
+        }
+    }
+
     export interface SessionStateMessage extends OutMessage {
         userID: string,
         type: 'session',
         data: {
             url: string,
+            sessionURL: string,
             graphIndex: number,
             graphIndexCount: number,
             users: {
-
-            },
+                username: string,
+                userID: string,
+                headsetCount: number
+            }[],
             simulators: ServerSimulator[],
+            headsets: {
+                headsetID: string,
+                connected: boolean
+            }[]
             simState: {
                 step: number,
                 stepMax: number
             }
             layoutInfo: LayoutInfo[]
-            expirationDate: Date
+            expirationDate: string
+            websocketPort: string
+            playmode: boolean
         }
     }
 
@@ -172,6 +209,10 @@ export module MessageTypes {
             nodes: any
             edges: any
         }
+    }
+
+    export interface HeadsetConnectedMessage extends OutMessage {
+        type: 'headset'
     }
 
     export interface SimulatorSetMessage extends OutMessage {
@@ -421,6 +462,7 @@ export class Session {
     private readonly sessionID: string
 
     private readonly localAddress: string
+    private readonly websocketPort: string
 
     private expirationDate: Date
     private cy: cytoscape.Core
@@ -448,14 +490,22 @@ export class Session {
     private graphHistory: string[]
     private graphIndex = 0
 
+    private logger: Logger
+
+    private playmode: boolean
+
     constructor(sid: string,
                 destroyFun: (sid: string) => void,
                 sourceURL: string,
                 nodes: {[key: string]: any}[],
                 edges: {[key: string]: any}[],
-                localAddress: string) {
+                localAddress: string,
+                websocketPort: string,
+                logger: Logger) {
 
+        this.logger = logger
         this.localAddress = localAddress
+        this.websocketPort = websocketPort
         this.sourceURL = sourceURL
         this.destroyFun = destroyFun
         this.sessionID = sid
@@ -484,6 +534,15 @@ export class Session {
         this.simulators = []
         this.messageQueue = []
         this.sessionState = 'idle'
+
+        this.logger.log({
+            level: 'info',
+            message: 'New session',
+            timeout: expDate,
+            sid: sid
+        })
+
+        this.playmode = false
     }
 
     /* Sets session state. */
@@ -499,7 +558,7 @@ export class Session {
 
         return new Promise((resolve) => {gzip(JSON.stringify(data), (err, buffer) => {
             if (err) {
-                console.log(`Error while zipping current instance: ${err.message}`)
+                this.logger.log('error', `Error while zipping current instance: ${err.message}`)
                 resolve(err.message)
                 return
             }
@@ -514,7 +573,7 @@ export class Session {
     private async appendGraphState(data: string) {
         return new Promise((resolve) => {gzip(data, (err, buffer) => {
             if (err) {
-                console.log(`Error while zipping current instance: ${err.message}`)
+                this.logger.log('error', `Error while zipping current instance: ${err.message}`)
                 resolve(err.message)
                 return
             }
@@ -525,10 +584,17 @@ export class Session {
         })})
     }
 
+    private async time(index: number) {
+        await setTimeout(3000, () => {
+
+        })
+
+        await this.loadGraphState(index + 1)
+
+    }
+
     /* Load slice into timeline at index. */
     private async loadGraphState(index: number) {
-        console.log(`Loading state ${index}`)
-
         return new Promise((resolve) => {gunzip(Buffer.from(this.graphHistory[index], 'base64'), (err, buffer) => {
             if (err) {
                 console.log(`Error while zipping current instance: ${err.message}`)
@@ -545,6 +611,23 @@ export class Session {
 
             this.graphIndex = index
 
+            if (this.playmode) {
+                this.sendGraphState()
+                this.sendSessionState()
+
+                if (this.graphIndex == this.graphHistory.length - 1) {
+                    this.playmode = false
+                    this.sessionState = 'idle'
+
+                    resolve('Resolved')
+
+                    return
+                }
+                else {
+                    this.time(index)
+                }
+            }
+
             resolve('Resolved')
         })})
     }
@@ -559,6 +642,13 @@ export class Session {
                 /* Register new simulator. */
                 this.simulators.forEach((sim) => {
                     if (sim.apikey === message.apiKey) {
+                        this.logger.log({
+                            level: 'info',
+                            message: 'Registered API',
+                            title: message.title,
+                            params: JSON.parse(message.data),
+                        })
+
                         sim.title = message.title!
                         sim.params = JSON.parse(message.data)
                         sim.state = 'idle'
@@ -570,6 +660,11 @@ export class Session {
                 })
                 break
             case 'data':
+                this.logger.log({
+                    level: 'verbose',
+                    message: 'Received data from API',
+                })
+
                 /* Process new data message. */
                 this.storeCurrentGraphState().then(() => {
                     const msg = (message as MessageTypes.SimulatorDataMessage)
@@ -627,15 +722,20 @@ export class Session {
             case 'QR':
                 break
             case 'graphState':
+                this.logger.log('verbose', 'Client requested graphState')
+
                 resolve(() => {
                     this.sendGraphState()
                 })
+
                 return
             case 'sessionState':
             case 'layouts':
+                this.logger.log('verbose', 'Client requested session state')
+
                 resolve(() => {
-                    this.sendSessionState()
-                })
+                        this.sendSessionState()
+                    })
                 return
             default:
                 reject('Unknown message type')
@@ -648,6 +748,38 @@ export class Session {
         reject: (reason?: any) => void) {
 
         switch (message.dataType) {
+            case 'playstate':
+                const newPlayState = message.params.state
+
+                this.logger.log('info', `Play state: ${newPlayState}`)
+
+                if (newPlayState && !this.playmode) {
+                    // Set new timeline index.
+
+                    this.sessionState = 'busy'
+
+                    this.sendSessionState()
+
+                    var newIndex = this.graphIndex
+                    if (newIndex  == this.graphHistory.length) {
+                        newIndex = 0
+                    }
+
+                    this.storeCurrentGraphState().then(() => {
+                        this.loadGraphState(newIndex).then(() => {
+                            resolve(() => {
+                                this.sessionState = 'idle'
+
+                                this.sendSessionState()
+                                this.sendGraphState()
+                            })
+                        })
+                    })
+                }
+
+                this.playmode = newPlayState
+                break
+
             case 'username':
                 this.users = this.users.map((user) => {
                     if (user.userID === message.userID) {
@@ -743,6 +875,41 @@ export class Session {
                         })
                     })
                 })
+                break
+            case 'headset':
+                this.users.forEach((user) => {
+                    if (user.userID === message.userID) {
+                        const headsetID = uid.sync(4)
+
+                        user.headsets.push({
+                            headsetID: headsetID,
+                            socket: null
+                        })
+                    }
+                })
+
+                resolve(() => {this.sendSessionState()})
+                break
+            case 'windowSize':
+                this.users.forEach((user) => {
+                    if (user.userID === message.userID) {
+                        user.width = message.params.width
+                        user.height = message.params.height
+                    }
+                })
+
+                resolve(() => {this.sendSessionState()})
+                break;
+            case 'pan':
+                this.users.forEach((user) => {
+                    if (user.userID === message.userID) {
+                        user.panX = message.params.x
+                        user.panY = message.params.y
+                        user.panK = message.params.k
+                    }
+                })
+
+                resolve(() => {this.sendPanState(message.userID)})
         }
     }
 
@@ -766,6 +933,7 @@ export class Session {
                 signal: signal
             })
 
+            this.logger.log('warn', "Layout generation timed out")
             worker.terminate()
 
             resolve('')
@@ -820,11 +988,12 @@ export class Session {
     }
 
     private getMessage() {
-        if (this.messageQueue.length === 0) {
+        if (this.messageQueue.length === 0 && this.sessionState !== 'idle') {
             this.setState('idle')
-
-            return
         }
+
+        if (this.messageQueue.length === 0)
+            return
 
         // Get the first message in the queue.
         this.processMessage(this.messageQueue.splice(0, 1)[0])
@@ -858,6 +1027,42 @@ export class Session {
             return user.socket.readyState !== user.socket.CLOSING
                 && user.socket.readyState !== user.socket.CLOSED
         })
+
+        this.users.forEach((user) => {
+            user.headsets = user.headsets.map((headset) => {
+                if (!headset.socket)
+                    return headset
+
+                if (headset.socket.readyState == headset.socket.CLOSING
+                    || headset.socket.readyState == headset.socket.CLOSED) {
+
+                    headset.socket = null
+                    return headset
+                }
+
+                return headset
+            })
+        })
+    }
+
+    public removeHeadset(headsetKey: string) {
+        this.users.forEach((user) => {
+            user.headsets = user.headsets.map((headset) => {
+                if (!headset.socket)
+                    return headset
+
+                if (headset.headsetID === headsetKey) {
+                    this.logger.log('info', 'Disconnected headset')
+
+                    headset.socket = null
+                    return headset
+                }
+
+                return headset
+            })
+        })
+
+        this.sendSessionState()
     }
 
     // Sends graph data to all users.
@@ -875,6 +1080,12 @@ export class Session {
             }
 
             user.socket.send(JSON.stringify(msg))
+
+            user.headsets.forEach((headset) => {
+                if (headset.socket) {
+                    headset.socket.send(JSON.stringify(msg))
+                }
+            })
         })
     }
 
@@ -930,9 +1141,27 @@ export class Session {
         })
     }
 
+    private sendHeadsetConnectedMessage(userID: string) {
+        this.pruneSessions()
+
+        this.users.forEach((user) => {
+            if (user.userID === userID) {
+                const msg: MessageTypes.HeadsetConnectedMessage = {
+                    sessionID: this.sessionID,
+                    sessionState: this.sessionState,
+                    type: 'headset'
+                }
+
+                user.socket.send(JSON.stringify(msg))
+            }
+        })
+    }
+
     // Sends session info to all users.
     private sendSessionState() {
         this.pruneSessions()
+
+        const dateDiff = new Date(this.expirationDate.getTime() - new Date().getTime())
 
         this.users.forEach((user) => {
             const msg: MessageTypes.SessionStateMessage = {
@@ -945,7 +1174,19 @@ export class Session {
                     users: this.users.map((user) => {
                         return {
                             username: user.username,
-                            userID: user.userID
+                            userID: user.userID,
+                            headsetCount: user.headsets.filter((headset) => {return headset.socket !== null}).length,
+                            width: user.width,
+                            height: user.height,
+                            panX: user.panX,
+                            panY: user.panY,
+                            panK: user.panK
+                        }
+                    }),
+                    headsets: user.headsets.map((headset) => {
+                        return {
+                            headsetID: headset.headsetID,
+                            connected: headset.socket !== null
                         }
                     }),
                     graphIndex: this.graphIndex,
@@ -967,12 +1208,48 @@ export class Session {
                         step: this.simState.step,
                         stepMax: this.simState.stepMax
                     },
+                    sessionURL: this.localAddress,
                     layoutInfo: getAvailableLayouts(),
-                    expirationDate: this.expirationDate
+                    expirationDate: `${dateDiff.getHours()} hours, ${dateDiff.getMinutes()} minutes`,
+                    websocketPort: this.websocketPort,
+                    playmode: this.playmode
                 }
             }
 
             user.socket.send(JSON.stringify(msg))
+
+            user.headsets.forEach((headset) => {
+                if (headset.socket) {
+                    headset.socket.send(JSON.stringify(msg))
+                }
+            })
+        })
+    }
+
+    private sendPanState(userID: string) {
+        this.pruneSessions()
+
+        this.users.forEach((user) => {
+            if (user.userID !== userID)
+                return
+
+            const msg: MessageTypes.PanStateMessage = {
+                userID: userID,
+                type: 'pan',
+                sessionID: this.sessionID,
+                sessionState: this.sessionState,
+                data: {
+                    x: user.panX,
+                    y: user.panY,
+                    k: user.panK,
+                }
+            }
+
+            user.headsets.forEach((headset) => {
+                if (headset.socket) {
+                    headset.socket.send(JSON.stringify(msg))
+                }
+            })
         })
     }
 
@@ -984,6 +1261,24 @@ export class Session {
             }
         })
 
+        this.sendSessionState()
+    }
+
+    registerHeadset(headsetKey: string, userID: string, socket: WebSocket) {
+        this.users.forEach((user) => {
+            if (user.userID === userID) {
+                user.headsets.forEach((headset) => {
+                    if (headset.headsetID === headsetKey) {
+                        this.logger.log('info', 'Registered headset')
+
+                        headset.socket = socket
+                    }
+                })
+            }
+        })
+
+        this.sendHeadsetConnectedMessage(userID)
+        this.sendGraphState()
         this.sendSessionState()
     }
 
@@ -1009,7 +1304,12 @@ export class Session {
             socket: socket,
             username: username,
             apikeys: [],
-            headsetIDs: []
+            headsets: [],
+            width: 0,
+            height: 0,
+            panX: 0,
+            panY: 0,
+            panK: 1
         })
 
         const msg: MessageTypes.UIDMessage = {

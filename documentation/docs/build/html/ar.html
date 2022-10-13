@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Visgraph AR &mdash; Visgraph 0.1 documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Hosting Visgraph" href="hosting.html" />
+    <link rel="prev" title="Usage" href="usage.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Visgraph
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Visgraph AR</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#setup">Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#qr-code-recognition">QR Code Recognition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#interface">Interface</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="hosting.html">Hosting Visgraph</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Developing Visgraph</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Visgraph</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Visgraph AR</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/ar.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="visgraph-ar">
+<h1>Visgraph AR<a class="headerlink" href="#visgraph-ar" title="Permalink to this headline"></a></h1>
+<p>Visgraph AR is a tool for visualizing and analyzing networks in 3D using the
+Hololens 2 headset developed by Microsoft. It is a research project developed
+for a Bachelor’s thesis and afterwards further expanded and improved under supervision
+of dr. Rob Belleman at the UvA Visualisation Lab.</p>
+<div class="section" id="setup">
+<h2>Setup<a class="headerlink" href="#setup" title="Permalink to this headline"></a></h2>
+<p>The application needs access to the camera (for QR recognition) and networking capabilities.
+Developers can load the application onto the Hololens 2 using Visual Studio. It is
+designed to run independently from a PC and connects to an active Visgraph
+session by scanning a QR code. The user generates the QR code by navigating to the
+<strong>Session Tab</strong> in the Visgraph application and clicking the <strong>Add Headset</strong> button, and
+afterwards, <strong>Connect</strong> to show the QR code.</p>
+</div>
+<div class="section" id="qr-code-recognition">
+<h2>QR Code Recognition<a class="headerlink" href="#qr-code-recognition" title="Permalink to this headline"></a></h2>
+<p>The QR code is recognized by the Hololens 2 using the MRTK QR code scanner.
+Effectiveness is a function of QR code size and distance from the headset. When
+the headset recognizes a QR code, it projects a purple square onto it. When the user
+pinches the thumb and index finger together while pointing at it. When the application loads
+the session and the nodes move, the headset superimposes them onto the screen in 3D.</p>
+</div>
+<div class="section" id="interface">
+<h2>Interface<a class="headerlink" href="#interface" title="Permalink to this headline"></a></h2>
+<p>If the user holds up their left or right hand, a menu appears with the options
+to map attributes to nodes; map attributes to edges; view session information or
+disconnect from that session. When pressed, the menu buttons act like physical buttons and bring up a view window attached to the user’s hand.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="usage.html" class="btn btn-neutral float-left" title="Usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="hosting.html" class="btn btn-neutral float-right" title="Hosting Visgraph" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Miles van der Lely.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

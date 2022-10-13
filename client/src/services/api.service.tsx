@@ -1,12 +1,20 @@
+import { quantumOfCirculationDependencies } from 'mathjs'
 import { GraphDataState } from '../reducers/graphdata.reducer'
 import { LayoutState } from '../reducers/layoutsettings.reducer'
 import { SimulatorParam } from '../reducers/sessiondata.reducer'
 import { VisGraph } from '../types'
 import { websocketService } from './websocket.service'
-
+import {QR} from '../services/qrcode.service'
 export module API {
     let sid: null | string = null
     let userID: null | string = null
+    let panX = 0
+    let panY = 0
+    let panK = 0
+
+    export function getUID() {
+        return userID
+    }
 
     export function setSID(newSID: string) {
         sid = newSID
@@ -14,6 +22,19 @@ export module API {
 
     export function setUserID(newUserID: string) {
         userID = newUserID
+
+
+        websocketService.sendSetMessage({
+            messageType: 'set',
+            dataType: 'windowSize',
+            params: {
+                width: window.innerWidth,
+                height: window.innerHeight
+            },
+            sessionID: sid!,
+            userID: userID,
+            messageSource: 'user'
+        })
     }
 
     export function addSim() {
@@ -26,6 +47,23 @@ export module API {
             sessionID: sid,
             messageType: 'set',
             dataType: 'simulatorInstance',
+            messageSource: 'user',
+            params: null
+        })
+    }
+
+    export function addHeadset() {
+        QR.genRickRoll()
+
+        if (sid === null || userID === null) {
+            return
+        }
+
+        websocketService.sendSetMessage({
+            userID: userID,
+            sessionID: sid,
+            messageType: 'set',
+            dataType: 'headset',
             messageSource: 'user',
             params: null
         })
@@ -211,6 +249,100 @@ export module API {
             dataType: 'graphIndex',
             params: {
                 index: index
+            },
+            sessionID: sid,
+            userID: userID,
+            messageSource: 'user'
+        })
+    }
+
+    export function setWindowSize(width: number, height: number) {
+        if (sid === null || userID === null) {
+            return
+        }
+
+        websocketService.sendSetMessage({
+            messageType: 'set',
+            dataType: 'windowSize',
+            params: {
+                width: width,
+                height: height
+            },
+            sessionID: sid,
+            userID: userID,
+            messageSource: 'user'
+        })
+    }
+
+    export function setPan(x: number, y: number, k: number) {
+        if (sid === null || userID === null) {
+            return
+        }
+
+        panX = x
+        panY = y
+        panK = k
+
+        websocketService.sendSetMessage({
+            messageType: 'set',
+            dataType: 'pan',
+            params: {
+                x: x,
+                y: y,
+                k: k
+            },
+            sessionID: sid,
+            userID: userID,
+            messageSource: 'user'
+        })
+    }
+
+    export function play() {
+        if (sid === null || userID === null) {
+            return
+        }
+
+        websocketService.sendSetMessage({
+            messageType: 'set',
+            dataType: 'playstate',
+            params: {
+                state: true
+            },
+            sessionID: sid,
+            userID: userID,
+            messageSource: 'user'
+        })
+    }
+
+    export function pause() {
+        if (sid === null || userID === null) {
+            return
+        }
+
+        websocketService.sendSetMessage({
+            messageType: 'set',
+            dataType: 'playstate',
+            params: {
+                state: false
+            },
+            sessionID: sid,
+            userID: userID,
+            messageSource: 'user'
+        })
+    }
+
+    export function sendPan() {
+        if (sid === null || userID === null) {
+            return
+        }
+
+        websocketService.sendSetMessage({
+            messageType: 'set',
+            dataType: 'pan',
+            params: {
+                x: panX,
+                y: panY,
+                k: panK
             },
             sessionID: sid,
             userID: userID,

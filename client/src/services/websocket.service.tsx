@@ -45,7 +45,7 @@ export module MessageTypes {
     export interface OutMessage {
         sessionID: string,
         sessionState: SessionState,
-        type: 'data' | 'session' | 'uid'
+        type: 'data' | 'session' | 'uid' | 'headset'
     }
 
     export interface InMessage {
@@ -70,7 +70,8 @@ export module MessageTypes {
     }
 
     export type GetType = 'graphState' | 'sessionState' | 'layouts' | 'apiKey' | 'QR'
-    export type SetType = 'graphState' | 'simulator' | 'simulatorInstance' | 'layout' | 'username' | 'graphIndex'
+    export type SetType = 'graphState' | 'simulator' | 'simulatorInstance' | 'playstate'
+        | 'layout' | 'username' | 'graphIndex' | 'headset' | 'windowSize' | 'pan'
 
     export interface GetMessage extends InMessage {
         messageSource: 'user'
@@ -200,8 +201,6 @@ class WebsocketService {
             || this.ws.readyState === WebSocket.CONNECTING) {
             return
         }
-
-        console.log('here')
 
         this.ws.send(JSON.stringify(message))
     }

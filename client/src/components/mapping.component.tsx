@@ -180,8 +180,8 @@ function edgeMapping(graphState: GraphDataState, dispatch: Dispatch<GraphDataRed
             }}>
                 <Container>
                     <ListGroup>
-                        {/* {rows} */}
-                        {settingsBorder([])}
+                        {rows}
+                        {/* {settingsBorder([])} */}
                     </ListGroup>
                 </Container>
             </Accordion.Body>

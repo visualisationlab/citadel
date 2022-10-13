@@ -1,7 +1,10 @@
 export declare type ServerState = 'disconnected' | 'idle' | 'busy';
 export interface SessionState {
     userName: string;
-    users: string[];
+    users: {
+        userName: string;
+        headsetCount: number;
+    }[];
     expirationDate: Date;
     graphURL: string;
     sid: string;
@@ -14,6 +17,13 @@ export interface SessionState {
         step: number;
         stepMax: number;
     };
+    sessionURL: string;
+    websocketPort: string;
+    headsets: {
+        headsetID: string;
+        connected: boolean;
+    }[];
+    playmode: false;
 }
 export declare type SimulatorParam = {
     attribute: string;
