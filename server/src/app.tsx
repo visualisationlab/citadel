@@ -57,7 +57,11 @@ if (nInterface) {
     })[0].address
 }
 else {
-    logger.log('error', 'Could not retrieve local networking interface')
+
+    logger.log({
+            level: 'error',
+            message: 'Could not retrieve local networking interface',
+            interfaces: networkInterfaces()})
     exit(1)
 }
 
