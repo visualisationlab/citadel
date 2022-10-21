@@ -18,7 +18,6 @@ function updateNodeMapping(state) {
         });
         try {
             const res = dataFun(data);
-            console.log(res);
             state.nodes.mapping.generators[key].data = res;
         }
         catch (e) {
@@ -108,11 +107,26 @@ function setData(state, action) {
             }
     }
 }
+function updateSetting(state, action) {
+    if (action.type !== 'updateSetting') {
+        return state;
+    }
+    switch (action.object) {
+        case 'node':
+            state.nodes.mapping.settings.colours = action.value;
+            return Object.assign({}, state);
+        case 'edge':
+            state.edges.mapping.settings.colours = action.value;
+            return Object.assign({}, state);
+    }
+}
 export function GraphDataReducer(state, action) {
     switch (action.type) {
         case 'set':
             return setData(state, action);
         case 'update':
             return updateData(state, action);
+        case 'updateSetting':
+            return updateSetting(state, action);
     }
 }

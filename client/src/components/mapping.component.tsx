@@ -17,6 +17,8 @@ import {
     CloseButton,
     Spinner } from 'react-bootstrap'
 
+import tinycolor from 'tinycolor2'
+
 import { UserDataContext } from '../components/main.component'
 import { GraphDataContext } from '../components/main.component'
 import { GraphDataReducerAction, GraphDataState, NodeMapping, EdgeMapping } from '../reducers/graphdata.reducer'
@@ -25,6 +27,7 @@ import { LayoutInfo, ServerState } from '../reducers/sessiondata.reducer'
 import { LayoutSettingsReducer, LayoutSettingsState, LayoutSettingsReducerAction } from '../reducers/layoutsettings.reducer'
 
 import { BsInfoCircle } from 'react-icons/bs'
+import { BiCog } from 'react-icons/bi'
 
 import { API } from '../services/api.service'
 
@@ -49,10 +52,7 @@ const edgeMappingTitles: { [key in EdgeMapping]: InfoCard} = {
     'width': {img: 'widthImg', title: 'Width', description: 'Maps an edge attribute to its width.'},
 }
 
-function nodeMapping(graphState: GraphDataState, dispatch: Dispatch<GraphDataReducerAction>): JSX.Element {
-
-
-
+function NodeMappingWindow(nodeSettings: string, setNodeSettingState: React.Dispatch<React.SetStateAction<string>>, graphState: GraphDataState, dispatch: Dispatch<GraphDataReducerAction>): JSX.Element {
     const rows = Object.entries(nodeMappingTitles).map(([key, value], index) => {
             const title = graphState.nodes.mapping.generators[key as NodeMapping].attribute
 
@@ -65,11 +65,11 @@ function nodeMapping(graphState: GraphDataState, dispatch: Dispatch<GraphDataRed
                         <Col md={{span: 4}}>
                             {value.description}
                         </Col>
-                        <Col md={{span: 4}}>
+                        <Col md={{span: 6}}>
                             <ListGroup className="list-group-flush">
                                 <ListGroup.Item>
                                     <ButtonGroup>
-                                        <Button>Settings</Button>
+
                                         <DropdownButton as={ButtonGroup} title={title === '' ? 'none' : title} onSelect={(item) => {
                                         if (item === null) {
                                             return
@@ -92,6 +92,7 @@ function nodeMapping(graphState: GraphDataState, dispatch: Dispatch<GraphDataRed
                                             })}
 
                                         </DropdownButton>
+                                        <Button onClick={() => setNodeSettingState(key)}><BiCog></BiCog></Button>
                                     </ButtonGroup>
                                 </ListGroup.Item>
                             </ListGroup>
@@ -109,9 +110,13 @@ function nodeMapping(graphState: GraphDataState, dispatch: Dispatch<GraphDataRed
                 height: '400px'
             }}>
                 <Container>
+                    { nodeSettings !== '' &&
+                        SettingsComponent(nodeSettings, setNodeSettingState, graphState, dispatch)}
+                    { nodeSettings === '' &&
+
                     <ListGroup>
                         {rows}
-                    </ListGroup>
+                    </ListGroup>}
                 </Container>
             </Accordion.Body>
         </Accordion.Item>
@@ -139,7 +144,7 @@ function edgeMapping(graphState: GraphDataState, dispatch: Dispatch<GraphDataRed
                         <ListGroup className="list-group-flush">
                             <ListGroup.Item>
                                 <ButtonGroup>
-                                    <Button>Settings</Button>
+                                    {/* <Button>Settings</Button> */}
                                     <DropdownButton as={ButtonGroup} title={title === '' ? 'none' : title} onSelect={(item) => {
                                     if (item === null) {
                                         return
@@ -361,9 +366,71 @@ function layoutMapping(layouts: string[], layoutInfo: LayoutSettingsState,
     )
 }
 
-function settingsBorder(settingState: any) {
+function ColourSettingsComponent(props: {graphState: GraphDataState, dispatch: Dispatch<GraphDataReducerAction>, objectType: 'node' | 'edge'}): JSX.Element {
+    let colours = props.objectType === 'node' ? props.graphState.nodes.mapping.settings.colours : props.graphState.edges.mapping.settings.colours
+
+    const [colourState, setColourState] = useState(colours)
+
+    useEffect(() => {
+        if (props.objectType === 'node')
+            setColourState(props.graphState.nodes.mapping.settings.colours)
+        else
+            setColourState(props.graphState.edges.mapping.settings.colours)
+    }, [props.graphState.nodes.mapping.settings.colours, props.graphState.edges.mapping.settings.colours, props.objectType])
+
+    let colourRows = colourState.map((colour, index) => {
+        let val = '#' + colour.map(function (x) {return (x * 255).toString(16).padStart(2, '0')}).join('')
+
+        return (
+            <Row>
+                <Col>
+
+                    <input type="color" onChange={(val) => {
+                        let newColours = [...colourState]
+                        newColours[index] = [tinycolor(val.target.value).toRgb().r / 255, tinycolor(val.target.value).toRgb().g / 255, tinycolor(val.target.value).toRgb().b / 255]
+                        setColourState(newColours)
+                    }} value={val}></input>
+                </Col>
+            </Row>
+        )
+    })
+
+    return (<>
+        {colourRows}
+        <Row>
+            <Col md={{offset: 8, span: 4}}>
+                <Button variant='outline-primary'
+                    onClick={() => {
+                        props.dispatch({
+                            type: 'updateSetting',
+                            object: 'node',
+                            attribute: 'colours',
+                            value: colourState
+                        })
+                    }
+                }>Apply</Button>
+            </Col>
+        </Row>
+    </>)
+}
+
+function SettingsComponent(nodeSettings: string, setNodeSettingState: React.Dispatch<React.SetStateAction<string>>, graphState: GraphDataState, dispatch: Dispatch<GraphDataReducerAction>): JSX.Element {
+    let content = <></>
+
+    if (nodeSettings === 'colour') {
+        content = <ColourSettingsComponent graphState={graphState} dispatch={dispatch} objectType='node'/>
+    }
+
     return (
-        <CloseButton></CloseButton>
+        <>
+            <Row>
+                <Col>
+                    <CloseButton
+                        onClick={() => setNodeSettingState('')}></CloseButton>
+                </Col>
+                {content}
+            </Row>
+        </>
     )
 }
 
@@ -402,7 +469,7 @@ export default function MappingTab() {
 
     return (
         <Accordion defaultActiveKey='nodemap' alwaysOpen>
-            {nodeMapping(graphState, graphDispatch)}
+            {NodeMappingWindow(nodeSettingState, setNodeSettingState, graphState, graphDispatch)}
             {edgeMapping(graphState, graphDispatch)}
             {layoutMapping(
                 state.layouts.map((layout) => {return layout.name}),

@@ -54,6 +54,7 @@ export type GraphDataReducerAction =
     | { type: 'set', property: 'mapping', object: 'node', map: NodeMapping, fun: Mappings.MappingFunction, key: string }
     | { type: 'set', property: 'mapping', object: 'edge', map: EdgeMapping, fun: Mappings.MappingFunction, key: string }
     | { type: 'set', property: 'directed', value: boolean}
+    | { type: 'updateSetting', object: 'node' | 'edge', attribute: 'colours', value: VisGraph.Colour[]}
     | { type: 'update', object: 'node' | 'edge', value: {
         id: string,
         attributes: {[key: string]: string}
@@ -83,7 +84,6 @@ function updateNodeMapping(state: GraphDataState): GraphDataState {
         try {
             const res = dataFun(data)
 
-            console.log(res)
             state.nodes.mapping.generators[key as keyof typeof state.nodes.mapping.generators].data = res
         } catch (e) {
             console.log(`Error! ${e}`)
@@ -206,11 +206,30 @@ function setData(state: GraphDataState, action: GraphDataReducerAction): GraphDa
     }
 }
 
+function updateSetting(state: GraphDataState, action: GraphDataReducerAction): GraphDataState {
+    if (action.type !== 'updateSetting') {
+        return state
+    }
+
+    switch (action.object) {
+        case 'node':
+            state.nodes.mapping.settings.colours = action.value
+
+            return {...state}
+        case 'edge':
+            state.edges.mapping.settings.colours = action.value
+
+            return {...state}
+    }
+}
+
 export function GraphDataReducer(state: GraphDataState, action: GraphDataReducerAction): GraphDataState {
     switch (action.type) {
         case 'set':
             return setData(state, action)
         case 'update':
             return updateData(state, action)
+        case 'updateSetting':
+            return updateSetting(state, action)
     }
 }

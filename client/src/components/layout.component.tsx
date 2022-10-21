@@ -111,8 +111,12 @@ export default function Layout() {
                 const mappingState = graphState.nodes.mapping.generators.colour
 
                 const mapFun = Mappings.getMapFunction(mappingState.fun)
+
                 if (mapFun !== null && Object.keys(node.attributes).includes(mappingState.attribute.toString())) {
-                    node.visualAttributes.fillColour = [mapFun(node.attributes[mappingState.attribute], mappingState.data as any), 0, 0]
+                    let val = mapFun(node.attributes[mappingState.attribute], mappingState.data as any)
+                    let col = graphState.nodes.mapping.settings.colours[0]
+
+                    node.visualAttributes.fillColour = [col[0] * val, col[1] * val, col[2] * val]
                 }
             }
 

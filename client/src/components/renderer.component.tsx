@@ -270,7 +270,7 @@ function renderBackground(stage: PIXI.Container,
 
     background.on(('mouseup'), () => {
         if (prevTransform !== null) {
-            console.log(selectionBox)
+
             selectionRect.destroy()
             selectionRect = new PIXI.Graphics()
 
@@ -313,7 +313,7 @@ function renderBackground(stage: PIXI.Container,
 
     background.on(('mouseupoutside'), () => {
         if (prevTransform !== null) {
-            console.log(selectionBox)
+
             selectionRect.destroy()
             selectionRect = new PIXI.Graphics()
 
@@ -332,7 +332,7 @@ function renderBackground(stage: PIXI.Container,
         }
 
         if (timer !== null) {
-            console.log('RECT OFF')
+
             pan = true
 
             // d3.select('.render')
@@ -372,7 +372,7 @@ function renderBackground(stage: PIXI.Container,
 
     background.on('pointertap', function() {
         if (dispatch === null || zooming) {
-            console.log(zooming)
+
             return
         }
 
@@ -604,6 +604,7 @@ function updateNodePositions(nodes: VisGraph.HashedGraphNode[]) {
     })
 
     if (!animatorTriggered) {
+
         requestAnimationFrame(animator)
     }
 }
@@ -677,7 +678,7 @@ function animator(timestamp: DOMHighResTimeStamp) {
     let done = true
 
     if (previousTimestep !== timestamp) {
-        console.log("Animating")
+
 
         let gfxDict: {[key: string]: RenderedNode} = {}
 
@@ -688,7 +689,6 @@ function animator(timestamp: DOMHighResTimeStamp) {
             let targetX = node.x * transformK + transformX
             let targetY = node.y * transformK + transformY
 
-            console.log(Math.sqrt((gfx.x - targetX) ** 2 + (gfx.y - targetY) ** 2))
             if (Math.sqrt((gfx.x - targetX) ** 2 + (gfx.y - targetY) ** 2) > 1) {
                 gfx.x += (targetX - gfx.x) *  Math.min(animationSpeed * elapsed, animationSpeed)
                 gfx.y += (targetY - gfx.y) * Math.min(animationSpeed * elapsed, animationSpeed)

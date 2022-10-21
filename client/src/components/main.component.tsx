@@ -68,7 +68,7 @@ export default function Main() {
                 },
 
                 settings: {
-                    colours: [],
+                    colours: [[1.0, 0.0, 0.0]],
                     minRadius: 16,
                     maxRadius: 32
                 }

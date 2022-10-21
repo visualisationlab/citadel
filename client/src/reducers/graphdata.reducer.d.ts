@@ -91,6 +91,11 @@ export declare type GraphDataReducerAction = {
     property: 'directed';
     value: boolean;
 } | {
+    type: 'updateSetting';
+    object: 'node' | 'edge';
+    attribute: 'colours';
+    value: VisGraph.Colour[];
+} | {
     type: 'update';
     object: 'node' | 'edge';
     value: {
