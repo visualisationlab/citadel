@@ -38,7 +38,7 @@ const app = new PIXI.Application({
     antialias: true
 })
 
-const circleTexture = PIXI.Texture.from('http://146.50.62.57:3001/node2.png')
+const circleTexture = PIXI.Texture.from('http://chimay.science.uva.nl:8061/node2.png')
 
 app.stage.sortableChildren = true;
 
@@ -604,6 +604,7 @@ function updateNodePositions(nodes: VisGraph.HashedGraphNode[]) {
     })
 
     if (!animatorTriggered) {
+        console.log("requesting animation frame")
         requestAnimationFrame(animator)
     }
 }
@@ -667,6 +668,7 @@ function updateTransform() {
 }
 
 function animator(timestamp: DOMHighResTimeStamp) {
+    console.log("here");
     animatorTriggered = true
 
     if (start === null) {
