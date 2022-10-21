@@ -1,5 +1,5 @@
 
-import React, { useContext, useReducer, useEffect, Dispatch, useState } from 'react'
+import React, { useContext, useReducer, useEffect, Dispatch, useState, useRef } from 'react'
 import {
     Accordion,
     Row,
@@ -370,6 +370,7 @@ function ColourSettingsComponent(props: {graphState: GraphDataState, dispatch: D
     let colours = props.objectType === 'node' ? props.graphState.nodes.mapping.settings.colours : props.graphState.edges.mapping.settings.colours
 
     const [colourState, setColourState] = useState(colours)
+    const sessionRef = useRef(null)
 
     useEffect(() => {
         if (props.objectType === 'node')
@@ -383,14 +384,23 @@ function ColourSettingsComponent(props: {graphState: GraphDataState, dispatch: D
 
         return (
             <Row>
-                <Col>
-
+                <Col md={{span: 2}}>
                     <input type="color" onChange={(val) => {
                         let newColours = [...colourState]
                         newColours[index] = [tinycolor(val.target.value).toRgb().r / 255, tinycolor(val.target.value).toRgb().g / 255, tinycolor(val.target.value).toRgb().b / 255]
                         setColourState(newColours)
                     }} value={val}></input>
                 </Col>
+                {index > 0 &&
+                    <Col md={{span: 2}}>
+                        <Button variant='outline-danger' onClick={() => {
+                            let newColours = [...colourState]
+                            newColours.splice(index, 1)
+                            setColourState(newColours)
+                        }
+                        }>Remove</Button>
+                    </Col>
+                }
             </Row>
         )
     })
@@ -398,7 +408,36 @@ function ColourSettingsComponent(props: {graphState: GraphDataState, dispatch: D
     return (<>
         {colourRows}
         <Row>
-            <Col md={{offset: 8, span: 4}}>
+            <Col>
+                <Button variant='outline-primary'
+                    onClick={() => {
+                        if (props.objectType === 'node') {
+                            let newColours = [...colourState]
+                            newColours.push([1.0, 0.0, 0.0])
+                            setColourState(newColours)
+                        }
+                    }
+                }>Add Colour</Button>
+            </Col>
+        </Row>
+        <Row>
+            <Col>
+                <Button variant='outline-primary'
+                    onClick={() => {
+                        if (props.objectType === 'node') {
+                            if (window.isSecureContext && navigator.clipboard) {
+                                navigator.clipboard.writeText(colourState.toString())
+                            } else {
+                                // @ts-ignore
+                                sessionRef.current.select()
+
+                                document.execCommand('copy')
+                            }
+                        }
+                    }
+                }>Copy Colours</Button>
+            </Col>
+            <Col md={{offset: 4, span: 4}}>
                 <Button variant='outline-primary'
                     onClick={() => {
                         props.dispatch({
@@ -410,6 +449,11 @@ function ColourSettingsComponent(props: {graphState: GraphDataState, dispatch: D
                     }
                 }>Apply</Button>
             </Col>
+        </Row>
+        <Row>
+            <input type='text' ref={sessionRef} value={'[' + colourState.map((x) => {
+               return '[' + (x.map((n) => {return n.toFixed(2)}).toString()) + ']'
+            }) + ']'}></input>
         </Row>
     </>)
 }
