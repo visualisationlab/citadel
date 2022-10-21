@@ -35,7 +35,7 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "server": "npx tsc; PORT=8064 react-scripts start",
+    "server": "npx tsc; HTTPS=true PORT=8064 react-scripts start",
     "localdev": "npx tsc; PORT=3000; react-scripts start",
     "local": "docker run -u=1000:1000 -v $(pwd):/app -w=/app -d -p 3000:3000 --rm --name=nodedev node bash -c \"npm install && npm run dev\"",
     "build": "react-scripts build",

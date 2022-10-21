@@ -64,7 +64,7 @@ let selectionBox = {
     y1: 0
 }
 
-const animationSpeed = 0.08
+const animationSpeed = 0.04
 
 const edgeStartingCount = 10000
 const nodeStartingCount = 5000
