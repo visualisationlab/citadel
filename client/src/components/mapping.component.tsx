@@ -22,11 +22,10 @@ import tinycolor from 'tinycolor2'
 import { UserDataContext } from '../components/main.component'
 import { GraphDataContext } from '../components/main.component'
 import { GraphDataReducerAction, GraphDataState, NodeMapping, EdgeMapping } from '../reducers/graphdata.reducer'
-import { LayoutInfo, ServerState } from '../reducers/sessiondata.reducer'
+import { ServerState } from '../reducers/sessiondata.reducer'
 
 import { LayoutSettingsReducer, LayoutSettingsState, LayoutSettingsReducerAction } from '../reducers/layoutsettings.reducer'
 
-import { BsInfoCircle } from 'react-icons/bs'
 import { BiCog } from 'react-icons/bi'
 
 import { API } from '../services/api.service'
@@ -366,6 +365,10 @@ function layoutMapping(layouts: string[], layoutInfo: LayoutSettingsState,
     )
 }
 
+async function getClipboardData() {
+    return await navigator.clipboard.readText()
+}
+
 function ColourSettingsComponent(props: {graphState: GraphDataState, dispatch: Dispatch<GraphDataReducerAction>, objectType: 'node' | 'edge'}): JSX.Element {
     let colours = props.objectType === 'node' ? props.graphState.nodes.mapping.settings.colours : props.graphState.edges.mapping.settings.colours
 
@@ -380,7 +383,8 @@ function ColourSettingsComponent(props: {graphState: GraphDataState, dispatch: D
     }, [props.graphState.nodes.mapping.settings.colours, props.graphState.edges.mapping.settings.colours, props.objectType])
 
     let colourRows = colourState.map((colour, index) => {
-        let val = '#' + colour.map(function (x) {return (x * 255).toString(16).padStart(2, '0')}).join('')
+        console.log(colour)
+        let val = '#' + colour.map(function (x) {return Math.round(x * 255).toString(16).padStart(2, '0')}).join('')
 
         return (
             <Row>
@@ -426,7 +430,10 @@ function ColourSettingsComponent(props: {graphState: GraphDataState, dispatch: D
                     onClick={() => {
                         if (props.objectType === 'node') {
                             if (window.isSecureContext && navigator.clipboard) {
-                                navigator.clipboard.writeText(colourState.toString())
+                                console.log(colourState)
+                                navigator.clipboard.writeText('{"colours":[' + colourState.map((x) => {
+                                    return '[' + (x.map((n) => {return n.toFixed(2)}).toString()) + ']'
+                                 }) + ']}')
                             } else {
                                 // @ts-ignore
                                 sessionRef.current.select()
@@ -451,9 +458,30 @@ function ColourSettingsComponent(props: {graphState: GraphDataState, dispatch: D
             </Col>
         </Row>
         <Row>
-            <input type='text' ref={sessionRef} value={'[' + colourState.map((x) => {
+            <input type='text' ref={sessionRef} value={'{"colours":[' + colourState.map((x) => {
                return '[' + (x.map((n) => {return n.toFixed(2)}).toString()) + ']'
-            }) + ']'}></input>
+            }) + ']}'}></input>
+        </Row>
+        <Row>
+            <Col>
+                <Button variant='outline-primary'
+                    onClick={() => {
+                        getClipboardData().then((text) => {
+                            console.log(text)
+                            let newColours = JSON.parse(text)
+
+                            try {
+                                colours = newColours['colours']
+
+                                console.log(colours)
+                                setColourState(colours)
+                            } catch (e) {
+                                console.log(e)
+                            }
+                        })
+                    }
+                }>Load colours from clipboard</Button>
+            </Col>
         </Row>
     </>)
 }

@@ -6,11 +6,17 @@ import { networkInterfaces } from 'os'
 import { Session } from './session.class'
 import { IncomingMessage } from 'http'
 import uid from 'uid-safe'
-import { rm, createWriteStream, unlink } from 'fs'
-import { get } from 'http'
+import { rm, createWriteStream, unlink, readFileSync } from 'fs'
 import { exit } from 'process'
 import {GraphFormatConverter} from 'graph-format-converter'
 import { createLogger, format, transports } from 'winston'
+
+import https from 'https'
+
+// DISABLE IN PROD
+if (process.env.NODE_ENV !== 'production') {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+}
 
 const path = require('path');
 const cors = require('cors');
@@ -71,7 +77,8 @@ let corsOptions
 
 if (localAddress !== '') {
     corsOptions = {
-        origin: "http://" + localAddress + ":" + process.env.CLIENTPORT
+        // origin: "http://" + localAddress + ":" + process.env.CLIENTPORT
+        origin: "https://" + process.env["HOST"] + ":" + process.env.CLIENTPORT
     };
 }
 else {
@@ -81,9 +88,20 @@ else {
 
 app.use(cors(corsOptions))
 
+var httpsServer = https.createServer({
+    key: fs.readFileSync(process.env["KEY"], 'utf8'),
+    cert: fs.readFileSync(process.env["CERT"], 'utf8')
+}, app)
+
+// var httpsServer = https.createServer({
+//     key: fs.readFileSync('../certs/dev.visgraph-key.pem', 'utf8'),
+//     cert: fs.readFileSync('../certs/dev.visgraph.pem', 'utf8')
+// }, app)
+
 // Start websocket.
 const server = new WebSocketServer({
-    port: parseInt(process.env.WSCLIENTPORT),
+    server: httpsServer,
+    // port: parseInt(process.env.WSCLIENTPORT),
     clientTracking: true,
     perMessageDeflate: true
 })
@@ -99,7 +117,7 @@ server.on('connection', (socket: WebSocket, req: IncomingMessage) => {
 
     try {
         // Get sid/URL/key.
-        const url = new URL(req.url!, `ws://${req.headers.host}`)
+        const url = new URL(req.url!, `wss://${req.headers.host}`)
         const sid = url.searchParams.get('sid')
         const apiKey = url.searchParams.get('key')
         const headsetKey = url.searchParams.get('headsetKey')
@@ -257,7 +275,7 @@ app.post('/urls', body('url').trim().unescape(),  (req, res) => {
             let file = createWriteStream(dest)
 
             try {
-                get(url, (response) => {
+                https.get(url, (response) => {
                     let data = ''
 
                     response.on('data', (chunk) => {
@@ -336,6 +354,11 @@ logger.log({
     websocket: process.env.WSCLIENTPORT
 })
 
-app.listen(process.env.SERVERPORT);
+// console.log(fs.readFileSync('../certs/key.pem'))
+// console.log(fs.readFileSync('../certs/cert.pem'))
+
+
+
+httpsServer.listen(process.env.SERVERPORT);
 
 module.exports = app;

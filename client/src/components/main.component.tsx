@@ -111,7 +111,6 @@ export default function Main() {
 
         websocketService.checkConnection()
 
-
         Router.setup({
             sessionDataDispatch: sessionDataDispatch,
             graphDataDispatch: graphDataDispatch

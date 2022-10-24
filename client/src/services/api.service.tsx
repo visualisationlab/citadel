@@ -53,7 +53,6 @@ export module API {
     }
 
     export function addHeadset() {
-        QR.genRickRoll()
 
         if (sid === null || userID === null) {
             return

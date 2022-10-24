@@ -15,6 +15,40 @@ import { SelectionDataContext } from "./main.component"
 
 import { Mappings } from '../mappings/module.mappings';
 
+/**
+ * Generates a gradient value based on given colour gradient.
+ * @param stops Array of colours
+ * @param value value between 0-1
+ * @returns Colour
+ */
+function linearGradient(stops: VisGraph.Colour[], value: number) : VisGraph.Colour {
+    const stopLength = 1 / (stops.length - 1);
+    const valueRatio = value / stopLength;
+    const stopIndex = Math.floor(valueRatio);
+
+    if (stopIndex === (stops.length - 1)) {
+        return stops[stops.length - 1];
+    }
+
+    const stopFraction = valueRatio % 1;
+
+    return lerp(stops[stopIndex], stops[stopIndex + 1], stopFraction);
+}
+
+/**
+ * Lerps between two colours. dev.to/ndesmic/linear-color-gradient
+ * @param {Colour} colour0
+ * @param {Colour} colour1
+ * @param {number} value between 0-1
+ * @returns
+ */
+function lerp(colour0: VisGraph.Colour, colour1: VisGraph.Colour, value: number) : VisGraph.Colour {
+    return [
+        colour0[0] + (colour1[0] - colour0[0]) * value,
+        colour0[1] + (colour1[1] - colour0[1]) * value,
+        colour0[2] + (colour1[2] - colour0[2]) * value
+    ]
+}
 
 /**
  * Returns a container, which is updated by reference to contain the graph.
@@ -114,9 +148,8 @@ export default function Layout() {
 
                 if (mapFun !== null && Object.keys(node.attributes).includes(mappingState.attribute.toString())) {
                     let val = mapFun(node.attributes[mappingState.attribute], mappingState.data as any)
-                    let col = graphState.nodes.mapping.settings.colours[0]
 
-                    node.visualAttributes.fillColour = [col[0] * val, col[1] * val, col[2] * val]
+                    node.visualAttributes.fillColour = linearGradient(graphState.nodes.mapping.settings.colours, val)
                 }
             }
 
