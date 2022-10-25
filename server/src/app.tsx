@@ -75,16 +75,16 @@ var app = express()
 
 let corsOptions
 
-if (localAddress !== '') {
+// if (localAddress !== '') {
     corsOptions = {
         // origin: "http://" + localAddress + ":" + process.env.CLIENTPORT
         origin: "https://" + process.env["HOST"] + ":" + process.env.CLIENTPORT
     };
-}
-else {
-    logger.log('error', 'Could not retrieve local address from networking interface')
-    exit(1)
-}
+// }
+// else {
+//     logger.log('error', 'Could not retrieve local address from networking interface')
+//     exit(1)
+// }
 
 app.use(cors(corsOptions))
 
