@@ -55,9 +55,9 @@ if (process.env.WSCLIENTPORT === undefined) {
     throw new Error('WSCLIENTPORT not set in ENV')
 }
 
-const nInterface = networkInterfaces()['wlp3s0'];
+// const nInterface = networkInterfaces()['wlp3s0'];
 
-if (nInterface) {
+/*if (nInterface) {
     localAddress = nInterface.filter((entry) => {
         return entry.family === "IPv4";
     })[0].address
@@ -69,7 +69,7 @@ else {
             message: 'Could not retrieve local networking interface',
             interfaces: networkInterfaces()})
     exit(1)
-}
+}*/
 
 var app = express()
 
