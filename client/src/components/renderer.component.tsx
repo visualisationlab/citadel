@@ -23,10 +23,7 @@ interface RendererProps {
     selectionDispatch: React.Dispatch<SelectionDataReducerAction> | null
 }
 
-// PIXI.settings.ROUND_PIXELS = true;
 PIXI.settings.GC_MAX_IDLE = 100000;
-// PIXI.settings.PRECISION_FRAGMENT = PIXI.PRECISION.LOW;
-// PIXI.settings.PRECISION_VERTEX = PIXI.PRECISION.LOW;
 PIXI.settings.PREFER_ENV = PIXI.ENV.WEBGL2
 PIXI.settings.FILTER_MULTISAMPLE = PIXI.MSAA_QUALITY.HIGH
 
