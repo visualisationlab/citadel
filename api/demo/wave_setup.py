@@ -1,4 +1,4 @@
-import visgraph
+from visgraph import connect
 import sys
 import asyncio
 
@@ -46,4 +46,4 @@ if __name__ == "__main__":
         }
     ]
 
-    asyncio.run(visgraph.connect(url, port, sid, key, title, startParams, simulate))
+    asyncio.run(connect(url, port, sid, key, title, startParams, simulate))

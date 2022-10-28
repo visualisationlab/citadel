@@ -10,9 +10,9 @@ async def connect(  url: str,
                     startParams: json,
                     simulateFunction):
 
-    uri = f"ws://{url}:{int(port)}?sid={sid}&key={key}"
+    uri = f"wss://{url}:{int(port)}?sid={sid}&key={key}"
 
-    async with(websockets.connect(uri, max_size=2 ** 25)) as websocket:
+    async with(websockets.connect(uri, max_size=2 ** 25, ssl=True)) as websocket:
         await websocket.send(json.dumps({
             'sessionID': sid,
             'messageSource': 'simulator',

@@ -24,9 +24,9 @@ dependencies = [
 dynamic = ["version"]
 
 [tool.hatch.version]
-path = "visgraph_api/__init__.py"
+path = "./src/visgraph/__init__.py"
 
 [tool.hatch.build.targets.sdist]
 include = [
-    "/visgraph_api",
+    "src/visgraph",
 ]

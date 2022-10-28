@@ -383,7 +383,6 @@ function ColourSettingsComponent(props: {graphState: GraphDataState, dispatch: D
     }, [props.graphState.nodes.mapping.settings.colours, props.graphState.edges.mapping.settings.colours, props.objectType])
 
     let colourRows = colourState.map((colour, index) => {
-        console.log(colour)
         let val = '#' + colour.map(function (x) {return Math.round(x * 255).toString(16).padStart(2, '0')}).join('')
 
         return (
@@ -430,15 +429,11 @@ function ColourSettingsComponent(props: {graphState: GraphDataState, dispatch: D
                     onClick={() => {
                         if (props.objectType === 'node') {
                             if (window.isSecureContext && navigator.clipboard) {
-                                console.log(colourState)
                                 navigator.clipboard.writeText('{"colours":[' + colourState.map((x) => {
                                     return '[' + (x.map((n) => {return n.toFixed(2)}).toString()) + ']'
                                  }) + ']}')
                             } else {
-                                // @ts-ignore
-                                sessionRef.current.select()
-
-                                document.execCommand('copy')
+                                console.log("Connection is insecure")
                             }
                         }
                     }
@@ -467,13 +462,11 @@ function ColourSettingsComponent(props: {graphState: GraphDataState, dispatch: D
                 <Button variant='outline-primary'
                     onClick={() => {
                         getClipboardData().then((text) => {
-                            console.log(text)
                             let newColours = JSON.parse(text)
 
                             try {
                                 colours = newColours['colours']
 
-                                console.log(colours)
                                 setColourState(colours)
                             } catch (e) {
                                 console.log(e)

@@ -38,7 +38,9 @@ const app = new PIXI.Application({
     antialias: true
 })
 
-const circleTexture = PIXI.Texture.from('https://chimay.science.uva.nl:8061/node2.png')
+const circleTexture = PIXI.Texture.from('https://chimay.science.uva.nl:8061/circle.png')
+
+const SPRITESCALE = 2.5
 
 app.stage.sortableChildren = true;
 
@@ -145,8 +147,6 @@ function setTransformCallback(transformUpdate: () => void) {
             prevTransform = null
         })
         .on('zoom', (event) => {
-            // console.log('here')
-
             transformHandler(event)
         }).on("end", () => {
             zooming = false
@@ -160,8 +160,8 @@ function genCircleSprite() {
     circleSprite.x = 0
     circleSprite.y = 0
     circleSprite.tint = 0xFF00FF
-    circleSprite.scale.x = 1
-    circleSprite.scale.y = 1
+    circleSprite.scale.x = 0.25
+    circleSprite.scale.y = 0.25
 
     circleSprite.anchor.set(0.5)
     return circleSprite
@@ -174,8 +174,8 @@ function genEdgeSprite() {
     lineSprite.x = 0
     lineSprite.y = 0
     lineSprite.tint = 0xFFFF00
-    lineSprite.scale.x = 1
-    lineSprite.scale.y = 1
+    lineSprite.scale.x = 0.25
+    lineSprite.scale.y = 0.25
 
     return lineSprite
 }
@@ -551,8 +551,8 @@ function updateNodePositions(nodes: VisGraph.HashedGraphNode[]) {
         // node.gfx.x = nodes[index].x * transformK + transformX
         // node.gfx.y = nodes[index].y * transformK + transformY
 
-        node.gfx.scale.x = (node.visualAttributes.radius) / 16 * transformK
-        node.gfx.scale.y = (node.visualAttributes.radius) / 16 * transformK
+        node.gfx.scale.x = ((node.visualAttributes.radius) / 16  * transformK ) / SPRITESCALE
+        node.gfx.scale.y = ((node.visualAttributes.radius) / 16  * transformK ) / SPRITESCALE
 
         nodeDict[node.id] = node
     })
@@ -614,8 +614,8 @@ function updateTransform() {
         node.gfx.x = node.x * transformK + transformX
         node.gfx.y = node.y * transformK + transformY
 
-        node.gfx.scale.x = (node.visualAttributes.radius) / 16 * transformK
-        node.gfx.scale.y = (node.visualAttributes.radius) / 16 * transformK
+        node.gfx.scale.x = ((node.visualAttributes.radius) / 16 * transformK) / SPRITESCALE
+        node.gfx.scale.y = ((node.visualAttributes.radius) / 16 * transformK) / SPRITESCALE
     })
 
     renderedEdges.forEach((edge, index) => {
@@ -636,11 +636,11 @@ function updateTransform() {
             // Calculate the angles to get the circle border location.
         let angle = Math.atan2(target.y - source.y, target.x - source.x);
 
-        let sinSource = Math.sin(angle) * source.visualAttributes.radius;
-        let cosSource = Math.cos(angle) * source.visualAttributes.radius;
+        let sinSource = Math.sin(angle) * source.visualAttributes.radius / SPRITESCALE;
+        let cosSource = Math.cos(angle) * source.visualAttributes.radius / SPRITESCALE;
 
-        let sinTarget = Math.sin(angle) * target.visualAttributes.radius;
-        let cosTarget = Math.cos(angle) * target.visualAttributes.radius;
+        let sinTarget = Math.sin(angle) * target.visualAttributes.radius / SPRITESCALE;
+        let cosTarget = Math.cos(angle) * target.visualAttributes.radius / SPRITESCALE;
 
         let sourceX = (source.x + cosSource) * transformK;
         let sourceY = (source.y + sinSource) * transformK;
@@ -668,7 +668,6 @@ function updateTransform() {
 }
 
 function animator(timestamp: DOMHighResTimeStamp) {
-    console.log("here");
     animatorTriggered = true
 
     if (start === null) {
@@ -696,8 +695,8 @@ function animator(timestamp: DOMHighResTimeStamp) {
 
                 done = false
 
-                gfx.scale.x = (node.visualAttributes.radius / 16) * transformK
-                gfx.scale.y = (node.visualAttributes.radius / 16) * transformK
+                gfx.scale.x = ((node.visualAttributes.radius / 16) * transformK) / SPRITESCALE
+                gfx.scale.y = ((node.visualAttributes.radius / 16) * transformK) / SPRITESCALE
             }
         })
 
