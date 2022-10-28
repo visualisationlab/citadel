@@ -302,7 +302,7 @@ app.post('/urls', body('url').trim().unescape(),  (req, res) => {
 
                             const session = new Session(sid, ((sid) => {
                                 sessions[sid] = null
-                            }), url, json.nodes, json.edges, localAddress,
+                            }), url, json.nodes, json.edges, process.env["HOST"]!,
                                 process.env.WSCLIENTPORT!, logger)
 
                             sessions[sid] = session
