@@ -32,7 +32,7 @@ export default function Home() {
             <Container className="shadow p-3 bg-white rounded" style={{ width: '50%', marginTop: '30px' }}>
                 <Row>
                     <Col md={{span: 2}}>
-                        <img width='100%' src="http://visualisationlab.science.uva.nl/wp-content/uploads/2022/02/VisLablogo-cropped-notitle.svg" className="custom-logo" alt="Visualisation Lab"></img>
+                        <img width='100%' src="https://chimay.science.uva.nl:8061/VisLablogo-cropped-notitle.svg" className="custom-logo" alt="Visualisation Lab"></img>
                     </Col>
                     <Col md={{span: 10}}>
                         <h1>Graph-Vis</h1>
