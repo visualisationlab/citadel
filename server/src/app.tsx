@@ -13,7 +13,6 @@ import { createLogger, format, transports } from 'winston'
 
 import https from 'https'
 
-// DISABLE IN PROD
 if (process.env.NODE_ENV !== 'production') {
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 }
@@ -22,7 +21,12 @@ const path = require('path');
 const cors = require('cors');
 const fs = require('fs');
 
-let localAddress = '';
+if (process.env["HOST"] == undefined) {
+    exit(0)
+}
+
+let localAddress = process.env["HOST"]
+
 let sessions: {[sid: string]: (Session | null)} = {}
 
 const logger = createLogger({
@@ -42,49 +46,24 @@ const logger = createLogger({
     ]
 })
 
-// if (process.env.NODE_ENV !== 'production') {
-    logger.add(new transports.Console({
-        format: format.combine(
-            format.colorize(),
-            format.simple()
-        )
-    }))
-// }
+logger.add(new transports.Console({
+    format: format.combine(
+        format.colorize(),
+        format.simple()
+    )
+}))
 
 if (process.env.WSCLIENTPORT === undefined) {
     throw new Error('WSCLIENTPORT not set in ENV')
 }
 
-// const nInterface = networkInterfaces()['wlp3s0'];
-
-/*if (nInterface) {
-    localAddress = nInterface.filter((entry) => {
-        return entry.family === "IPv4";
-    })[0].address
-}
-else {
-
-    logger.log({
-            level: 'error',
-            message: 'Could not retrieve local networking interface',
-            interfaces: networkInterfaces()})
-    exit(1)
-}*/
-
 var app = express()
 
 let corsOptions
 
-// if (localAddress !== '') {
-    corsOptions = {
-        // origin: "http://" + localAddress + ":" + process.env.CLIENTPORT
-        origin: "https://" + process.env["HOST"] + ":" + process.env.CLIENTPORT
-    };
-// }
-// else {
-//     logger.log('error', 'Could not retrieve local address from networking interface')
-//     exit(1)
-// }
+corsOptions = {
+    origin: "https://" + process.env["HOST"] + ":" + process.env.CLIENTPORT
+}
 
 app.use(cors(corsOptions))
 
@@ -302,7 +281,7 @@ app.post('/urls', body('url').trim().unescape(),  (req, res) => {
 
                             const session = new Session(sid, ((sid) => {
                                 sessions[sid] = null
-                            }), url, json.nodes, json.edges, process.env["HOST"]!,
+                            }), url, json.nodes, json.edges, localAddress,
                                 process.env.WSCLIENTPORT!, logger)
 
                             sessions[sid] = session
