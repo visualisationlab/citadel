@@ -21,11 +21,11 @@ const path = require('path');
 const cors = require('cors');
 const fs = require('fs');
 
-if (process.env["HOST"] == undefined) {
+if (process.env.HOST == undefined || process.env.HOST == '') {
     exit(0)
 }
 
-let localAddress = process.env["HOST"]
+let localAddress = process.env.HOST
 
 let sessions: {[sid: string]: (Session | null)} = {}
 
@@ -62,7 +62,7 @@ var app = express()
 let corsOptions
 
 corsOptions = {
-    origin: "https://" + process.env["HOST"] + ":" + process.env.CLIENTPORT
+    origin: "https://" + localAddress + ":" + process.env.CLIENTPORT
 }
 
 app.use(cors(corsOptions))
@@ -330,7 +330,8 @@ logger.log({
     corsorigin: localAddress + ":" + process.env.CLIENTPORT,
     clientport: process.env.CLIENTPORT,
     serverport: process.env.SERVERPORT,
-    websocket: process.env.WSCLIENTPORT
+    websocket: process.env.WSCLIENTPORT,
+
 })
 
 // console.log(fs.readFileSync('../certs/key.pem'))
