@@ -2,11 +2,11 @@ require('dotenv').config({path:__dirname + '/../.env'})
 import express, { RequestHandler, Request, Response } from 'express'
 import { body } from 'express-validator'
 import { WebSocket, WebSocketServer } from 'ws'
-import { networkInterfaces } from 'os'
 import { Session } from './session.class'
 import { IncomingMessage } from 'http'
 import uid from 'uid-safe'
-import { rm, createWriteStream, unlink, readFileSync } from 'fs'
+import { rm, createWriteStream, unlink } from 'fs'
+import { Validator } from 'jsonschema'
 import { exit } from 'process'
 import {GraphFormatConverter} from 'graph-format-converter'
 import { createLogger, format, transports } from 'winston'
@@ -17,9 +17,9 @@ if (process.env.NODE_ENV !== 'production') {
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 }
 
-const path = require('path');
-const cors = require('cors');
-const fs = require('fs');
+const path = require('path')
+const cors = require('cors')
+const fs = require('fs')
 
 if (process.env.HOST == undefined || process.env.HOST == '') {
     exit(0)
@@ -72,15 +72,8 @@ var httpsServer = https.createServer({
     cert: fs.readFileSync(process.env["CERT"], 'utf8')
 }, app)
 
-// var httpsServer = https.createServer({
-//     key: fs.readFileSync('../certs/dev.visgraph-key.pem', 'utf8'),
-//     cert: fs.readFileSync('../certs/dev.visgraph.pem', 'utf8')
-// }, app)
-
-// Start websocket.
 const server = new WebSocketServer({
     server: httpsServer,
-    // port: parseInt(process.env.WSCLIENTPORT),
     clientTracking: true,
     perMessageDeflate: true
 })
@@ -239,6 +232,62 @@ app.get('/graphs', getGraphs, (req: Request, res: Response) => {
     res.json(res.locals.graphs);
 })
 
+var graphSchema = {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    // "$id": "https://example.com/product.schema.json",
+    "type": "object",
+    "description": "Network data",
+    "properties": {
+        "attributes": {
+            "type": "object",
+            "properties": {
+                "edgeType": {
+                    "type": "string"
+                }
+            },
+            "required": [ "edgeType" ]
+        },
+        "nodes": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": ["string", "integer"]
+                    },
+                    "attributes": {
+                        "type": "object"
+                    }
+                },
+                "required": ["id"]
+            },
+            "minItems": 1,
+            "uniqueItems": true
+        },
+        "edges": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "source": {
+                        "type": ["string", "integer"]
+                    },
+                    "target": {
+                        "type": ["string", "integer"]
+                    },
+                    "attributes": {
+                        "type": "object"
+                    }
+                },
+                "required": ["source", "target", "attributes"]
+            },
+            "minItems": 1,
+            "uniqueItems": true
+        }
+    },
+    "required": ["attributes", "nodes", "edges"]
+}
+
 app.post('/urls', body('url').trim().unescape(),  (req, res) => {
     let url = req.body.url
 
@@ -270,6 +319,8 @@ app.post('/urls', body('url').trim().unescape(),  (req, res) => {
 
                             let json
 
+                            var validator = new Validator()
+
                             if (extension === 'graphml') {
                                 const graphmlInstance = GraphFormatConverter.fromGraphml(data);
 
@@ -277,6 +328,14 @@ app.post('/urls', body('url').trim().unescape(),  (req, res) => {
                             }
                             else {
                                 json = JSON.parse(data)
+                            }
+
+                            var vr = validator.validate(json, graphSchema)
+
+                            if (!vr.valid) {
+                                res.status(400).json({msg: "Error(s) parsing graph", errors: vr.errors})
+
+                                return
                             }
 
                             const session = new Session(sid, ((sid) => {
@@ -299,6 +358,8 @@ app.post('/urls', body('url').trim().unescape(),  (req, res) => {
                     })
                 }).on('error', (err) => {
                     logger.log('error', `Error downloading graph from URL ${url}: ${err}`)
+
+                    res.status(404).json("Error downloading graph data")
                     unlink(dest, (err) => {
                         if (err === null) {
                             return
@@ -307,6 +368,7 @@ app.post('/urls', body('url').trim().unescape(),  (req, res) => {
                 })
             } catch (e) {
                 logger.log('error', `Error downloading graph from URL ${url}: ${e}`)
+                res.status(404).json("Error downloading graph data")
                 unlink(dest, (err) => {
                     if (err === null) {
                         return

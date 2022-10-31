@@ -1,12 +1,13 @@
 import React, { useState } from 'react'
 import { useHistory } from 'react-router-dom'
-import { Form, Button, Container, Row, Col } from 'react-bootstrap'
+import { Form, Button, Container, Row, Col, Table } from 'react-bootstrap'
 import { userService } from '../services/user.service';
 
 import './home.component.css'
 
 export default function Home() {
     const [url, setURL] = useState('')
+    const [errors, setErrors] = useState<[string, string][]>([])
 
     let history = useHistory();
 
@@ -20,12 +21,58 @@ export default function Home() {
                 history.push(`/sessions/${response.data}`)
             },
             error => {
-                console.log(error)
+                if (error.response.status === 404) {
+                    setErrors([["server", "Couldn't fetch data from remote"]])
+                }
+                if (error.response.status === 400) {
+                    console.log("setting errors")
+                    setErrors(error.response.data.errors.map((val: {message: string, property: string}) => {
+                        return [val.property, val.message]
+                    }))
+                }
+                console.log(error.response.data)
             }
         )
     }
 
     const [sid, setSid] = useState('')
+
+    let errorText = errors.length === 0 ? [] : (
+        <Row>
+            <Col>
+            <style type="text/css">
+                {`
+                .table-responsive {
+                    overflow: auto;
+                    // display: block;
+                    // table-layout: auto;
+                    height: 200px;
+                }
+                `}
+            </style>
+                <Table variant="responsive" responsive striped bordered hover>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Property</th>
+                            <th>Error</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {errors.map((val, index) => {
+                            return (
+                                <tr>
+                                    <td>{index}</td>
+                                    <td>{val[0]}</td>
+                                    <td>{val[1]}</td>
+                                </tr>
+                            )
+                        })}
+                    </tbody>
+                </Table>
+            </Col>
+        </Row>
+    )
 
     return (
         <>
@@ -72,6 +119,7 @@ export default function Home() {
                                 </Button>
                             </Col>
                         </Row>
+                        {errorText}
                     </Col>
                     <Col md={{span: 4, offset: 0}}>
                         <Row >
