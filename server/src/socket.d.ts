@@ -1,5 +1,4 @@
 /// <reference types="node" />
-/// <reference types="node" />
 import { WebSocket, RawData } from 'ws';
 import { IncomingMessage } from 'http';
 export interface ClientMessage {

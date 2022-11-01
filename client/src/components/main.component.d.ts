@@ -1,18 +1,15 @@
 import React from 'react';
 import './home.component.css';
-import { SessionState, SessionReducer } from '../reducers/sessiondata.reducer';
-import { GraphDataReducerAction, GraphDataState } from '../reducers/graphdata.reducer';
-import { SelectionDataReducerAction, SelectionDataState } from '../reducers/selection.reducer';
 export declare const UserDataContext: React.Context<{
-    state: SessionState | null;
-    dispatch: React.Dispatch<SessionReducer> | null;
+    state: any;
+    dispatch: React.Dispatch<any> | null;
 }>;
 export declare const GraphDataContext: React.Context<{
-    graphState: GraphDataState | null;
-    graphDispatch: React.Dispatch<GraphDataReducerAction> | null;
+    graphState: any;
+    graphDispatch: React.Dispatch<any> | null;
 }>;
 export declare const SelectionDataContext: React.Context<{
-    selectionState: SelectionDataState | null;
-    selectionDispatch: React.Dispatch<SelectionDataReducerAction> | null;
+    selectionState: any;
+    selectionDispatch: React.Dispatch<any> | null;
 }>;
 export default function Main(): JSX.Element;

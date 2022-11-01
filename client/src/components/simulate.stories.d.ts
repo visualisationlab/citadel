@@ -1,4 +1,2 @@
-import { ComponentMeta } from '@storybook/react';
-import { SimulatorTab } from './simulate.component';
-declare const _default: ComponentMeta<typeof SimulatorTab>;
+declare const _default: import("@storybook/csf").ComponentAnnotations<import("@storybook/react").ReactFramework, any>;
 export default _default;
