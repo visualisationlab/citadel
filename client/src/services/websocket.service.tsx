@@ -169,7 +169,6 @@ class WebsocketService {
 
         // Handles incoming messages from server.
         this.ws.onmessage = (msg) => {
-
             try {
                 const messageData: MessageTypes.OutMessage = JSON.parse(msg.data)
 
