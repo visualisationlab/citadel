@@ -82,7 +82,7 @@ export default function Home() {
                         <img width='100%' src="https://chimay.science.uva.nl:8061/VisLablogo-cropped-notitle.svg" className="custom-logo" alt="Visualisation Lab"></img>
                     </Col>
                     <Col md={{span: 10}}>
-                        <h1>Graph-Vis</h1>
+                        <h1>Metagraph</h1>
                         <p className='text-secondary'> Graph Visualisation Software. Create a new session or join an existing one below.</p>
 
                     </Col>
