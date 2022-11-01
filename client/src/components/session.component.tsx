@@ -207,9 +207,8 @@ export default function SessionTab() {
 
                                                 if (uid) {
                                                     console.log('here')
-                                                    // QR.genQR(state.sessionURL, state.websocketPort, state.sid,
-                                                    //     headset.headsetID, uid)
-                                                    QR.genRickRoll()
+                                                    QR.genQR(state.sessionURL, state.websocketPort, state.sid,
+                                                        headset.headsetID, uid)
                                                 }
                                             }}>
                                         Connect
