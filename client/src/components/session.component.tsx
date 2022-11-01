@@ -4,11 +4,13 @@ import { Row, Col, Button, Container, ListGroup, InputGroup, Form } from 'react-
 
 import './home.component.css'
 
-import { UserDataContext } from '../components/main.component'
+import { UserDataContext, GraphDataContext } from '../components/main.component'
 
 import { API } from '../services/api.service'
 
 import { QR } from '../services/qrcode.service'
+
+
 
 function renderUsers(userName: string, users: {userName: string, headsetCount: number}[]): JSX.Element {
     return (
@@ -37,12 +39,12 @@ function renderSettings(
     newUserName: string,
     setNewUserName: React.Dispatch<React.SetStateAction<string>>,
     sessionRef: any,
-    graphRef: any
+    graphRef: any,
+    downloadURL: string,
     ) {
 
     return (
         <Container>
-
             <Row>
                 <InputGroup>
                     <InputGroup.Text>Username</InputGroup.Text>
@@ -114,9 +116,11 @@ function renderSettings(
             </Row>
             <Row className='justify-content-md-center'>
                 <Col md={{span: 3}}>
-                    <Button>
-                        Download Graph
-                    </Button>
+                    <a href={downloadURL} download="graph.json">
+                        <Button>
+                            Download Graph
+                        </Button>
+                    </a>
                 </Col>
             </Row>
         </Container>
@@ -125,17 +129,95 @@ function renderSettings(
 
 export default function SessionTab() {
     const { state } = useContext(UserDataContext)
+    const { graphState } = useContext(GraphDataContext)
 
     const [newUserName, setNewUserName] = useState('')
 
     const sessionRef = useRef(null)
     const graphRef = useRef(null)
 
-    if (!state) {
+    if (!state || !graphState) {
         return (
             <></>
         )
     }
+
+    var graphSchema = {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        // "$id": "https://example.com/product.schema.json",
+        "type": "object",
+        "description": "Network data",
+        "properties": {
+            "attributes": {
+                "type": "object",
+                "properties": {
+                    "edgeType": {
+                        "type": "string"
+                    }
+                },
+                "required": [ "edgeType" ]
+            },
+            "nodes": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "type": ["string", "integer"]
+                        },
+                        "attributes": {
+                            "type": "object"
+                        }
+                    },
+                    "required": ["id"]
+                },
+                "minItems": 1,
+                "uniqueItems": true
+            },
+            "edges": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "source": {
+                            "type": ["string", "integer"]
+                        },
+                        "target": {
+                            "type": ["string", "integer"]
+                        },
+                        "attributes": {
+                            "type": "object"
+                        }
+                    },
+                    "required": ["source", "target", "attributes"]
+                },
+                "minItems": 1,
+                "uniqueItems": true
+            }
+        },
+        "required": ["attributes", "nodes", "edges"]
+    }
+
+    let exportData = {
+        nodes: graphState.nodes.data.map((data) => {
+            return {
+                id: data.id,
+                attributes: data.attributes
+            }
+        }),
+        edges: graphState.edges.data.map((edges) => {
+            return {
+                source: edges.source,
+                target: edges.target,
+                attributes: edges.attributes
+            }
+        }),
+        attributes: {
+            edgeType: graphState.directed ? 'directed' : 'undirected'
+        }
+    }
+    let blob = new Blob([JSON.stringify(exportData)], {type: 'text/plain'})
+    let downloadURL = URL.createObjectURL(blob)
 
     let sessionVariant = 'primary'
 
@@ -170,7 +252,8 @@ export default function SessionTab() {
                     state.sid,
                     newUserName, setNewUserName,
                     sessionRef,
-                    graphRef)}
+                    graphRef,
+                    downloadURL)}
             </Row>
             <Row>
                 {state.headsets.map((headset) => {
