@@ -35,7 +35,7 @@ const app = new PIXI.Application({
     antialias: true
 })
 
-const circleTexture = PIXI.Texture.from('https://chimay.science.uva.nl:8061/circle.png')
+const circleTexture = PIXI.Texture.from('https://dev.visgraph:3001/circle.png')
 
 const SPRITESCALE = 2.5
 
@@ -125,7 +125,6 @@ function setTransformCallback(transformUpdate: () => void) {
 
         transformUpdate()
         API.setPan(transformX, transformY, transformK)
-
     }
 
     d3.select('.render')
@@ -242,6 +241,8 @@ function renderBackground(stage: PIXI.Container,
     var timer: ReturnType<typeof setTimeout> | null = null
 
     background.on(('pointerdown'), (event) => {
+        console.log("Pointer down")
+
         if (timer !== null) {
             return
         }
@@ -260,14 +261,13 @@ function renderBackground(stage: PIXI.Container,
             // @ts-ignore
             prevTransform = d3.zoomTransform(d3.select('.render').node())
 
-            console.log('disabled pan');
+            console.log('Pointer pan disabled');
         }, 250)
-
     })
 
     background.on(('mouseup'), () => {
         if (prevTransform !== null) {
-
+            console.log("Mouse up")
             selectionRect.destroy()
             selectionRect = new PIXI.Graphics()
 
@@ -285,21 +285,15 @@ function renderBackground(stage: PIXI.Container,
             })
         }
 
-        if (timer !== null) {
-            console.log('RECT OFF')
+        if (timer) {
+            console.log('Mouse up, cleared timer')
             pan = true
 
-            // d3.select('.render')
-            // // @ts-ignore
-            // .call(d3.zoom()
-            // .on('zoom', (event) => transformHandler(event)))
-
-
-            // selectionDispatch({
-            //     'attribute': 'node',
-            //     'type': 'shortClick',
-            //     'id': id
-            // })
+            if (dispatch) {
+                dispatch({
+                    'type': 'reset'
+                })
+            }
 
             clearTimeout(timer)
             timer = null
@@ -329,7 +323,7 @@ function renderBackground(stage: PIXI.Container,
         }
 
         if (timer !== null) {
-
+            console.log("Mouse up outside")
             pan = true
 
             // d3.select('.render')
@@ -353,7 +347,7 @@ function renderBackground(stage: PIXI.Container,
 
     background.on(('pointermove'), () => {
         if (timer !== null) {
-            console.log('RECT OFF')
+            console.log('Pointer move')
             pan = true
 
             // selectionDispatch({
@@ -367,16 +361,18 @@ function renderBackground(stage: PIXI.Container,
         }
     })
 
-    background.on('pointertap', function() {
-        if (dispatch === null || zooming) {
+    // background.on('pointertap', function() {
+    //     if (dispatch === null || zooming) {
 
-            return
-        }
+    //         return
+    //     }
 
-        dispatch({
-            'type': 'reset'
-        })
-    })
+    //     console.log('Pointertap')
+
+        // dispatch({
+        //     'type': 'reset'
+        // })
+    // })
 
     stage.addChild(background)
 
