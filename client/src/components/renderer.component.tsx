@@ -35,7 +35,7 @@ const app = new PIXI.Application({
     antialias: true
 })
 
-const circleTexture = PIXI.Texture.from('https://dev.visgraph:3001/circle.png')
+const circleTexture = PIXI.Texture.from('https://chimay.science.uva.nl:3001/circle.png')
 
 const SPRITESCALE = 2.5
 
