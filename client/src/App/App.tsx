@@ -10,6 +10,7 @@ import Upload from '../components/upload.component'
 import Main from '../components/main.component'
 
 export default function App() {
+    document.title = "Metagraph"
     return (
       <div>
         <div>
