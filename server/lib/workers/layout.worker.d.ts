@@ -3,9 +3,11 @@ export interface WorkerData {
     settings: {
         name: string;
         settings: {
-            [key: string]: (number | boolean);
-        };
+            name: string;
+            value: (number | boolean);
+        }[];
     };
+    randomize: boolean;
     width: number;
     height: number;
 }

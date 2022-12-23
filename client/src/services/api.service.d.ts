@@ -7,6 +7,7 @@ export declare module API {
     function setUserID(newUserID: string): void;
     function addSim(): void;
     function addHeadset(): void;
+    function validate(apiKey: string): void;
     function step(stepCount: number, apiKey: string, params: SimulatorParam[]): void;
     function removeNode(nodeID: string, graphState: GraphDataState): void;
     function removeEdge(edgeID: string, graphState: GraphDataState): void;

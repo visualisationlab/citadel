@@ -1,6 +1,7 @@
 export type ServerState = 'disconnected' | 'idle' | 'busy'
 
 export interface SessionState {
+    currentLayout: string | null,
     userName: string,
     users: {userName: string, headsetCount: number}[],
     expirationDate: Date,
@@ -58,6 +59,8 @@ export interface Simulator {
     title: string,
     state: 'disconnected' | 'idle' | 'generating' | 'connecting',
     options: SimulatorParam[],
+    valid: 'valid' | 'invalid' | 'unknown',
+    validator: boolean
 }
 
 type AvailableLayout =
@@ -99,8 +102,8 @@ export type SessionReducer =
 export function SessionDataReducer(state: SessionState, action: SessionReducer): SessionState {
     switch (action.attribute) {
         case 'all':
-
             return {
+                currentLayout: action.value.data.currentLayout,
                 userName: action.value.data.users.filter((userData: {
                     userID: string, username: string
                 }) => {

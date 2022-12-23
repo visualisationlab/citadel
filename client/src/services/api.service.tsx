@@ -68,6 +68,23 @@ export module API {
         })
     }
 
+    export function validate(apiKey: string) {
+        if (sid == null || userID == null) {
+            return
+        }
+
+        websocketService.sendSetMessage({
+            userID: userID,
+            sessionID: sid,
+            messageType: 'set',
+            dataType: 'validate',
+            messageSource: 'user',
+            params: {
+                apiKey: apiKey
+            }
+        })
+    }
+
     export function step(stepCount: number, apiKey: string, params: SimulatorParam[]) {
         if (sid === null || userID === null) {
             return
@@ -213,17 +230,16 @@ export module API {
             return
         }
 
-        console.log(`Setting layout`)
-
-        let res: {[key: string]: (boolean | number)} = {}
-
-        layout.settings.forEach((setting) => {
-            if (setting.type === 'number' && setting.value === 0) {
-                return
-            }
-            res[setting.name] = setting.value
+        console.log({
+            messageType: 'set',
+            dataType: 'layout',
+            params: {
+                layout: layout
+            },
+            sessionID: sid,
+            userID: userID,
+            messageSource: 'user'
         })
-
         websocketService.sendSetMessage({
             messageType: 'set',
             dataType: 'layout',

@@ -2,8 +2,8 @@
 import { WebSocket } from 'ws';
 import { Worker } from 'worker_threads';
 import { Logger } from 'winston';
-declare type SessionState = 'idle' | 'busy';
-declare type SimulatorParam = {
+type SessionState = 'idle' | 'busy';
+type SimulatorParam = {
     attribute: string;
     type: 'boolean';
     defaultValue: boolean;
@@ -34,6 +34,7 @@ export declare module MessageTypes {
         data?: any;
         dataType?: any;
         title?: string;
+        validator?: boolean;
     }
     export interface RegisterSimulatorMessage extends InMessage {
         sessionID: string;
@@ -125,6 +126,7 @@ export declare module MessageTypes {
         userID: string;
         type: 'session';
         data: {
+            currentLayout: AvailableLayout | null;
             url: string;
             sessionURL: string;
             graphIndex: number;
@@ -173,8 +175,8 @@ export declare module MessageTypes {
     }
     export {};
 }
-declare type AvailableLayout = 'null' | 'random' | 'cose' | 'grid' | 'circle' | 'breadthfirst' | 'cose' | 'fcose' | 'cola' | 'cise' | 'spread' | 'd3-force';
-export declare type LayoutSetting = {
+type AvailableLayout = 'null' | 'random' | 'cose' | 'grid' | 'circle' | 'breadthfirst' | 'cose' | 'fcose' | 'cola' | 'cise' | 'spread' | 'd3-force';
+export type LayoutSetting = {
     name: string;
     description: string;
     type: 'number';
@@ -191,11 +193,13 @@ export interface LayoutInfo {
     link: string;
     settings: LayoutSetting[];
 }
-declare type LayoutSettings = {
-    name: string;
+type LayoutSettings = {
+    name: AvailableLayout;
+    randomize: boolean;
     settings: {
-        [key: string]: number | boolean;
-    };
+        name: string;
+        value: number | boolean;
+    }[];
 };
 export declare class Session {
     private readonly sourceURL;
@@ -214,12 +218,14 @@ export declare class Session {
     private graphIndex;
     private logger;
     private playmode;
+    private currentLayout;
     constructor(sid: string, destroyFun: (sid: string) => void, sourceURL: string, nodes: {
         [key: string]: any;
     }[], edges: {
         [key: string]: any;
     }[], localAddress: string, websocketPort: string, logger: Logger);
     private setState;
+    private changeGraphState;
     private storeCurrentGraphState;
     private appendGraphState;
     private time;

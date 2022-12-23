@@ -5,7 +5,7 @@
  */
 import * as PIXI from 'pixi.js';
 export declare module VisGraph {
-    export type Shape = 'circle' | 'square' | 'triangle' | 'star';
+    export type Shape = 'circle' | 'square' | 'triangle' | 'star' | 'line';
     export type Colour = [number, number, number];
     export const attributeType: readonly ["LinearMapDate", "LinearMapScalar", "Classify", "None"];
     export type AttributeType = typeof attributeType[number];
@@ -63,10 +63,12 @@ export declare module VisGraph {
             [id: string]: any;
         };
         visualAttributes: {
-            fillColour: Colour;
+            hue: number;
+            saturation: number;
+            lightness: number;
+            text: string;
             width: number;
             alpha: number;
-            edgeColour: Colour;
         };
     }
     export interface HashedEdge extends Edge {
@@ -211,10 +213,14 @@ export declare module VisGraph {
             [id: string]: any;
         };
         visualAttributes: {
-            fillColour: Colour;
+            hue: number;
+            saturation: number;
+            lightness: number;
+            shape: Shape;
+            prevShape: Shape;
             radius: number;
             alpha: number;
-            edgeColour: Colour;
+            text: string;
         };
     }
     export interface HashedGraphNode extends GraphNode {

@@ -1,4 +1,4 @@
-import { ComponentStory, ComponentMeta } from '@storybook/react';
+import { ComponentStory } from '@storybook/react';
 import InspectTab from './inspect.component';
 declare const _default: ComponentMeta<typeof InspectTab>;
 export default _default;

@@ -4,8 +4,8 @@ export module LinearMap {
         max: number
     }
 
-    export function map(val: any, data: LinearMapData): number {
-        return (parseFloat(val) - data.min) / (data.max - data.min)
+    export function map(val: number, data: LinearMapData): number {
+        return (val - data.min) / (data.max - data.min)
     }
 
     export function generate(data: number[]): {

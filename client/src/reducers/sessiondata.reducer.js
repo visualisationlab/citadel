@@ -2,6 +2,7 @@ export function SessionDataReducer(state, action) {
     switch (action.attribute) {
         case 'all':
             return {
+                currentLayout: action.value.data.currentLayout,
                 userName: action.value.data.users.filter((userData) => {
                     return userData.userID === action.value.userID;
                 })[0].username,

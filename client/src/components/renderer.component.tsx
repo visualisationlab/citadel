@@ -1,17 +1,30 @@
 
-import { getNodeText } from "@storybook/testing-library"
 import * as PIXI from "pixi.js"
 import * as d3 from "d3"
-import { useContext, useEffect } from 'react'
 
 import { VisGraph } from '../types'
 import { SelectionDataReducerAction, SelectionDataState } from "../reducers/selection.reducer"
-import { selection } from "d3"
 
 import { API } from '../services/api.service'
+import { forEach } from "mathjs"
+
+// Create and load bitmap font.
+PIXI.BitmapFont.from('font', {
+    fontFamily: 'sans-serif',
+    fontSize: 20,
+    align: 'center',
+    stroke: 'white',
+    strokeThickness: 4,
+    wordWrap: true,
+    wordWrapWidth: 5,
+    breakWords: true
+})
+
+type NodeData = [PIXI.Sprite, PIXI.BitmapText]
 
 interface RenderedNode extends VisGraph.HashedGraphNode {
-    gfx: PIXI.Sprite
+    nodesprite: PIXI.Sprite,
+    textsprite: PIXI.BitmapText,
 }
 
 interface RendererProps {
@@ -25,7 +38,7 @@ interface RendererProps {
 
 PIXI.settings.GC_MAX_IDLE = 100000;
 PIXI.settings.PREFER_ENV = PIXI.ENV.WEBGL2
-PIXI.settings.FILTER_MULTISAMPLE = PIXI.MSAA_QUALITY.HIGH
+// PIXI.settings.FILTER_MULTISAMPLE = PIXI.MSAA_QUALITY.HIGH
 
 const app = new PIXI.Application({
     width:window.innerWidth,
@@ -35,20 +48,15 @@ const app = new PIXI.Application({
     antialias: true
 })
 
-const circleTexture = PIXI.Texture.from('https://chimay.science.uva.nl:8061/circle.png')
+const circleTexture = PIXI.Texture.from('https://dev.visgraph:3001/circle.png')
+const amongusTexture = PIXI.Texture.from('https://dev.visgraph:3001/amongus.png')
 
 const SPRITESCALE = 2.5
 
-app.stage.sortableChildren = true;
-
 let nodeDict: {[key: string]: VisGraph.GraphNode} = {}
 
-// Stack for sprites.
-let edgeCache: PIXI.Sprite[] = []
 let renderedEdges: VisGraph.RenderedEdge[] = []
 
-// Stack for sprites.
-let nodeCache: PIXI.Sprite[] = []
 let renderedNodes: RenderedNode[] = []
 let nodeIndex = 0
 
@@ -65,18 +73,12 @@ let selectionBox = {
 
 const animationSpeed = 0.04
 
-const edgeStartingCount = 10000
-const nodeStartingCount = 5000
+const edgeStartingCount = 1
+const nodeStartingCount = 1
 
-const edgesPerContainer = 1500
-const nodesPerContainer = 1500
-
-let nodeContainers: PIXI.Container[] = []
-let edgeContainers: PIXI.Container[] = []
-
-let transformX = 0;
-let transformY = 0;
-let transformK = 1.0;
+let transformX = 0
+let transformY = 0
+let transformK = 1.0
 
 let prevTransform: d3.ZoomTransform | null = null
 
@@ -89,10 +91,56 @@ let animatorTriggered = false
 let start : DOMHighResTimeStamp | null = null
 let previousTimestep : DOMHighResTimeStamp | null = null
 
+class SpriteCache {
+    static cache: {[key: string]: PIXI.Sprite[]} = {}
+
+    static pushSprite(sprite: PIXI.Sprite, shape: VisGraph.Shape) {
+
+        if (this.cache[shape.toString()] === undefined) {
+            this.cache[shape.toString()] = []
+        }
+
+        app.stage.removeChild(sprite)
+
+        sprite.removeAllListeners()
+
+        this.cache[shape.toString()].unshift(sprite)
+
+        // Disable the sprite
+        sprite.visible = false
+    }
+
+    static getSprite(shape: VisGraph.Shape) {
+        let shapeString = shape.toString()
+        if (this.cache[shapeString] === undefined) {
+            this.cache[shapeString] = []
+        }
+
+        if (this.cache[shapeString].length === 0) {
+            if (shape === 'line') {
+                return new PIXI.Sprite(PIXI.Texture.WHITE)
+            }
+
+            return new PIXI.Sprite(PIXI.Texture.from(`https://dev.visgraph:3001/${shape}.png`))
+        }
+
+        return this.cache[shapeString].pop()!
+    }
+
+
+
+    static clearCache() {
+        Object.values(this.cache).forEach((sprites) => {
+            sprites.forEach((sprite) => {
+                sprite.destroy()
+        })})
+
+        this.cache = {}
+    }
+}
+
 /**
  * Transforms nodes and lines on zoom/pan.
- * @param zoomUpdate () => void
- * @param renderUpdate () => void
  * @returns void
  */
 function setTransformCallback(transformUpdate: () => void) {
@@ -102,7 +150,10 @@ function setTransformCallback(transformUpdate: () => void) {
 
     transformHandler = (event: any) => {
         if (!pan && prevTransform) {
+
+            // Draw selection box.
             selectionRect.destroy()
+
             selectionRect = new PIXI.Graphics()
             selectionRect.beginFill(0x00B200, 0.3)
             selectionRect.lineStyle(3)
@@ -114,8 +165,13 @@ function setTransformCallback(transformUpdate: () => void) {
                                     (event.transform.x - prevTransform.x)  ,
                                     (event.transform.y - prevTransform.y)  )
             selectionRect.endFill()
+
             app.stage.addChild(selectionRect)
 
+            return
+        }
+
+        if (!pan) {
             return
         }
 
@@ -124,17 +180,17 @@ function setTransformCallback(transformUpdate: () => void) {
         transformK = event.transform.k
 
         transformUpdate()
+
+        // Update server pan.
         API.setPan(transformX, transformY, transformK)
     }
 
     d3.select('.render')
         // @ts-ignore
         .call(d3.zoom()
-        .scaleExtent([0.10, 3])
+        .scaleExtent([0.01, 3])
         .on('start', () => {
-
             if (prevTransform !== null) {
-                console.log("MOVING")
 
                 // @ts-ignore
                 d3.select('.render').call(d3.zoom().transform, prevTransform)
@@ -149,99 +205,64 @@ function setTransformCallback(transformUpdate: () => void) {
         }))
 }
 
-function genCircleSprite() {
-    let circleSprite = new PIXI.Sprite(circleTexture)
+function getSprite(shape: VisGraph.Shape) {
+    const edgeZ = 2
+    const nodeZ = 3
 
-    circleSprite.alpha = 0
-    circleSprite.x = 0
-    circleSprite.y = 0
-    circleSprite.tint = 0xFF00FF
-    circleSprite.scale.x = 0.25
-    circleSprite.scale.y = 0.25
+    let newSprite = SpriteCache.getSprite(shape)
 
-    circleSprite.anchor.set(0.5)
-    return circleSprite
-}
+    newSprite.visible = true
 
-function genEdgeSprite() {
-    const lineSprite = new PIXI.Sprite(PIXI.Texture.WHITE)
+    if (shape === 'line') {
+        newSprite.zIndex = edgeZ
+    }
+    else {
+        newSprite.zIndex = nodeZ
+        newSprite.anchor.set(0.5, 0.5)
+    }
 
-    lineSprite.alpha = 0
-    lineSprite.x = 0
-    lineSprite.y = 0
-    lineSprite.tint = 0xFFFF00
-    lineSprite.scale.x = 0.25
-    lineSprite.scale.y = 0.25
+    app.stage.addChild(newSprite)
 
-    return lineSprite
+    return newSprite
 }
 
 /**
  * Generates circles and lines for use in rendering.
  */
 function setupRendering() {
-    // Starting number of containers.
-    let edgeContainerCount = Math.ceil(edgeStartingCount / edgesPerContainer)
-
-    for (let i = 0; i < edgeContainerCount; i++) {
-        const container = new PIXI.Container()
-
-        edgeContainers.push(container)
-
-        app.stage.addChild(container)
-    }
-
-    let nodeContainerCount = Math.ceil(nodeStartingCount / nodesPerContainer)
-
-    for (let i = 0; i < nodeContainerCount; i++) {
-        const container = new PIXI.Container()
-
-        nodeContainers.push(container)
-
-        app.stage.addChild(container)
-    }
-
-
+    app.stage.sortableChildren = true
 
     // Generate a set of edges.
-    for (let i = 0; i < edgeStartingCount; i++) {
-        const lineSprite = new PIXI.Sprite(PIXI.Texture.WHITE)
+    // for (let i = 0; i < edgeStartingCount; i++) {
+    //     let lineSprite = getSprite('line')
 
-        lineSprite.tint = 0x000000
-
-        lineSprite.alpha = 0
-
-        edgeContainers[Math.floor(i / edgesPerContainer)].addChild(lineSprite)
-        edgeCache.push(lineSprite)
-    }
+    //     app.stage.addChild(lineSprite)
+    // }
 
     // Generate a set of nodes.
-    for (let i = 0; i < nodeStartingCount; i++) {
-        const nodeSprite = genCircleSprite()
+    // for (let i = 0; i < nodeStartingCount; i++) {
 
-        nodeContainers[0].addChild(nodeSprite)
-
-        nodeCache.push(nodeSprite)
-
-        nodeContainers[Math.floor(i / nodesPerContainer)].addChild(nodeSprite)
-    }
+    // }
 }
 
 function renderBackground(stage: PIXI.Container,
     dispatch: React.Dispatch<SelectionDataReducerAction> | null,
     nodes: RenderedNode[], selectionDispatch: React.Dispatch<SelectionDataReducerAction>) {
+
     const background = new PIXI.Sprite(PIXI.Texture.WHITE);
 
     background.width = window.innerWidth
     background.height = window.innerHeight
     background.interactive = true
 
-    background.zIndex = -100
+    background.zIndex = -1
+
+    stage.addChild(background)
 
     var timer: ReturnType<typeof setTimeout> | null = null
 
-    background.on(('pointerdown'), (event) => {
-        console.log("Pointer down")
+    background.on(('pointerdown'), (event: any) => {
+
 
         if (timer !== null) {
             return
@@ -253,29 +274,31 @@ function renderBackground(stage: PIXI.Container,
         }
 
         timer = setTimeout(() => {
-            pan = false;
-            timer = null;
+            pan = false
+            timer = null
 
             selectionBox.x0 = event.data.global.x
             selectionBox.y0 = event.data.global.y
             // @ts-ignore
             prevTransform = d3.zoomTransform(d3.select('.render').node())
 
-            console.log('Pointer pan disabled');
+
         }, 250)
     })
 
     background.on(('mouseup'), () => {
         if (prevTransform !== null) {
-            console.log("Mouse up")
+
             selectionRect.destroy()
             selectionRect = new PIXI.Graphics()
+
 
             nodes.forEach((node) => {
                 if (node.x * transformK + transformX > selectionBox.x0
                     && node.x * transformK + transformX < selectionBox.x0 + selectionBox.x1
                     && node.y * transformK + transformY > selectionBox.y0
                     && node.y * transformK + transformY < selectionBox.y0 + selectionBox.y1) {
+
                     selectionDispatch({
                         type: 'add',
                         attribute: 'node',
@@ -286,7 +309,7 @@ function renderBackground(stage: PIXI.Container,
         }
 
         if (timer) {
-            console.log('Mouse up, cleared timer')
+
             pan = true
 
             if (dispatch) {
@@ -323,20 +346,8 @@ function renderBackground(stage: PIXI.Container,
         }
 
         if (timer !== null) {
-            console.log("Mouse up outside")
+
             pan = true
-
-            // d3.select('.render')
-            // // @ts-ignore
-            // .call(d3.zoom()
-            // .on('zoom', (event) => transformHandler(event)))
-
-
-            // selectionDispatch({
-            //     'attribute': 'node',
-            //     'type': 'shortClick',
-            //     'id': id
-            // })
 
             clearTimeout(timer)
             timer = null
@@ -347,150 +358,16 @@ function renderBackground(stage: PIXI.Container,
 
     background.on(('pointermove'), () => {
         if (timer !== null) {
-            console.log('Pointer move')
             pan = true
-
-            // selectionDispatch({
-            //     'attribute': 'node',
-            //     'type': 'shortClick',
-            //     'id': id
-            // })
 
             clearTimeout(timer)
             timer = null
         }
     })
 
-    // background.on('pointertap', function() {
-    //     if (dispatch === null || zooming) {
-
-    //         return
-    //     }
-
-    //     console.log('Pointertap')
-
-        // dispatch({
-        //     'type': 'reset'
-        // })
-    // })
-
     stage.addChild(background)
 
     return background
-}
-
-function getNode(): PIXI.Sprite {
-    if (nodeIndex < nodeCache.length) {
-        return nodeCache[nodeIndex++]
-    }
-
-    const container = new PIXI.Container()
-
-    nodeContainers.push(container)
-
-    for (let i = 0; i < nodesPerContainer; i++) {
-        const nodeSprite = genCircleSprite()
-
-        nodeContainers[nodeContainers.length - 1].addChild(nodeSprite)
-
-        nodeCache.push(nodeSprite)
-    }
-
-    return nodeCache[nodeIndex++]
-}
-
-function getEdge(): PIXI.Sprite {
-    let pop = edgeCache.pop()
-
-    if (pop !== undefined && pop !== null) {
-        return pop
-    }
-
-    if (edgeContainers[0].children.length === edgesPerContainer) {
-        edgeContainers.push(new PIXI.Container())
-    }
-
-    for (let i = 0; i < edgesPerContainer - 1; i++) {
-        const edgeSprite = genEdgeSprite()
-
-        edgeContainers[0].addChild(edgeSprite)
-
-        edgeCache.push(edgeSprite)
-    }
-
-    const edgeSprite = genEdgeSprite()
-
-    edgeContainers[0].addChild(edgeSprite)
-
-    return edgeSprite
-}
-
-function cleanRenderedNodes() {
-    nodeIndex = 0
-
-    renderedNodes = []
-}
-
-function cleanRenderedEdges() {
-    renderedEdges.forEach((edge) => {
-        if (edge.gfx === null)  {
-            return
-        }
-
-        edgeCache.push(edge.gfx)
-    })
-
-    renderedEdges = []
-}
-
-function checkRenderedNodes(nodes: VisGraph.HashedGraphNode[]): boolean {
-    cleanRenderedNodes()
-    if (nodes.length !== renderedNodes.length) {
-
-        renderedNodes.forEach((node) => {
-            node.gfx.alpha = 0
-        })
-
-        return true
-    }
-
-    // for (let i = 0; i < renderedNodes.length; i++) {
-    //     if (renderedNodes[i].id !== nodes[i].id) {
-    //         cleanRenderedNodes()
-
-    //         return true
-    //     }
-    // }
-
-    return true
-}
-
-function checkRenderedEdges(edges: VisGraph.HashedEdge[]): boolean {
-    if (edges.length !== renderedEdges.length) {
-        renderedEdges.forEach((edge) => {
-            if (edge.gfx === null)  {
-                return
-            }
-
-            edge.gfx.alpha = 0
-        })
-
-    }
-    cleanRenderedEdges()
-    if (edges.length !== renderedEdges.length) {
-
-        return true
-    }
-
-    // for (let i = 0; i < renderedEdges.length; i++) {
-    //     if (renderedEdges[i].hash !== edges[i].hash) {
-    //         cleanRenderedEdges()
-
-    //         return true
-    //     }
-    // }
-
-    return true
 }
 
 function cleanMemory() {
@@ -500,32 +377,13 @@ function cleanMemory() {
         edge.gfx?.destroy()
     })
 
-    renderedNodes.forEach((node) => {
-        node.gfx?.destroy()
+    renderedNodes.forEach((renderedNode) => {
+        renderedNode.nodesprite?.destroy()
+        renderedNode.textsprite?.destroy()
     })
 
     app.stage.children.forEach((child) => {
         child.destroy()
-    })
-
-    console.log(`Cleaning edge cache (${edgeCache.length} objects)`)
-    edgeCache.forEach((edge) => {
-        edge.destroy()
-    })
-
-    console.log(`Cleaning node cache (${nodeCache.length} objects)`)
-    nodeCache.forEach((node) => {
-        node.destroy()
-    })
-
-    console.log(`Cleaning node containers (${nodeContainers.length} objects)`)
-    nodeContainers.forEach((container) => {
-        container.destroy()
-    })
-
-    console.log(`Cleaning edge containers (${edgeContainers.length} objects)`)
-    edgeContainers.forEach((container) => {
-        container.destroy()
     })
 
     app.stage.removeChildren()
@@ -537,17 +395,17 @@ function cleanMemory() {
 function updateNodePositions(nodes: VisGraph.HashedGraphNode[]) {
     let nodeDict: {[key: string]: VisGraph.GraphNode} = {}
 
-    renderedNodes.forEach((node, index) => {
-        node.x = nodes[index].x
-        node.y = nodes[index].y
+    renderedNodes.forEach((renderedNode, index) => {
+        renderedNode.x = nodes[index].x
+        renderedNode.y = nodes[index].y
 
         // node.gfx.x = nodes[index].x * transformK + transformX
         // node.gfx.y = nodes[index].y * transformK + transformY
 
-        node.gfx.scale.x = ((node.visualAttributes.radius) / 16  * transformK ) / SPRITESCALE
-        node.gfx.scale.y = ((node.visualAttributes.radius) / 16  * transformK ) / SPRITESCALE
+        renderedNode.nodesprite.scale.x = ((renderedNode.visualAttributes.radius) / 16  * transformK ) / SPRITESCALE
+        renderedNode.nodesprite.scale.y = ((renderedNode.visualAttributes.radius) / 16  * transformK ) / SPRITESCALE
 
-        nodeDict[node.id] = node
+        nodeDict[renderedNode.id] = renderedNode
     })
 
     renderedEdges.forEach((edge) => {
@@ -603,24 +461,21 @@ function updateNodePositions(nodes: VisGraph.HashedGraphNode[]) {
 }
 
 function updateTransform() {
-    renderedNodes.forEach((node) => {
-        node.gfx.x = node.x * transformK + transformX
-        node.gfx.y = node.y * transformK + transformY
+    renderedNodes.forEach((renderedNode) => {
+        renderedNode.nodesprite.x = renderedNode.x * transformK + transformX
+        renderedNode.nodesprite.y = renderedNode.y * transformK + transformY
 
-        node.gfx.scale.x = ((node.visualAttributes.radius) / 16 * transformK) / SPRITESCALE
-        node.gfx.scale.y = ((node.visualAttributes.radius) / 16 * transformK) / SPRITESCALE
+        renderedNode.textsprite.x = ((renderedNode.x) * transformK + transformX) - renderedNode.textsprite.textWidth / 2
+        renderedNode.textsprite.y = (renderedNode.y * transformK + transformY) - renderedNode.textsprite.textHeight / 2
+
+        renderedNode.nodesprite.scale.x = ((renderedNode.visualAttributes.radius) / 16 * transformK) / SPRITESCALE
+        renderedNode.nodesprite.scale.y = ((renderedNode.visualAttributes.radius) / 16 * transformK) / SPRITESCALE
     })
 
     renderedEdges.forEach((edge, index) => {
         if (edge.gfx === null) {
             return
         }
-
-        // edge.gfx.x = edge.gfx.x * transformK + transformX
-        // edge.gfx.y = edge.gfx.y * transformK + transformY
-
-        // edge.gfx.scale.x = transformK
-        // edge.gfx.scale.y = transformK
 
         const source = {...edge.sourceNode}
 
@@ -655,7 +510,7 @@ function updateTransform() {
         edge.gfx.y = (source.y + sinSource) * transformK + transformY
 
         edge.gfx.width = lineLength
-        edge.gfx.height = edge.visualAttributes.width * transformK
+        edge.gfx.height = edge.visualAttributes.width
         edge.gfx.rotation = angle
     })
 }
@@ -671,25 +526,46 @@ function animator(timestamp: DOMHighResTimeStamp) {
     let done = true
 
     if (previousTimestep !== timestamp) {
-
-
         let gfxDict: {[key: string]: RenderedNode} = {}
 
-        renderedNodes.forEach((node) => {
-            gfxDict[node.id] = node
-            let gfx = node.gfx
+        renderedNodes.forEach((renderedNode) => {
+            gfxDict[renderedNode.id] = renderedNode
 
-            let targetX = node.x * transformK + transformX
-            let targetY = node.y * transformK + transformY
+            let gfx = renderedNode.nodesprite
+
+            let targetX = renderedNode.x * transformK + transformX
+            let targetY = renderedNode.y * transformK + transformY
+
+            if (renderedNode.visualAttributes.prevShape !== renderedNode.visualAttributes.shape) {
+                console.log('Spriteflip')
+
+                gfx.x = targetX
+                gfx.y = targetY
+
+                renderedNode.textsprite.x = targetX
+                renderedNode.textsprite.y = targetY
+
+                gfx.scale.x = ((renderedNode.visualAttributes.radius / 16) * transformK) / SPRITESCALE
+                gfx.scale.y = ((renderedNode.visualAttributes.radius / 16) * transformK) / SPRITESCALE
+
+                renderedNode.visualAttributes.prevShape = renderedNode.visualAttributes.shape
+                return
+            }
 
             if (Math.sqrt((gfx.x - targetX) ** 2 + (gfx.y - targetY) ** 2) > 1) {
-                gfx.x += (targetX - gfx.x) *  Math.min(animationSpeed * elapsed, animationSpeed)
-                gfx.y += (targetY - gfx.y) * Math.min(animationSpeed * elapsed, animationSpeed)
+                let dx = (targetX - gfx.x) *  Math.min(animationSpeed * elapsed, animationSpeed)
+                let dy = (targetY - gfx.y) *  Math.min(animationSpeed * elapsed, animationSpeed)
+
+                gfx.x += dx
+                gfx.y += dy
+
+                renderedNode.textsprite.x += dx
+                renderedNode.textsprite.y += dy
 
                 done = false
 
-                gfx.scale.x = ((node.visualAttributes.radius / 16) * transformK) / SPRITESCALE
-                gfx.scale.y = ((node.visualAttributes.radius / 16) * transformK) / SPRITESCALE
+                gfx.scale.x = ((renderedNode.visualAttributes.radius / 16) * transformK) / SPRITESCALE
+                gfx.scale.y = ((renderedNode.visualAttributes.radius / 16) * transformK) / SPRITESCALE
             }
         })
 
@@ -706,7 +582,8 @@ function animator(timestamp: DOMHighResTimeStamp) {
             gfx.alpha = edge.visualAttributes.alpha
 
             // Calculate the angles to get the circle border location.
-            let angle = Math.atan2(target.gfx.y - source.gfx.y, target.gfx.x - source.gfx.x);
+            let angle = Math.atan2(target.nodesprite.y - source.nodesprite.y,
+                                   target.nodesprite.x - source.nodesprite.x);
 
             let sinSource = Math.sin(angle) * source.visualAttributes.radius / 16;
             let cosSource = Math.cos(angle) * source.visualAttributes.radius / 16;
@@ -714,11 +591,11 @@ function animator(timestamp: DOMHighResTimeStamp) {
             let sinTarget = Math.sin(angle) * target.visualAttributes.radius  / 16;
             let cosTarget = Math.cos(angle) * target.visualAttributes.radius  / 16;
 
-            let sourceX = (source.gfx.x + cosSource);
-            let sourceY = (source.gfx.y + sinSource);
+            let sourceX = (source.nodesprite.x + cosSource);
+            let sourceY = (source.nodesprite.y + sinSource);
 
-            let targetX = (target.gfx.x - cosTarget);
-            let targetY = (target.gfx.y - sinTarget);
+            let targetX = (target.nodesprite.x - cosTarget);
+            let targetY = (target.nodesprite.y - sinTarget);
 
             let dx = targetX - sourceX;
             let dy = targetY - sourceY;
@@ -730,22 +607,14 @@ function animator(timestamp: DOMHighResTimeStamp) {
 
             let wingLength = 5 * transformK;
 
-            // Rounds to nearest integer larger than zero. Possibly unnecessary due to ROUND_PIXELS.
-            // lineGraphic.lineStyle(Math.round(transform_k * 2) <= 0 ? 1 : Math.round(transform_k * 2), lineColour, alpha);
-
-            // lineGraphic.setTransform(
-            //     (source.x + cosSource) * transform_k,
-            //     (target.x - cosTarget) * transform_k,
-            // )
-
-
-
-            gfx.tint = PIXI.utils.rgb2hex(edge.visualAttributes.fillColour)
+            gfx.tint = PIXI.utils.rgb2hex(hsltorgb(edge.visualAttributes.hue,
+                edge.visualAttributes.saturation,
+                edge.visualAttributes.lightness))
             gfx.width = lineLength
 
-            gfx.height = edge.visualAttributes.width * transformK
-            gfx.x = (source.gfx.x + cosSource)
-            gfx.y = (source.gfx.y + sinSource)
+            gfx.height = edge.visualAttributes.width
+            gfx.x = (source.nodesprite.x + cosSource)
+            gfx.y = (source.nodesprite.y + sinSource)
             gfx.rotation = angle
         })
     }
@@ -757,9 +626,23 @@ function animator(timestamp: DOMHighResTimeStamp) {
         return
     }
 
-
-
     animatorTriggered = false
+}
+
+// HSL to RGB
+// H: [0:360] S: [0:1] L: [0:1]
+// Returns [r, g, b] in [0:1]
+// https://www.30secondsofcode.org/js/s/hsl-to-rgb
+const hsltorgb = (h: number, s: number, l: number) => {
+    s /= 1;
+    l /= 1;
+
+    const k = (n: number) => (n + h / 30) % 12;
+    const a = s * Math.min(l, 1 - l);
+    const f = (n: number) =>
+       l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+
+    return [f(0), f(8), f(4)];
 }
 
 export function Renderer({
@@ -771,153 +654,144 @@ export function Renderer({
     selectionDispatch
     }: RendererProps) {
 
-    console.log('Render start')
     if (!startupFlag) {
         setupRendering()
 
         startupFlag = true
     }
 
-    /* Check if nodes need to be re-rendered. */
-    const nodesShouldUpdate = checkRenderedNodes(nodes)
-    const edgesShouldUpdate = checkRenderedEdges(edges)
-
     container.appendChild(app.view)
     app.stage.addChild(selectionRect)
 
-    if (nodesShouldUpdate) {
-        nodeDict = {}
-        /* Update node gfx. */
-        var timer: ReturnType<typeof setTimeout> | null = null
+    renderedNodes.forEach((renderedNode) => {
+        SpriteCache.pushSprite(renderedNode.nodesprite, renderedNode.visualAttributes.shape)
 
-        renderedNodes = nodes.map((node) => {
-            const gfx = getNode()
+        renderedNode.textsprite.destroy()
 
-            gfx.tint = PIXI.utils.rgb2hex(node.visualAttributes.fillColour)
+        app.stage.removeChild(renderedNode.textsprite)})
 
-            gfx.alpha = node.visualAttributes.alpha
+    renderedEdges.forEach((renderedEdge) => {
+        if (renderedEdge.gfx)
+            SpriteCache.pushSprite(renderedEdge.gfx, 'line')
+    })
 
-            gfx.interactive = true
-            gfx.zIndex = 100
+    app.render()
 
-            const id = node.id
-            gfx.removeAllListeners()
+    nodeDict = {}
+    /* Update node gfx. */
+    var timer: ReturnType<typeof setTimeout> | null = null
 
-            // callback?
-            gfx.on(('pointerdown'), () => {
-                if (selectionDispatch === null) {
-                    return
-                }
+    renderedNodes = nodes.map((node) => {
+        const nodeSprite = getSprite(node.visualAttributes.shape)
 
-                if (timer !== null) {
-                    return
-                }
+        const text = new PIXI.BitmapText('ABCD', {fontName: 'font'})
 
-                if (timer) {
-                    clearTimeout(timer)
-                    timer = null
-                }
+        // nodeSprite.x = node.x * transformK + transformX
+        // nodeSprite.y = node.y * transformK + transformY
 
-                timer = setTimeout(() => {selectionDispatch({
-                    'attribute': 'node',
-                    'type': 'longClick',
-                    'id': id
-                })}, 250)
+        nodeSprite.tint = PIXI.utils.rgb2hex(hsltorgb(node.visualAttributes.hue,
+            node.visualAttributes.saturation,
+            node.visualAttributes.lightness))
+
+        nodeSprite.alpha = node.visualAttributes.alpha
+        nodeSprite.interactive = true
+
+        text.text = node.visualAttributes.text
+
+        text.x = (node.x * transformK + transformX) - text.textWidth / 2
+        text.y = (node.y * transformK + transformY) - text.textHeight / 2
+
+        text.zIndex = 100
+
+        app.stage.addChild(text)
+
+        const id = node.id
+        nodeSprite.on(('pointerdown'), () => {
+            if (selectionDispatch === null) {
+                return
+            }
+
+            if (timer !== null) {
+                return
+            }
+
+            if (timer) {
+                clearTimeout(timer)
+                timer = null
+            }
+
+            timer = setTimeout(() => {selectionDispatch({
+                'attribute': 'node',
+                'type': 'longClick',
+                'id': id
+            })}, 250)
+        })
+
+        nodeSprite.on(('pointertap'), () => {
+            if (selectionDispatch === null) {
+                return
+            }
+
+            if (timer !== null) {
+
+                clearTimeout(timer)
+
+                timer = null
+            }
+
+
+
+            selectionDispatch({
+                'attribute': 'node',
+                'type': 'shortClick',
+                'id': id
             })
+        })
 
-            gfx.on(('pointertap'), () => {
-                if (selectionDispatch === null) {
-                    return
-                }
+        nodeSprite.on(('pointerup'), () => {
+            if (selectionDispatch === null) {
+                return
+            }
 
-                if (timer !== null) {
-                    console.log('clearing timer')
-                    clearTimeout(timer)
-
-                    timer = null
-                }
-
-                console.log('tap')
-
-                selectionDispatch({
-                    'attribute': 'node',
-                    'type': 'shortClick',
-                    'id': id
-                })
-            })
-
-            gfx.on(('pointerup'), () => {
-                if (selectionDispatch === null) {
-                    return
-                }
-
-                if (timer !== null) {
-                    console.log('click up')
-
-                    // selectionDispatch({
-                    //     'attribute': 'node',
-                    //     'type': 'shortClick',
-                    //     'id': id
-                    // })
-
-                    clearTimeout(timer)
-                    timer = null
-                }
-            })
-
-            // gfx.on(('mouseupoutside'), () => {
-            //     if (timer !== null) {
-            //         clearTimeout(timer)
-            //         timer = null
-            //     }
-
-            //     if (selectionDispatch) {
-            //         selectionDispatch({
-            //             'type': 'reset'
-            //         })
-            //     }
-            // })
-
-
-
-            nodeDict[node.id] = node
-
-            return {
-                id: node.id,
-                x: node.x,
-                y: node.y,
-                attributes: node.attributes,
-                hash: node.hash,
-                visualAttributes: node.visualAttributes,
-                gfx: gfx
+            if (timer !== null) {
+                clearTimeout(timer)
+                timer = null
             }
         })
 
+        nodeDict[node.id] = node
 
-    }
-
-    if (edgesShouldUpdate) {
-        renderedEdges = edges.map((edge) => {
-            const gfx = getEdge()
-
-            const source = nodeDict[edge.source]
-
-            const target = nodeDict[edge.target]
-
-
-
-            return {
-                ...edge,
-                sourceNode: source,
-                targetNode: target,
-                gfx: gfx
-            }
-        })
-    }
+        return {
+            id: node.id,
+            x: node.x,
+            y: node.y,
+            attributes: {...node.attributes},
+            hash: node.hash,
+            visualAttributes: {...node.visualAttributes},
+            nodesprite: nodeSprite,
+            textsprite: text
+        }
+    })
 
     if (selectionDispatch) {
         renderBackground(app.stage, selectionDispatch, renderedNodes, selectionDispatch)
     }
+
+    renderedEdges = edges.map((edge) => {
+        const gfx = getSprite('line')
+
+        const source = nodeDict[edge.source]
+
+        const target = nodeDict[edge.target]
+
+        return {
+            ...edge,
+            sourceNode: source,
+            targetNode: target,
+            gfx: gfx
+        }
+    })
+
 
     /* If there are still rendered nodes, only update the positions. */
     if (renderedNodes.length !== 0) {
@@ -926,8 +800,6 @@ export function Renderer({
         setTransformCallback(updateTransform)
 
         window.addEventListener('beforeunload', cleanMemory);
-
-        console.log('Render end')
 
         return {
             destroy: () => {
@@ -940,12 +812,14 @@ export function Renderer({
 
     window.addEventListener('beforeunload', cleanMemory);
 
-    console.log('Render end')
+    app.stage.sortChildren()
+
     return {
         destroy: () => {
-            renderedNodes.forEach((node) => {
-                nodeCache.push(node.gfx)
-            })
+            // TODO REPLACE
+            // renderedNodes.forEach(([node) => {
+            //     nodeCache.push(node.gfx)
+            // })
 
             window.removeEventListener('beforeunload', cleanMemory);
         }

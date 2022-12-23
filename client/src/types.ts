@@ -12,6 +12,7 @@ export module VisGraph {
         | 'square'
         | 'triangle'
         | 'star'
+        | 'line'
 
     export type Colour = [number, number, number]
 
@@ -66,10 +67,12 @@ export module VisGraph {
         id: string,
         attributes: {[id: string]: any},
         visualAttributes: {
-            fillColour: Colour,
+            hue: number,
+            saturation: number,
+            lightness: number,
+            text: string,
             width: number,
             alpha: number,
-            edgeColour: Colour
         }
     }
 
@@ -207,10 +210,14 @@ export module VisGraph {
         y: number,
         attributes: { [id: string] : any},
         visualAttributes: {
-            fillColour: Colour,
+            hue: number,
+            saturation: number,
+            lightness: number,
+            shape: Shape,
+            prevShape: Shape,
             radius: number,
             alpha: number,
-            edgeColour: Colour
+            text: string
         }
     }
 

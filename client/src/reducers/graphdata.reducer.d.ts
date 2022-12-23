@@ -1,70 +1,40 @@
 import { VisGraph } from '../types';
-import { Mappings } from '../mappings/module.mappings';
-export declare type NodeMapping = 'colour' | 'radius' | 'alpha' | 'shape';
-export declare type EdgeMapping = 'colour' | 'width' | 'alpha';
+export type NodeMapping = 'colour' | 'radius' | 'alpha' | 'shape' | 'text';
+export type EdgeMapping = 'colour' | 'width' | 'alpha';
+type MetadataType = {
+    type: 'ordered';
+    dataType: 'number';
+    min: number;
+    max: number;
+    average: number;
+    count: number;
+    frequencies: [string, number][];
+    frequencyDict: {
+        [key: string]: number;
+    };
+} | {
+    type: 'categorical';
+    frequencies: [string, number][];
+    frequencyDict: {
+        [key: string]: number;
+    };
+};
 export interface GraphDataState {
     nodes: {
         data: VisGraph.GraphNode[];
-        mapping: {
-            generators: {
-                'colour': {
-                    attribute: string;
-                    fun: Mappings.MappingFunction;
-                    data: Object;
-                };
-                'radius': {
-                    attribute: string;
-                    fun: Mappings.MappingFunction;
-                    data: Object;
-                };
-                'alpha': {
-                    attribute: string;
-                    fun: Mappings.MappingFunction;
-                    data: Object;
-                };
-                'shape': {
-                    attribute: string;
-                    fun: Mappings.MappingFunction;
-                    data: Object;
-                };
-            };
-            settings: {
-                'colours': VisGraph.Colour[];
-                'minRadius': number;
-                'maxRadius': number;
-            };
+        metadata: {
+            [key: string]: MetadataType;
         };
     };
     edges: {
         data: VisGraph.Edge[];
-        mapping: {
-            generators: {
-                'colour': {
-                    attribute: string;
-                    fun: Mappings.MappingFunction;
-                    data: Object;
-                };
-                'width': {
-                    attribute: string;
-                    fun: Mappings.MappingFunction;
-                    data: Object;
-                };
-                'alpha': {
-                    attribute: string;
-                    fun: Mappings.MappingFunction;
-                    data: Object;
-                };
-            };
-            settings: {
-                'colours': VisGraph.Colour[];
-                'minWidth': number;
-                'maxWidth': number;
-            };
+        metadata: {
+            [key: string]: MetadataType;
         };
     };
     directed: boolean;
 }
-export declare type GraphDataReducerAction = {
+export type GraphDataReducerAction = {
     type: 'set';
     property: 'data';
     value: {
@@ -74,27 +44,8 @@ export declare type GraphDataReducerAction = {
     };
 } | {
     type: 'set';
-    property: 'mapping';
-    object: 'node';
-    map: NodeMapping;
-    fun: Mappings.MappingFunction;
-    key: string;
-} | {
-    type: 'set';
-    property: 'mapping';
-    object: 'edge';
-    map: EdgeMapping;
-    fun: Mappings.MappingFunction;
-    key: string;
-} | {
-    type: 'set';
     property: 'directed';
     value: boolean;
-} | {
-    type: 'updateSetting';
-    object: 'node' | 'edge';
-    attribute: 'colours';
-    value: VisGraph.Colour[];
 } | {
     type: 'update';
     object: 'node' | 'edge';
@@ -106,3 +57,4 @@ export declare type GraphDataReducerAction = {
     };
 };
 export declare function GraphDataReducer(state: GraphDataState, action: GraphDataReducerAction): GraphDataState;
+export {};

@@ -3,6 +3,7 @@ import './home.component.css';
 import { SessionState, SessionReducer } from '../reducers/sessiondata.reducer';
 import { GraphDataReducerAction, GraphDataState } from '../reducers/graphdata.reducer';
 import { SelectionDataReducerAction, SelectionDataState } from '../reducers/selection.reducer';
+import { SelectedMappingsReducerAction, SelectedMappingsState } from '../reducers/selectedmappings.reducer';
 export declare const UserDataContext: React.Context<{
     state: SessionState | null;
     dispatch: React.Dispatch<SessionReducer> | null;
@@ -10,6 +11,10 @@ export declare const UserDataContext: React.Context<{
 export declare const GraphDataContext: React.Context<{
     graphState: GraphDataState | null;
     graphDispatch: React.Dispatch<GraphDataReducerAction> | null;
+}>;
+export declare const MappingSettingsContext: React.Context<{
+    mappingSettingsState: SelectedMappingsState | null;
+    mappingSettingsDispatch: React.Dispatch<SelectedMappingsReducerAction> | null;
 }>;
 export declare const SelectionDataContext: React.Context<{
     selectionState: SelectionDataState | null;

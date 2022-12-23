@@ -3,7 +3,7 @@ export declare module LinearMap {
         min: number;
         max: number;
     };
-    function map(val: any, data: LinearMapData): number;
+    function map(val: number, data: LinearMapData): number;
     function generate(data: number[]): {
         min: number;
         max: number;

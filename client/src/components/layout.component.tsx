@@ -12,8 +12,10 @@ import { VisGraph } from '../types'
 
 import { GraphDataContext } from '../components/main.component'
 import { SelectionDataContext } from "./main.component"
+import { MappingSettingsContext } from '../components/main.component'
 
 import { Mappings } from '../mappings/module.mappings';
+import { MappingType } from '../reducers/selectedmappings.reducer';
 
 /**
  * Generates a gradient value based on given colour gradient.
@@ -58,100 +60,146 @@ function lerp(colour0: VisGraph.Colour, colour1: VisGraph.Colour, value: number)
 export default function Layout() {
     const { graphState } = useContext(GraphDataContext)
     const { selectionState, selectionDispatch } = useContext(SelectionDataContext)
+    const { mappingSettingsState } = useContext(MappingSettingsContext)
 
-    let [animatedNodes, setAnimatedNodes] = useState<VisGraph.GraphNode[]>([])
     const containerRef = useRef(null)
 
     /**
      * Updates the container reference with graph visualization.
      */
     React.useEffect(() => {
-        if (graphState === null) {
+        if (graphState === null || mappingSettingsState === null) {
             return
         }
 
-        console.log(`Layout start`)
-
-        // if (graphState.nodes.data.length !== animatedNodes.length) {
-        //     setAnimatedNodes(graphState.nodes.data)
-
-        //     return
-        // }
-
         let newNodes = [...graphState.nodes.data]
 
-        let animate = true
+        let nodeMetadata = graphState.nodes.metadata
+        let edgeMetadata = graphState.edges.metadata
 
-        const PARAM = 1
-        const CONV_SPEED = 0.2
-
-        // for (let i = 0; i < animatedNodes.length; i++) {
-        //     let dist = Math.sqrt(Math.pow(animatedNodes[i].x - graphState.nodes.data[i].x, 2) + Math.pow(animatedNodes[i].y - graphState.nodes.data[i].y, 2))
-
-        //     if (dist > PARAM) {
-        //         animate = true
-
-        //         newNodes[i].x += (graphState.nodes.data[i].x - animatedNodes[i].x) * CONV_SPEED
-        //         newNodes[i].y += (graphState.nodes.data[i].y - animatedNodes[i].y) * CONV_SPEED
-        //     }
-        // }
-
-        // if (animate) {
-        //     setAnimatedNodes(newNodes)
-        // }
+        let hues = [0, 120, 238]
+        let shapes: VisGraph.Shape[] = ['square', 'triangle', 'star']
 
         let hashedNodes = newNodes.map((node) => {
             node.visualAttributes.alpha = 1
-
-            if (graphState.nodes.mapping.generators.alpha.attribute !== '') {
-                const mappingState = graphState.nodes.mapping.generators.alpha
-
-                const mapFun = Mappings.getMapFunction(mappingState.fun)
-
-                if (mapFun !== null && Object.keys(node.attributes).includes(mappingState.attribute.toString())) {
-                    node.visualAttributes.alpha = mapFun(node.attributes[mappingState.attribute], mappingState.data as any) + 0.1
-                }
-            }
-
+            node.visualAttributes.text = ''
             node.visualAttributes.radius = 16
+            node.visualAttributes.hue = 50
+            node.visualAttributes.prevShape = node.visualAttributes.shape
 
-            if (graphState.nodes.mapping.generators.radius.attribute !== '') {
-                const mappingState = graphState.nodes.mapping.generators.radius
+            node.visualAttributes.lightness = 0.5
+            node.visualAttributes.saturation = 1
 
-                const mapFun = Mappings.getMapFunction(mappingState.fun)
+            mappingSettingsState.forEach((mapping) => {
+                let mapJS = mapping.toJS() as MappingType
 
-                if (mapFun !== null && Object.keys(node.attributes).includes(mappingState.attribute.toString())) {
+                if (mapJS.objectType === 'edge')
+                    return {
+                        ...node,
+                        hash: 'abc'
+                    }
 
-                    const val = mapFun(node.attributes[mappingState.attribute], mappingState.data as any)
-
-                    node.visualAttributes.radius = graphState.nodes.mapping.settings.minRadius + val * graphState.nodes.mapping.settings.maxRadius
+                if (mapJS.mappingName === 'text') {
+                    node.visualAttributes.text = node.attributes[mapJS.attributeName]
                 }
-            }
 
-            if (selectionState?.selectedNodes.length !== 0) {
-                if (selectionState?.selectedNodes.includes(node.id)) {
-                    node.visualAttributes.alpha = 1.0
+                if (mapJS.mappingName === 'alpha') {
+                    console.log(mapJS.attributeName)
+                    let attributeData = nodeMetadata[mapJS.attributeName]
+
+                    if (attributeData.type === 'ordered') {
+                        try {
+                            let val = (node.attributes[mapJS.attributeName] - attributeData.min) / (attributeData.max - attributeData.min)
+                            node.visualAttributes.alpha = val + 0.1
+                        }
+                        catch (e) {
+                            node.visualAttributes.alpha = 0
+                        }
+                    }
                 }
-                else {
-                    node.visualAttributes.alpha = 0.2
+
+                if (mapJS.mappingName === 'saturation') {
+                    let attributeData = nodeMetadata[mapJS.attributeName]
+
+                    if (attributeData.type === 'ordered') {
+                        try {
+                            let val = (node.attributes[mapJS.attributeName] - attributeData.min) / (attributeData.max - attributeData.min)
+                            node.visualAttributes.saturation = val
+                        }
+                        catch (e) {
+                            node.visualAttributes.saturation = 1
+                        }
+                    }
                 }
-            }
 
-            node.visualAttributes.fillColour = [0, 0, 0]
+                if (mapJS.mappingName === 'lightness') {
+                    let attributeData = nodeMetadata[mapJS.attributeName]
 
-            if (graphState.nodes.mapping.generators.colour.attribute !== '') {
-
-
-                const mappingState = graphState.nodes.mapping.generators.colour
-
-                const mapFun = Mappings.getMapFunction(mappingState.fun)
-
-                if (mapFun !== null && Object.keys(node.attributes).includes(mappingState.attribute.toString())) {
-                    let val = mapFun(node.attributes[mappingState.attribute], mappingState.data as any)
-
-                    node.visualAttributes.fillColour = linearGradient(graphState.nodes.mapping.settings.colours, val)
+                    if (attributeData.type === 'ordered') {
+                        try {
+                            let val = (node.attributes[mapJS.attributeName] - attributeData.min) / (attributeData.max - attributeData.min)
+                            node.visualAttributes.lightness = val
+                        }
+                        catch (e) {
+                            node.visualAttributes.lightness = 0.5
+                        }
+                    }
                 }
-            }
+
+                if (mapJS.mappingName === 'radius') {
+                    let attributeData = nodeMetadata[mapJS.attributeName]
+
+                    if (attributeData.type === 'ordered') {
+                        try {
+                            let val = (node.attributes[mapJS.attributeName] - attributeData.min) / (attributeData.max - attributeData.min)
+                            node.visualAttributes.radius = ((val) * 32) + 16
+                        }
+                        catch (e) {
+                            node.visualAttributes.radius = 16
+                        }
+                    }
+                }
+
+                if (mapJS.mappingName === 'hue') {
+                    let attributeData = nodeMetadata[mapJS.attributeName]
+
+                    try {
+                        let index = attributeData.frequencyDict[node.attributes[mapJS.attributeName]]
+
+                        if (index >= hues.length) {
+                            node.visualAttributes.hue = 60
+                        }
+                        else {
+                            node.visualAttributes.hue = hues[index]
+                        }
+                    }
+                    catch (e) {
+                        console.log(e)
+                        node.visualAttributes.hue = 50
+                        }
+                }
+
+                if (mapJS.mappingName === 'shape') {
+                    let attributeData = nodeMetadata[mapJS.attributeName]
+
+                    node.visualAttributes.prevShape = node.visualAttributes.shape
+
+                    try {
+                        let index = attributeData.frequencyDict[node.attributes[mapJS.attributeName]]
+
+                        if (index >= shapes.length) {
+                            node.visualAttributes.shape = 'circle'
+                        }
+                        else {
+                            node.visualAttributes.shape = shapes[index]
+                        }
+                    }
+                    catch (e) {
+                        console.log(e)
+                        node.visualAttributes.shape = 'circle'
+                    }
+                }
+            })
 
             return {
                 ...node,
@@ -176,42 +224,88 @@ export default function Layout() {
                 }
             }
 
-            edge.visualAttributes.fillColour = [0, 0, 0]
-
-            if (graphState.edges.mapping.generators.colour.attribute !== '') {
-                const mappingState = graphState.edges.mapping.generators.colour
-
-                const mapFun = Mappings.getMapFunction(mappingState.fun)
-
-                if (mapFun !== null && Object.keys(edge.attributes).includes(mappingState.attribute.toString())) {
-
-                    edge.visualAttributes.fillColour = [mapFun(edge.attributes[mappingState.attribute], mappingState.data as any), 0, 0]
-                }
-            }
-
-            if (graphState.edges.mapping.generators.alpha.attribute !== '') {
-                const mappingState = graphState.edges.mapping.generators.alpha
-
-                const mapFun = Mappings.getMapFunction(mappingState.fun)
-
-                if (mapFun !== null && Object.keys(edge.attributes).includes(mappingState.attribute.toString())) {
-                    edge.visualAttributes.alpha = mapFun(edge.attributes[mappingState.attribute], mappingState.data as any) + 0.1
-                }
-            }
-
+            edge.visualAttributes.hue = 234
+            edge.visualAttributes.lightness = 0.5
+            edge.visualAttributes.saturation = 1
+            edge.visualAttributes.text = ''
             edge.visualAttributes.width = 2
 
-            if (graphState.edges.mapping.generators.width.attribute !== '') {
-                const mappingState = graphState.edges.mapping.generators.width
+            mappingSettingsState.forEach((mapping) => {
+                let mapJS = mapping.toJS() as MappingType
 
-                const mapFun = Mappings.getMapFunction(mappingState.fun)
+                if (mapJS.objectType === 'node')
+                    return {
+                        ...edge,
+                        hash: 'abc'
+                    }
 
-                if (mapFun !== null && Object.keys(edge.attributes).includes(mappingState.attribute.toString())) {
-                    edge.visualAttributes.width = 2 + mapFun(edge.attributes[mappingState.attribute], mappingState.data as any) * 3
+                if (mapJS.mappingName === 'text') {
+                    edge.visualAttributes.text = edge.attributes[mapJS.attributeName]
                 }
-            }
 
+                if (mapJS.mappingName === 'alpha') {
+                    let attributeData = edgeMetadata[mapJS.attributeName]
 
+                    if (attributeData.type === 'ordered') {
+                        try {
+                            let val = (edge.attributes[mapJS.attributeName] - attributeData.min) / (attributeData.max - attributeData.min)
+                            edge.visualAttributes.alpha = val + 0.1
+                        }
+                        catch (e) {
+                            edge.visualAttributes.alpha = 0
+                        }
+                    }
+                }
+
+                if (mapJS.mappingName === 'saturation') {
+                    let attributeData = edgeMetadata[mapJS.attributeName]
+
+                    if (attributeData.type === 'ordered') {
+                        try {
+                            let val = (edge.attributes[mapJS.attributeName] - attributeData.min) / (attributeData.max - attributeData.min)
+                            edge.visualAttributes.saturation = val
+                        }
+                        catch (e) {
+                            edge.visualAttributes.saturation = 1
+                        }
+                    }
+                }
+
+                if (mapJS.mappingName === 'lightness') {
+                    let attributeData = edgeMetadata[mapJS.attributeName]
+
+                    if (attributeData.type === 'ordered') {
+                        try {
+                            let val = (edge.attributes[mapJS.attributeName] - attributeData.min) / (attributeData.max - attributeData.min)
+                            edge.visualAttributes.lightness = val
+                        }
+                        catch (e) {
+                            edge.visualAttributes.lightness = 0.5
+                        }
+                    }
+                }
+
+                if (mapJS.mappingName === 'hue') {
+                    let attributeData = edgeMetadata[mapJS.attributeName]
+
+                    if (attributeData.type === 'categorical') {
+                        try {
+                            let index = attributeData.frequencyDict[edge.attributes[mapJS.attributeName]]
+
+                            if (index >= hues.length) {
+                                edge.visualAttributes.hue = hues[hues.length - 1]
+                            }
+                            else {
+                                edge.visualAttributes.hue = hues[index]
+                            }
+                        }
+                        catch (e) {
+                            console.log(e)
+                            edge.visualAttributes.hue = 50
+                        }
+                    }
+                }
+            })
 
             return {
                 ...edge,
@@ -219,8 +313,6 @@ export default function Layout() {
                 hash: 'abc'
             }
         })
-
-        console.log(`layout end`)
 
         const { destroy } = Renderer({
             container: containerRef.current!,
@@ -232,9 +324,9 @@ export default function Layout() {
 
         return destroy
     }, [graphState,
-        animatedNodes,
         selectionDispatch,
-        selectionState])
+        selectionState,
+        mappingSettingsState])
 
     return <div ref={containerRef} className="render" />
 }

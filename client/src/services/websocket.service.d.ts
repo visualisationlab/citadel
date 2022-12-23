@@ -1,4 +1,4 @@
-export declare type LayoutSetting = {
+export type LayoutSetting = {
     name: string;
     description: string;
     type: 'number';
@@ -15,7 +15,7 @@ export interface LayoutInfo {
     link: string;
     settings: LayoutSetting[];
 }
-declare type Simulator = {
+type Simulator = {
     readonly apikey: string | null;
     readonly userID: string;
     socket: WebSocket;
@@ -62,7 +62,7 @@ export declare module MessageTypes {
         };
     }
     export type GetType = 'graphState' | 'sessionState' | 'layouts' | 'apiKey' | 'QR';
-    export type SetType = 'graphState' | 'simulator' | 'simulatorInstance' | 'playstate' | 'layout' | 'username' | 'graphIndex' | 'headset' | 'windowSize' | 'pan';
+    export type SetType = 'graphState' | 'simulator' | 'simulatorInstance' | 'playstate' | 'layout' | 'username' | 'graphIndex' | 'headset' | 'windowSize' | 'pan' | 'validate';
     export interface GetMessage extends InMessage {
         messageSource: 'user';
         messageType: 'get';

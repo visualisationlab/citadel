@@ -55,6 +55,8 @@ type Simulator = {
     readonly userID: string,
     socket: WebSocket | null,
     params: SimulatorParam[],
+    validator: boolean,
+    valid: 'valid' | 'invalid' | 'unknown',
     title: string,
     state: 'disconnected' | 'idle' | 'generating' | 'connecting'
 }
@@ -75,6 +77,7 @@ export module MessageTypes {
         data?: any
         dataType?: any
         title?: string
+        validator?: boolean
     }
 
     export interface RegisterSimulatorMessage extends InMessage {
@@ -178,6 +181,7 @@ export module MessageTypes {
         userID: string,
         type: 'session',
         data: {
+            currentLayout: AvailableLayout | null,
             url: string,
             sessionURL: string,
             graphIndex: number,
@@ -266,8 +270,9 @@ export interface LayoutInfo {
 }
 
 type LayoutSettings = {
-    name: string,
-    settings: {[key: string]: number | boolean}
+    name: AvailableLayout,
+    randomize: boolean,
+    settings: {name: string, value: number | boolean}[]
 }
 
 /* Returns layout information to be sent to client. */
@@ -300,13 +305,13 @@ function getAvailableLayouts(): LayoutInfo[] {
                     name: 'rows',
                     description: 'Force number of rows in the grid.',
                     type: 'number',
-                    defaultValue: 0,
+                    defaultValue: 1,
                 },
                 {
                     name: 'cols',
                     description: 'Force number of columns in the grid.',
                     type: 'number',
-                    defaultValue: 0,
+                    defaultValue: 1,
                 }
             ]
         },
@@ -390,6 +395,18 @@ function getAvailableLayouts(): LayoutInfo[] {
                     defaultValue: 3.8
                 },
                 {
+                    name: 'idealEdgeLength',
+                    description: 'Ideal (intra-graph) edge length.',
+                    type: 'number',
+                    defaultValue: 50,
+                },
+                {
+                    name: 'edgeElasticity',
+                    description: 'Divisor to compute edge forces.',
+                    type: 'number',
+                    defaultValue: 0.45,
+                },
+                {
                     name: 'nestingFactor',
                     description: 'Nesting factor (multiplier) to compute ideal edge length for nested edges.',
                     type: 'number',
@@ -400,6 +417,12 @@ function getAvailableLayouts(): LayoutInfo[] {
                     description: 'Number of iterations.',
                     type: 'number',
                     defaultValue: 2500
+                },
+                {
+                    name: 'nodeRepulsion',
+                    description: 'Node repulsion (overlapping) multiplier.',
+                    type: 'number',
+                    defaultValue: 4500
                 }
             ]
         },
@@ -408,12 +431,7 @@ function getAvailableLayouts(): LayoutInfo[] {
             description: 'The cola layout uses a force-directed physics simulation with several sophisticated constraints.',
             link: 'https://github.com/cytoscape/cytoscape.js-cola',
             settings: [
-                {
-                    name: 'randomize',
-                    description: 'Randomizes initial node positions.',
-                    type: 'boolean',
-                    defaultValue: true
-                },
+
                 {
                     name: 'convergenceThreshold',
                     description: 'when the alpha value (system energy) falls below this value, the layout stops.',
@@ -487,12 +505,14 @@ export class Session {
     }
 
     /* Stores graph slices for timeline. */
-    private graphHistory: string[]
+    private graphHistory: [string, AvailableLayout | null][]
     private graphIndex = 0
 
     private logger: Logger
 
     private playmode: boolean
+
+    private currentLayout: AvailableLayout | null
 
     constructor(sid: string,
                 destroyFun: (sid: string) => void,
@@ -520,7 +540,7 @@ export class Session {
         const data = this.parseJson(nodes, edges)
 
         /* Compress graph state and store it. */
-        this.graphHistory = [gzipSync(JSON.stringify(data)).toString('base64')]
+        this.graphHistory = [[gzipSync(JSON.stringify(data)).toString('base64'), null]]
 
         /* Startup cytoscape session. */
         this.cy = cytoscape({
@@ -543,11 +563,26 @@ export class Session {
         })
 
         this.playmode = false
+
+        this.currentLayout = null
     }
 
     /* Sets session state. */
     private setState(state: SessionState) {
         this.sessionState = state
+
+        this.sendSessionState()
+    }
+
+    /* Updates graph state and sends it to all users. */
+    private changeGraphState(data: object) {
+        this.cy.json(data)
+
+        // TODO: Implement validation of graph state.
+        this.simulators.forEach((sim) => {
+                sim.valid = 'unknown'
+            }
+        )
 
         this.sendSessionState()
     }
@@ -563,14 +598,14 @@ export class Session {
                 return
             }
 
-            this.graphHistory[this.graphIndex] = buffer.toString('base64')
+            this.graphHistory[this.graphIndex] = [buffer.toString('base64'), this.currentLayout]
 
             resolve('')
         })})
     }
 
     /* Adds new slice at end of graph timeline. Takes stringified JSON as input.*/
-    private async appendGraphState(data: string) {
+    private async appendGraphState(data: string, layout: AvailableLayout | null) {
         return new Promise((resolve) => {gzip(data, (err, buffer) => {
             if (err) {
                 this.logger.log('error', `Error while zipping current instance: ${err.message}`)
@@ -578,7 +613,7 @@ export class Session {
                 return
             }
 
-            this.graphHistory.push(buffer.toString('base64'))
+            this.graphHistory.push([buffer.toString('base64'), layout])
 
             resolve('')
         })})
@@ -590,12 +625,11 @@ export class Session {
         })
 
         await this.loadGraphState(index + 1)
-
     }
 
     /* Load slice into timeline at index. */
     private async loadGraphState(index: number) {
-        return new Promise((resolve) => {gunzip(Buffer.from(this.graphHistory[index], 'base64'), (err, buffer) => {
+        return new Promise((resolve) => {gunzip(Buffer.from(this.graphHistory[index][0], 'base64'), (err, [buffer]) => {
             if (err) {
                 console.log(`Error while zipping current instance: ${err.message}`)
                 resolve('Error')
@@ -607,7 +641,9 @@ export class Session {
             // Reset graph state.
             this.cy.elements().remove()
 
-            this.cy.json(this.parseJson(data.elements.nodes, data.elements.edges))
+            this.currentLayout = this.graphHistory[index][1]
+
+            this.changeGraphState(this.parseJson(data.elements.nodes, data.elements.edges))
 
             this.graphIndex = index
 
@@ -650,6 +686,7 @@ export class Session {
                         })
 
                         sim.title = message.title!
+                        sim.validator = message.validator!
                         sim.params = JSON.parse(message.data)
                         sim.state = 'idle'
                     }
@@ -672,10 +709,10 @@ export class Session {
                     const data = this.parseJson(msg.params.nodes, msg.params.edges)
 
                     // Append new slice.
-                    this.appendGraphState(JSON.stringify(data)).then(() => {
+                    this.appendGraphState(JSON.stringify(data), this.currentLayout).then(() => {
                         this.graphIndex = this.graphHistory.length - 1
 
-                        this.cy.json(data)
+                        this.changeGraphState(data)
 
                         // Update sim state.
                         this.simState = {
@@ -813,6 +850,8 @@ export class Session {
                     socket: null,
                     params: [],
                     title: '',
+                    validator: true,
+                    valid: 'unknown',
                     state: 'disconnected'
                 })
 
@@ -847,7 +886,7 @@ export class Session {
                 break
             case 'graphState':
                 // Update server graph state.
-                this.cy.json(this.parseJson(message.params.nodes, message.params.edges))
+                this.changeGraphState(this.parseJson(message.params.nodes, message.params.edges))
 
                 resolve(() => {
                     this.sendGraphState()
@@ -958,14 +997,17 @@ export class Session {
             worker.postMessage({
                 graphData: this.cy.json(),
                 settings: settings,
-                width: 3000,
-                height: 3000
+                randomize: settings.randomize,
+                width: 5000,
+                height: 5000
             })
 
             worker.on('message', (result) => {
                 ac.abort()
 
-                this.cy.json(result)
+                this.currentLayout = settings.name
+
+                this.changeGraphState(result)
 
                 layoutResolve('')
             })
@@ -1170,6 +1212,7 @@ export class Session {
                 userID: user.userID,
                 type: 'session',
                 data: {
+                    currentLayout: this.currentLayout,
                     url: this.sourceURL,
                     users: this.users.map((user) => {
                         return {

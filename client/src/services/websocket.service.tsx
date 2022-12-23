@@ -71,7 +71,7 @@ export module MessageTypes {
 
     export type GetType = 'graphState' | 'sessionState' | 'layouts' | 'apiKey' | 'QR'
     export type SetType = 'graphState' | 'simulator' | 'simulatorInstance' | 'playstate'
-        | 'layout' | 'username' | 'graphIndex' | 'headset' | 'windowSize' | 'pan'
+        | 'layout' | 'username' | 'graphIndex' | 'headset' | 'windowSize' | 'pan' | 'validate'
 
     export interface GetMessage extends InMessage {
         messageSource: 'user'

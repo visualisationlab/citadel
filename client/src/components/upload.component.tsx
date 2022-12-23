@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useHistory } from 'react-router-dom'
-import { Form, Button, Container, Row, Col, Table } from 'react-bootstrap'
+import { Form, Button, Container, Row, Col, Table, Spinner } from 'react-bootstrap'
 import { userService } from '../services/user.service';
 
 import './home.component.css'
@@ -8,6 +8,7 @@ import './home.component.css'
 export default function Home() {
     const [url, setURL] = useState('')
     const [errors, setErrors] = useState<[string, string][]>([])
+    const [loading, setLoading] = useState<boolean>(false)
 
     let history = useHistory();
 
@@ -16,19 +17,27 @@ export default function Home() {
     }
 
     function startSession(url: string) {
+        setErrors([])
+
+        setLoading(true)
+
         userService.genSession(url).then(
             response => {
+                setLoading(false)
                 history.push(`/sessions/${response.data}`)
             },
             error => {
+                setLoading(false)
+                console.log(error.response)
                 if (error.response.status === 404) {
                     setErrors([["server", "Couldn't fetch data from remote"]])
                 }
                 if (error.response.status === 400) {
                     console.log("setting errors")
-                    setErrors(error.response.data.errors.map((val: {message: string, property: string}) => {
+
+                    setErrors(error.response.data.errors.length !== 0 ? error.response.data.errors.map((val: {message: string, property: string}) => {
                         return [val.property, val.message]
-                    }))
+                    }) : [["server", error.response.data.msg]])
                 }
                 console.log(error.response.data)
             }
@@ -61,7 +70,7 @@ export default function Home() {
                     <tbody>
                         {errors.map((val, index) => {
                             return (
-                                <tr>
+                                <tr key='val'>
                                     <td>{index}</td>
                                     <td>{val[0]}</td>
                                     <td>{val[1]}</td>
@@ -74,6 +83,17 @@ export default function Home() {
         </Row>
     )
 
+    let but = !loading ? (
+        <Button variant='primary'
+                type='submit'
+                onClick={() => startSession(url)}
+                disabled={url === ''}>
+            Start session
+        </Button>
+    ) : (
+        <Spinner animation='border'></Spinner>
+    )
+
     return (
         <>
             <Container className="shadow p-3 bg-white rounded" style={{ width: '50%', marginTop: '30px' }}>
@@ -82,7 +102,7 @@ export default function Home() {
                         <img width='100%' src="https://chimay.science.uva.nl:8061/VisLablogo-cropped-notitle.svg" className="custom-logo" alt="Visualisation Lab"></img>
                     </Col>
                     <Col md={{span: 10}}>
-                        <h1>Metagraph</h1>
+                        <h1>Citadel</h1>
                         <p className='text-secondary'> Graph Visualisation Software. Create a new session or join an existing one below.</p>
 
                     </Col>
@@ -111,12 +131,8 @@ export default function Home() {
                                 marginTop: '10px'
                             }}>
                             <Col md={{span: 4}}>
-                                <Button variant='primary'
-                                        type='submit'
-                                        onClick={() => startSession(url)}
-                                        disabled={url === ''}>
-                                    Start session
-                                </Button>
+
+                                {but}
                             </Col>
                         </Row>
                         {errorText}

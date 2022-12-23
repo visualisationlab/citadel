@@ -1,47 +1,35 @@
 import { VisGraph } from '../types'
 
-import { Mappings } from '../mappings/module.mappings'
-
 import { API } from '../services/api.service'
 
-export type NodeMapping = 'colour' | 'radius' | 'alpha' | 'shape'
+export type NodeMapping = 'colour' | 'radius' | 'alpha' | 'shape' | 'text'
 export type EdgeMapping = 'colour' | 'width' | 'alpha'
+
+type MetadataType = {
+    type: 'ordered'
+    dataType: 'number'
+    min: number
+    max: number
+    average: number
+    count: number
+    frequencies: [string, number][]
+    frequencyDict: {[key: string]: number}
+} | {
+    type: 'categorical'
+    frequencies: [string, number][]
+    frequencyDict: {[key: string]: number}
+}
 
 export interface GraphDataState {
     nodes: {
         data: VisGraph.GraphNode[]
-
-        mapping: {
-            generators: {
-                'colour': {attribute: string, fun: Mappings.MappingFunction, data: Object}
-                'radius': {attribute: string, fun: Mappings.MappingFunction, data: Object}
-                'alpha': {attribute: string, fun: Mappings.MappingFunction, data: Object}
-                'shape': {attribute: string, fun: Mappings.MappingFunction, data: Object}
-            }
-
-            settings: {
-                'colours': VisGraph.Colour[]
-                'minRadius': number
-                'maxRadius': number
-            }
-        }
+        metadata: {[key: string]: MetadataType}
     },
     edges: {
         data: VisGraph.Edge[],
-        mapping: {
-            generators: {
-                'colour': {attribute: string, fun: Mappings.MappingFunction, data: Object}
-                'width': {attribute: string, fun: Mappings.MappingFunction, data: Object}
-                'alpha': {attribute: string, fun: Mappings.MappingFunction, data: Object}
-            }
-
-            settings: {
-                'colours': VisGraph.Colour[]
-                'minWidth': number
-                'maxWidth': number
-            }
-        }
+        metadata: {[key: string]: MetadataType}
     }
+
     directed: boolean
 }
 
@@ -51,82 +39,11 @@ export type GraphDataReducerAction =
         edges: VisGraph.Edge[]
         directed: boolean
     }}
-    | { type: 'set', property: 'mapping', object: 'node', map: NodeMapping, fun: Mappings.MappingFunction, key: string }
-    | { type: 'set', property: 'mapping', object: 'edge', map: EdgeMapping, fun: Mappings.MappingFunction, key: string }
     | { type: 'set', property: 'directed', value: boolean}
-    | { type: 'updateSetting', object: 'node' | 'edge', attribute: 'colours', value: VisGraph.Colour[]}
     | { type: 'update', object: 'node' | 'edge', value: {
         id: string,
         attributes: {[key: string]: string}
     } }
-
-function updateNodeMapping(state: GraphDataState): GraphDataState {
-    console.log('Updating node mapping')
-    Object.keys(state.nodes.mapping.generators).forEach((key) => {
-        const mapping = state.nodes.mapping.generators[key as keyof typeof state.nodes.mapping.generators]
-
-        if (mapping.attribute === '') {
-            return state
-        }
-
-        const dataFun = Mappings.getDataFunction(mapping.fun)
-
-        if (dataFun == null) {
-            return state
-        }
-
-        const data = state.nodes.data.filter((item) => {
-            return Object.keys(item.attributes).includes(mapping.attribute)
-        }).map((item) => {
-            return item.attributes[mapping.attribute]
-        })
-
-        try {
-            const res = dataFun(data)
-
-            state.nodes.mapping.generators[key as keyof typeof state.nodes.mapping.generators].data = res
-        } catch (e) {
-            console.log(`Error! ${e}`)
-        }
-    })
-
-    console.log('Done node mapping')
-
-    return {...state}
-}
-
-function updateEdgeMapping(state: GraphDataState): GraphDataState {
-    Object.keys(state.edges.mapping.generators).forEach((key) => {
-        const mapping = state.edges.mapping.generators[key as keyof typeof state.edges.mapping.generators]
-
-        if (mapping.attribute === '') {
-            return state
-        }
-
-        const dataFun = Mappings.getDataFunction(mapping.fun)
-
-        if (dataFun == null) {
-            return state
-        }
-
-        const data = state.edges.data.filter((item) => {
-            return Object.keys(item.attributes).includes(mapping.attribute)
-        }).map((item) => {
-            return item.attributes[mapping.attribute]
-        })
-
-        try {
-            const res = dataFun(data)
-
-            console.log(res)
-            state.edges.mapping.generators[key as keyof typeof state.edges.mapping.generators].data = res
-        } catch (e) {
-            console.log(`Error! ${e}`)
-        }
-    })
-
-    return {...state}
-}
 
 function updateData(state: GraphDataState, action: GraphDataReducerAction): GraphDataState {
     if (action.type !== 'update') {
@@ -162,10 +79,86 @@ function updateData(state: GraphDataState, action: GraphDataReducerAction): Grap
 
             API.updateGraph(state)
 
-            return {...updateNodeMapping(state)}
+            return {...state}
     }
 
     return state
+}
+
+function calculateMetadata(data: VisGraph.GraphNode[] | VisGraph.Edge[])
+    : {[key: string]: MetadataType} {
+
+    let nodeMetadata: {[key: string]: MetadataType} = {}
+
+    for (const node of data) {
+        for (const attribute of Object.keys(node.attributes)) {
+            let metadata = nodeMetadata[attribute]
+
+            if (metadata === undefined) {
+                nodeMetadata[attribute] = {
+                    type: 'ordered',
+                    frequencies: [],
+                    dataType: 'number',
+                    min: Number.MAX_VALUE,
+                    max: Number.MIN_VALUE,
+                    count: 0,
+                    average: 0,
+                    frequencyDict: {}
+                }
+
+                metadata = nodeMetadata[attribute]
+            }
+
+            const value = node.attributes[attribute]
+
+            if (metadata.type === 'ordered' && isNaN(Number(value))) {
+                nodeMetadata[attribute].type = 'categorical'
+            }
+
+            if (metadata.type === 'ordered') {
+                const numValue = Number(value)
+
+                nodeMetadata[attribute].type = 'ordered'
+
+                // @ts-ignore
+                nodeMetadata[attribute].min = Math.min(nodeMetadata[attribute].min, numValue)
+                // @ts-ignore
+                nodeMetadata[attribute].max = Math.max(nodeMetadata[attribute].max, numValue)
+
+                // @ts-ignore
+                nodeMetadata[attribute].average += numValue
+                // @ts-ignore
+                nodeMetadata[attribute].count += 1
+            }
+
+            const index = metadata.frequencies.findIndex((f) => {return f[0] === value})
+
+            if (index === -1) {
+                metadata.frequencies.push([value, 1])
+            } else {
+                metadata.frequencies[index][1] += 1
+            }
+        }
+    }
+
+    for (const attribute of Object.keys(nodeMetadata)) {
+        if (nodeMetadata[attribute].type === 'ordered') {
+            // @ts-ignore
+            nodeMetadata[attribute].average /= nodeMetadata[attribute].count
+        }
+        // sort frequencies
+        nodeMetadata[attribute].frequencies.sort((a, b) => {return b[1] - a[1]})
+
+        // create frequency dict
+        nodeMetadata[attribute].frequencyDict = {}
+
+        nodeMetadata[attribute].frequencies.forEach((freq, i) => {
+            nodeMetadata[attribute].frequencyDict[freq[0]] = i
+        })
+    }
+
+    console.log(nodeMetadata)
+    return nodeMetadata
 }
 
 function setData(state: GraphDataState, action: GraphDataReducerAction): GraphDataState {
@@ -181,55 +174,37 @@ function setData(state: GraphDataState, action: GraphDataReducerAction): GraphDa
 
             state.directed = action.value.directed
 
-            state = {...updateEdgeMapping(state)}
-
-            return {...updateNodeMapping(state)}
+            return {...state}
         case 'directed':
 
             state.directed = action.value
-
-            return {...state}
-
-        case 'mapping':
-            switch (action.object) {
-                case 'node':
-                    state.nodes.mapping.generators[action.map as keyof typeof state.nodes.mapping.generators].attribute = action.key
-                    state.nodes.mapping.generators[action.map as keyof typeof state.nodes.mapping.generators].fun = 'linearmap'
-
-                    return {...updateNodeMapping(state)}
-                case 'edge':
-                    state.edges.mapping.generators[action.map as keyof typeof state.edges.mapping.generators].attribute = action.key
-                    state.edges.mapping.generators[action.map as keyof typeof state.edges.mapping.generators].fun = 'linearmap'
-
-                    return {...updateEdgeMapping(state)}
-            }
-    }
-}
-
-function updateSetting(state: GraphDataState, action: GraphDataReducerAction): GraphDataState {
-    if (action.type !== 'updateSetting') {
-        return state
-    }
-
-    switch (action.object) {
-        case 'node':
-            state.nodes.mapping.settings.colours = action.value
-
-            return {...state}
-        case 'edge':
-            state.edges.mapping.settings.colours = action.value
 
             return {...state}
     }
 }
 
 export function GraphDataReducer(state: GraphDataState, action: GraphDataReducerAction): GraphDataState {
+    var newState
     switch (action.type) {
         case 'set':
-            return setData(state, action)
+            newState = setData(state, action)
+
+            return {...newState,
+                nodes: {...newState.nodes,
+                    metadata: calculateMetadata(newState.nodes.data)
+                },
+                edges: {...newState.edges,
+                    metadata: calculateMetadata(newState.edges.data)
+                }}
         case 'update':
-            return updateData(state, action)
-        case 'updateSetting':
-            return updateSetting(state, action)
+            newState = updateData(state, action)
+
+            return {...newState,
+                nodes: {...newState.nodes,
+                    metadata: calculateMetadata(newState.nodes.data)
+                },
+                edges: {...newState.edges,
+                    metadata: calculateMetadata(newState.edges.data)
+                }}
     }
 }

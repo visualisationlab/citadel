@@ -157,6 +157,26 @@ function renderSimulatorSettings(key: string, params: SimulatorParam[], setSimOp
     )
 }
 
+function renderValidateButton(simKey: string | null, validated: 'valid' | 'unknown' | 'invalid') {
+    if (validated === 'valid') {
+        return (
+            <Button variant='success' disabled>Valid</Button>
+        )
+    }
+
+    if (validated === 'invalid') {
+        return (
+            <Button variant='error' disabled>Invalid</Button>
+        )
+    }
+
+    <Button variant='outline-primary' onClick={() => {
+        if ((simKey) !== null && simKey !== '') {
+            API.validate(simKey)
+        }
+    }}>Validate</Button>
+}
+
 export function SimulatorTab() {
     const { state,  } = useContext(UserDataContext)
 
@@ -209,7 +229,10 @@ export function SimulatorTab() {
                         }
                     </Col>
                     <Col md={{span: 2}}>
-                        {sim.username}
+                        {((sim.username !== null && sim.username !== '') || !sim.validator) ? sim.username : (
+
+                                renderValidateButton(sim.key, sim.valid)
+                        )}
                     </Col>
                     <Col md={{span: 2}}>
                         {sim.key}

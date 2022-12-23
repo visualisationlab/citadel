@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@storybook/react": "^6.5.9",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "axios": "^0.26.1",
@@ -17,7 +16,7 @@
     "mathjs": "^10.6.4",
     "msgpackr": "^1.6.2",
     "object-hash": "^3.0.0",
-    "pixi.js": "^6.3.1",
+    "pixi.js": "^5.3.12",
     "qrcode": "^1.5.1",
     "queue": "^6.0.2",
     "react": "^18",
@@ -43,8 +42,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "storybook": "start-storybook -p 6006 -s public",
-    "build-storybook": "build-storybook -s public"
+    "prod": "serve -s build --ssl-cert \"../certs/dev.visgraph.pem\" --ssl-key \"../certs/dev.visgraph-key.pem\""
   },
   "eslintConfig": {
     "extends": [
@@ -75,15 +73,8 @@
     ]
   },
   "devDependencies": {
-    "@storybook/addon-actions": "^6.5.9",
-    "@storybook/addon-essentials": "^6.5.9",
-    "@storybook/addon-interactions": "^6.5.9",
-    "@storybook/addon-links": "^6.5.9",
-    "@storybook/builder-webpack5": "^6.5.9",
-    "@storybook/manager-webpack5": "^6.5.9",
-    "@storybook/node-logger": "^6.5.9",
-    "@storybook/preset-create-react-app": "^4.1.2",
-    "@storybook/testing-library": "^0.0.13",
+    "@babel/core": "^7.20.5",
+    "@babel/preset-env": "^7.20.2",
     "@types/cytoscape": "^3.19.4",
     "@types/d3": "^7.1.0",
     "@types/deep-equal": "^1.0.1",
@@ -92,9 +83,10 @@
     "@types/qrcode": "^1.5.0",
     "@types/react-router-dom": "^5.3.3",
     "@types/tinycolor2": "^1.4.3",
+    "babel-loader": "^9.1.0",
     "babel-plugin-named-exports-order": "^0.0.2",
     "prop-types": "^15.8.1",
-    "webpack": "^5.73.0"
+    "webpack": "^5.75.0"
   },
   "overrides": {
     "react-refresh": "0.11.0"

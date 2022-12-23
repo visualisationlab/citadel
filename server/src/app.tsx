@@ -347,6 +347,9 @@ app.post('/urls', body('url').trim().unescape(),  (req, res) => {
 
                         } catch (e) {
                             logger.log('error', `Error parsing graph from URL ${url}: ${e}`)
+
+                            res.status(400).json({msg: "Error(s) loading graph (source was probably not a graph!)", errors: []})
+
                             rm(dest, () => {})
 
                             sid = ''
@@ -359,7 +362,7 @@ app.post('/urls', body('url').trim().unescape(),  (req, res) => {
                 }).on('error', (err) => {
                     logger.log('error', `Error downloading graph from URL ${url}: ${err}`)
 
-                    res.status(404).json("Error downloading graph data")
+                    res.status(404).json({msg: "Error downloading graph data", errors: []})
                     unlink(dest, (err) => {
                         if (err === null) {
                             return
@@ -368,7 +371,7 @@ app.post('/urls', body('url').trim().unescape(),  (req, res) => {
                 })
             } catch (e) {
                 logger.log('error', `Error downloading graph from URL ${url}: ${e}`)
-                res.status(404).json("Error downloading graph data")
+                res.status(404).json({msg: "Error downloading graph data", errors: []})
                 unlink(dest, (err) => {
                     if (err === null) {
                         return

@@ -1,58 +1,4 @@
-import { Mappings } from '../mappings/module.mappings';
 import { API } from '../services/api.service';
-function updateNodeMapping(state) {
-    console.log('Updating node mapping');
-    Object.keys(state.nodes.mapping.generators).forEach((key) => {
-        const mapping = state.nodes.mapping.generators[key];
-        if (mapping.attribute === '') {
-            return state;
-        }
-        const dataFun = Mappings.getDataFunction(mapping.fun);
-        if (dataFun == null) {
-            return state;
-        }
-        const data = state.nodes.data.filter((item) => {
-            return Object.keys(item.attributes).includes(mapping.attribute);
-        }).map((item) => {
-            return item.attributes[mapping.attribute];
-        });
-        try {
-            const res = dataFun(data);
-            state.nodes.mapping.generators[key].data = res;
-        }
-        catch (e) {
-            console.log(`Error! ${e}`);
-        }
-    });
-    console.log('Done node mapping');
-    return Object.assign({}, state);
-}
-function updateEdgeMapping(state) {
-    Object.keys(state.edges.mapping.generators).forEach((key) => {
-        const mapping = state.edges.mapping.generators[key];
-        if (mapping.attribute === '') {
-            return state;
-        }
-        const dataFun = Mappings.getDataFunction(mapping.fun);
-        if (dataFun == null) {
-            return state;
-        }
-        const data = state.edges.data.filter((item) => {
-            return Object.keys(item.attributes).includes(mapping.attribute);
-        }).map((item) => {
-            return item.attributes[mapping.attribute];
-        });
-        try {
-            const res = dataFun(data);
-            console.log(res);
-            state.edges.mapping.generators[key].data = res;
-        }
-        catch (e) {
-            console.log(`Error! ${e}`);
-        }
-    });
-    return Object.assign({}, state);
-}
 function updateData(state, action) {
     if (action.type !== 'update') {
         return state;
@@ -76,9 +22,68 @@ function updateData(state, action) {
             });
             state.nodes.data = newNodes;
             API.updateGraph(state);
-            return Object.assign({}, updateNodeMapping(state));
+            return Object.assign({}, state);
     }
     return state;
+}
+function calculateMetadata(data) {
+    let nodeMetadata = {};
+    for (const node of data) {
+        for (const attribute of Object.keys(node.attributes)) {
+            let metadata = nodeMetadata[attribute];
+            if (metadata === undefined) {
+                nodeMetadata[attribute] = {
+                    type: 'ordered',
+                    frequencies: [],
+                    dataType: 'number',
+                    min: Number.MAX_VALUE,
+                    max: Number.MIN_VALUE,
+                    count: 0,
+                    average: 0,
+                    frequencyDict: {}
+                };
+                metadata = nodeMetadata[attribute];
+            }
+            const value = node.attributes[attribute];
+            if (metadata.type === 'ordered' && isNaN(Number(value))) {
+                nodeMetadata[attribute].type = 'categorical';
+            }
+            if (metadata.type === 'ordered') {
+                const numValue = Number(value);
+                nodeMetadata[attribute].type = 'ordered';
+                // @ts-ignore
+                nodeMetadata[attribute].min = Math.min(nodeMetadata[attribute].min, numValue);
+                // @ts-ignore
+                nodeMetadata[attribute].max = Math.max(nodeMetadata[attribute].max, numValue);
+                // @ts-ignore
+                nodeMetadata[attribute].average += numValue;
+                // @ts-ignore
+                nodeMetadata[attribute].count += 1;
+            }
+            const index = metadata.frequencies.findIndex((f) => { return f[0] === value; });
+            if (index === -1) {
+                metadata.frequencies.push([value, 1]);
+            }
+            else {
+                metadata.frequencies[index][1] += 1;
+            }
+        }
+    }
+    for (const attribute of Object.keys(nodeMetadata)) {
+        if (nodeMetadata[attribute].type === 'ordered') {
+            // @ts-ignore
+            nodeMetadata[attribute].average /= nodeMetadata[attribute].count;
+        }
+        // sort frequencies
+        nodeMetadata[attribute].frequencies.sort((a, b) => { return b[1] - a[1]; });
+        // create frequency dict
+        nodeMetadata[attribute].frequencyDict = {};
+        nodeMetadata[attribute].frequencies.forEach((freq, i) => {
+            nodeMetadata[attribute].frequencyDict[freq[0]] = i;
+        });
+    }
+    console.log(nodeMetadata);
+    return nodeMetadata;
 }
 function setData(state, action) {
     if (action.type !== 'set') {
@@ -89,44 +94,20 @@ function setData(state, action) {
             state.edges.data = action.value.edges;
             state.nodes.data = action.value.nodes;
             state.directed = action.value.directed;
-            state = Object.assign({}, updateEdgeMapping(state));
-            return Object.assign({}, updateNodeMapping(state));
+            return Object.assign({}, state);
         case 'directed':
             state.directed = action.value;
-            return Object.assign({}, state);
-        case 'mapping':
-            switch (action.object) {
-                case 'node':
-                    state.nodes.mapping.generators[action.map].attribute = action.key;
-                    state.nodes.mapping.generators[action.map].fun = 'linearmap';
-                    return Object.assign({}, updateNodeMapping(state));
-                case 'edge':
-                    state.edges.mapping.generators[action.map].attribute = action.key;
-                    state.edges.mapping.generators[action.map].fun = 'linearmap';
-                    return Object.assign({}, updateEdgeMapping(state));
-            }
-    }
-}
-function updateSetting(state, action) {
-    if (action.type !== 'updateSetting') {
-        return state;
-    }
-    switch (action.object) {
-        case 'node':
-            state.nodes.mapping.settings.colours = action.value;
-            return Object.assign({}, state);
-        case 'edge':
-            state.edges.mapping.settings.colours = action.value;
             return Object.assign({}, state);
     }
 }
 export function GraphDataReducer(state, action) {
+    var newState;
     switch (action.type) {
         case 'set':
-            return setData(state, action);
+            newState = setData(state, action);
+            return Object.assign(Object.assign({}, newState), { nodes: Object.assign(Object.assign({}, newState.nodes), { metadata: calculateMetadata(newState.nodes.data) }), edges: Object.assign(Object.assign({}, newState.edges), { metadata: calculateMetadata(newState.edges.data) }) });
         case 'update':
-            return updateData(state, action);
-        case 'updateSetting':
-            return updateSetting(state, action);
+            newState = updateData(state, action);
+            return Object.assign(Object.assign({}, newState), { nodes: Object.assign(Object.assign({}, newState.nodes), { metadata: calculateMetadata(newState.nodes.data) }), edges: Object.assign(Object.assign({}, newState.edges), { metadata: calculateMetadata(newState.edges.data) }) });
     }
 }

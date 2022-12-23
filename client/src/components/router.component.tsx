@@ -37,8 +37,6 @@ export module Router {
                     edges: VisGraph.CytoEdge[] | undefined
                 } = (message as any).data
 
-                console.log(messageData)
-
                 const nodes: VisGraph.GraphNode[] = messageData.nodes.map((node: VisGraph.CytoNode) => {
                     return {
                         id: node.data.id,
@@ -48,8 +46,12 @@ export module Router {
                         visualAttributes: {
                             radius: 16,
                             alpha: 1,
-                            fillColour: [0, 1, 0],
-                            edgeColour: [0, 1, 0]
+                            hue: 0,
+                            saturation: 1,
+                            lightness: 0.5,
+                            shape: 'circle',
+                            prevShape: 'circle',
+                            text: ""
                         }
                     }
                 })
@@ -77,8 +79,10 @@ export module Router {
                         visualAttributes: {
                             alpha: 1,
                             width: 10,
-                            fillColour: [0, 0, 0],
-                            edgeColour: [0, 0, 0]
+                            hue: 0,
+                            saturation: 1,
+                            lightness: 0.5,
+                            text: ''
                         }
                     }
                 })

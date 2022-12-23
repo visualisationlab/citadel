@@ -1,5 +1,5 @@
 import React, {useEffect, useReducer, createContext, Reducer, useState } from 'react'
-
+import { Set, Map } from 'immutable'
 import './home.component.css'
 
 import Navigator from './navigator.component'
@@ -8,7 +8,7 @@ import Layout from './layout.component'
 import { SessionDataReducer, SessionState, SessionReducer } from '../reducers/sessiondata.reducer'
 import { GraphDataReducerAction, GraphDataState, GraphDataReducer } from '../reducers/graphdata.reducer'
 import { SelectionDataReducerAction, SelectionDataState, SelectionDataReducer } from '../reducers/selection.reducer'
-
+import { SelectedMappingsReducerAction, SelectedMappingsState, MappingChannel, MappingType, SelectedMappingsReducer } from '../reducers/selectedmappings.reducer'
 import { websocketService } from '../services/websocket.service'
 
 import { Router } from './router.component'
@@ -29,6 +29,11 @@ export const GraphDataContext = createContext({
     graphDispatch: null as React.Dispatch<GraphDataReducerAction> | null
 })
 
+export const MappingSettingsContext = createContext({
+    mappingSettingsState: null as SelectedMappingsState | null,
+    mappingSettingsDispatch: null as React.Dispatch<SelectedMappingsReducerAction> | null
+})
+
 export const SelectionDataContext = createContext({
     selectionState: null as SelectionDataState | null,
     selectionDispatch: null as React.Dispatch<SelectionDataReducerAction> | null
@@ -36,6 +41,7 @@ export const SelectionDataContext = createContext({
 
 export default function Main() {
     let [sessionData, sessionDataDispatch] = useReducer(SessionDataReducer, {
+        currentLayout: null,
         userName: '',
         users: [],
         expirationDate: new Date(),
@@ -56,40 +62,16 @@ export default function Main() {
         playmode: false
     })
 
+    let [mappingSettings, mappingSettingsDispatch] = useReducer<Reducer<SelectedMappingsState, SelectedMappingsReducerAction>>(SelectedMappingsReducer, Set<Map<string, any>>())
+
     let [graphData, graphDataDispatch] = useReducer<Reducer<GraphDataState, GraphDataReducerAction>>(GraphDataReducer, {
         nodes: {
             data: [],
-            mapping: {
-                generators: {
-                    'colour': {fun: 'linearmap', attribute: '', data: {}},
-                    'radius': {fun: 'linearmap', attribute: '', data: {}},
-                    'alpha': {fun: 'linearmap', attribute: '', data: {}},
-                    'shape': {fun: 'linearmap', attribute: '', data: {}},
-                },
-
-                settings: {
-                    colours: [[1.0, 0.0, 0.0]],
-                    minRadius: 16,
-                    maxRadius: 32
-                }
-            }
+            metadata: {}
         },
         edges: {
             data: [],
-            mapping: {
-
-                generators: {
-                    'colour': {fun: 'linearmap', attribute: '', data: {}},
-                    'alpha': {fun: 'linearmap', attribute: '', data: {}},
-                    'width': {fun: 'linearmap', attribute: '', data: {}},
-                },
-                settings: {
-                    colours: [],
-                    minWidth: 1,
-                    maxWidth: 4
-                }
-            },
-
+            metadata: {}
         },
         directed: false
     })
@@ -131,19 +113,21 @@ export default function Main() {
     return (
         <>
             <SelectionDataContext.Provider value={{ selectionState: selectionData, selectionDispatch: selectionDataDispatch}}>
-            <GraphDataContext.Provider value={{ graphState: graphData, graphDispatch: graphDataDispatch }}>
-                <UserDataContext.Provider value={{ state: sessionData, dispatch: sessionDataDispatch}}>
-                        <Navigator
-                            disconnected = {sessionData.state === 'disconnected'}
-                            // nodes={graphData.nodes}
-                            // edges={graphData.edges}
+                <MappingSettingsContext.Provider value={{ mappingSettingsState: mappingSettings, mappingSettingsDispatch: mappingSettingsDispatch}}>
+                <GraphDataContext.Provider value={{ graphState: graphData, graphDispatch: graphDataDispatch }}>
+                    <UserDataContext.Provider value={{ state: sessionData, dispatch: sessionDataDispatch}}>
+                            <Navigator
+                                disconnected = {sessionData.state === 'disconnected'}
+                                // nodes={graphData.nodes}
+                                // edges={graphData.edges}
 
-                            // directed={graphData.directed}
-                        />
-                        <InspectionTab/>
-                </UserDataContext.Provider>
-                <Layout/>
-            </GraphDataContext.Provider>
+                                // directed={graphData.directed}
+                            />
+                            <InspectionTab/>
+                    </UserDataContext.Provider>
+                    <Layout/>
+                </GraphDataContext.Provider>
+                </MappingSettingsContext.Provider>
             </SelectionDataContext.Provider>
         </>
     )
