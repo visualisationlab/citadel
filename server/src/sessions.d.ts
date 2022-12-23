@@ -1,6 +1,5 @@
 import cytoscape from 'cytoscape';
 import { ClientMessage, ServerMessage, APIMessage } from './socket';
-import { Cyto } from './cytoscape';
 export declare module Session {
     export interface SimInfo {
         step: number;
@@ -32,7 +31,7 @@ export declare module Session {
         edges: any;
     } | null;
     export function getInfo(sid: string): SessionInfo | null;
-    export function getLayouts(): Cyto.LayoutInfo[];
+    export function getLayouts(): any;
     export function registerSim(sid: string, startParams: {
         [key: string]: number;
     }): void;
