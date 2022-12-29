@@ -1,20 +1,18 @@
 /**
- * Miles van der Lely (12206970), 2022.
+ * @author Miles van der Lely <m.vanderlely@uva.nl>
  *
- * Exports functional component returning the graph visualization.
+ * This file contains the layout component, which is a worker app in the main
+ * component. It generates data for the renderer component.
  */
 
-import React, { useRef, useContext, useState } from 'react';
-
-import { Renderer } from './renderer.component'
+import React, { useRef, useContext } from 'react';
 
 import { VisGraph } from '../types'
 
+import { Renderer } from './renderer.component'
 import { GraphDataContext } from '../components/main.component'
 import { SelectionDataContext } from "./main.component"
 import { MappingSettingsContext } from '../components/main.component'
-
-import { Mappings } from '../mappings/module.mappings';
 import { MappingType } from '../reducers/selectedmappings.reducer';
 
 /**
@@ -179,26 +177,26 @@ export default function Layout() {
                         }
                 }
 
-                if (mapJS.mappingName === 'shape') {
-                    let attributeData = nodeMetadata[mapJS.attributeName]
+                // if (mapJS.mappingName === 'shape') {
+                //     let attributeData = nodeMetadata[mapJS.attributeName]
 
-                    node.visualAttributes.prevShape = node.visualAttributes.shape
+                //     node.visualAttributes.prevShape = node.visualAttributes.shape
 
-                    try {
-                        let index = attributeData.frequencyDict[node.attributes[mapJS.attributeName]]
+                //     try {
+                //         let index = attributeData.frequencyDict[node.attributes[mapJS.attributeName]]
 
-                        if (index >= shapes.length) {
-                            node.visualAttributes.shape = 'circle'
-                        }
-                        else {
-                            node.visualAttributes.shape = shapes[index]
-                        }
-                    }
-                    catch (e) {
-                        console.log(e)
-                        node.visualAttributes.shape = 'circle'
-                    }
-                }
+                //         if (index >= shapes.length) {
+                //             node.visualAttributes.shape = 'circle'
+                //         }
+                //         else {
+                //             node.visualAttributes.shape = shapes[index]
+                //         }
+                //     }
+                //     catch (e) {
+                //         console.log(e)
+                //         node.visualAttributes.shape = 'circle'
+                //     }
+                // }
             })
 
             return {

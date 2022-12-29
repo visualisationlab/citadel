@@ -1,7 +1,8 @@
 /**
- * Miles van der Lely (12206970), 2022.
+ * @author Miles van der Lely <m.vanderlely@uva.nl>
  *
- * Exports functional component returning the graph visualization.
+ * This file contains the layout component, which is a worker app in the main
+ * component. It generates data for the renderer component.
  */
 /// <reference types="react" />
 /**

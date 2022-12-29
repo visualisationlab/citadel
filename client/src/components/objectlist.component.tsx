@@ -1,16 +1,22 @@
+/**
+ * @author Miles van der Lely <m.vanderlely@uva.nl>
+ *
+ * This file contains the object list component, which is a tab in the main component.
+ * It allows the user to search through nodes and edges and select them.
+ */
 
 import React, { useState, useEffect, useContext } from 'react'
 import { Row, Container, InputGroup, Form, Accordion, Table } from 'react-bootstrap'
 
+import './home.component.css'
+
 import Fuse from 'fuse.js'
 
-import { GraphDataContext } from '../components/main.component'
-import { SelectionDataContext } from '../components/main.component'
-
-import './home.component.css'
+import { GraphDataContext } from './main.component'
+import { SelectionDataContext } from './main.component'
 import { SelectionDataReducerAction } from '../reducers/selection.reducer';
 
-interface InspectTabProps {
+interface ObjectListTabProps {
     // selectedEdgeID: string,
     // selectedNodeID: string
 }
@@ -21,7 +27,8 @@ interface InspectEdge {
 }
 
 function renderListContent(source: string, edges: InspectEdge[],
-    selectedEdges: string[], selectedNodes: string[], selectionDispatch: React.Dispatch<SelectionDataReducerAction>): JSX.Element {
+                           selectedEdges: string[], selectedNodes: string[],
+                            selectionDispatch: React.Dispatch<SelectionDataReducerAction>): JSX.Element {
     if (edges.length === 0) {
         return (<></>)
     }
@@ -98,7 +105,7 @@ function renderMainList(nodes: {[id: string]: InspectEdge[]},
 
 // TRY MINISEARCH
 // PAGINATION
-export default function InspectTab(props: InspectTabProps) {
+export default function ObjectListTab(props: ObjectListTabProps) {
     let [nodes, setNodes] = useState<{[id: string]: InspectEdge[]}>({})
     let [query, setQuery] = useState('')
 

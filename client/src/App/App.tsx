@@ -1,16 +1,22 @@
-import React from 'react';
+/**
+ * @author Miles van der Lely <m.vanderlely@uva.nl>
+ * This file contains the main App component, which is the root of the React app.
+ * It contains the routing logic for the app.
+ *
+ */
+
 import { Switch, Route, Redirect } from 'react-router-dom';
 
 import './App.css';
 import "bootstrap/dist/css/bootstrap.min.css";
 
-// import Home from '../components/home.component'
-
 import Upload from '../components/upload.component'
 import Main from '../components/main.component'
 
+
 export default function App() {
-    document.title = "Metagraph"
+    document.title = "Citadel"
+
     return (
       <div>
         <div>

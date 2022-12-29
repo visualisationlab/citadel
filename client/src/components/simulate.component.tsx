@@ -1,20 +1,158 @@
-import React, { useState, useEffect, useContext, useRef } from 'react'
-import { Tabs, Tab, Container, Row, Col, Button, Card, ListGroup, Dropdown, ToggleButton, ProgressBar, Spinner, Form, CloseButton, InputGroup } from 'react-bootstrap'
-import { userService } from '../services/user.service';
-import { UserDataContext } from '../components/main.component'
+/**
+ * @author Miles van der Lely <m.vanderlely@uva.nl>
+ * This file contains the simulate component, which allows for connections of
+ * API simulations to the session.
+ */
 
+import React, { useState, useEffect, useContext, useRef } from 'react'
+import { Container, Row, Col, Button, ListGroup, Dropdown, ProgressBar,
+    Form, CloseButton, InputGroup } from 'react-bootstrap'
+    import { GrPlay, GrPause } from 'react-icons/gr'
+
+import { UserDataContext } from '../components/main.component'
 import { API } from '../services/api.service'
 import './home.component.css'
-
-import { Simulator, SimulatorParam } from '../reducers/sessiondata.reducer'
-
+import { SimulatorParam } from '../reducers/sessiondata.reducer'
 import { Router } from './router.component'
 
-import { GrPlay, GrPause } from 'react-icons/gr'
+// Renders sim item in simulator list.
+function renderSimItem(param: SimulatorParam, index: number, key: string, params: SimulatorParam[]) {
+    let inputField = <></>
 
-function renderSimulatorSettings(key: string, params: SimulatorParam[], setSimOptionsSelection: React.Dispatch<React.SetStateAction<string | null>>) {
+    switch (param.type) {
+        case 'boolean':
+            // Booleans are rendered as a dropdown menu.
+            inputField = (
+                <Dropdown onSelect={(item) => {
+                    Router.setSimulatorSettings(key, params.map((paramIter) => {
+                        if (paramIter.attribute === param.attribute) {
+                            paramIter.value = item === 'true'
+                        }
+
+                        return paramIter
+                    }))
+                }}>
+                    <Dropdown.Toggle>{param.value === true ? 'True' : 'False'}</Dropdown.Toggle>
+                    <Dropdown.Menu>
+                        <Dropdown.Item key='true' eventKey={'true'} active={param.value}>True</Dropdown.Item>
+                        <Dropdown.Item key='false' eventKey={'false'} active={!param.value}>False</Dropdown.Item>
+                    </Dropdown.Menu>
+                </Dropdown>
+            )
+            break
+        case 'integer':
+            // Integers are rendered as a number input field.
+            inputField = (
+                <Form.Control
+                    type='number'
+                    value={param.value}
+                    onChange={(e) => {
+                        let num = Number(e.target.value)
+
+                        if (!Number.isInteger(num)) {
+                            return
+                        }
+
+                        Router.setSimulatorSettings(key, params.map((paramIter) => {
+                            if (paramIter.attribute === param.attribute) {
+                                paramIter.value = num
+                            }
+
+                            return paramIter
+                        }))
+                    }}
+                >
+
+                </Form.Control>
+            )
+            break
+        case 'float':
+            // Floats are rendered as a number input field.
+            inputField = (
+                <Form.Control
+                    type='number'
+                    step={0.1}
+                    value={param.value}
+                    onChange={(e) => {
+                        let num = parseFloat(e.target.value)
+
+                        if (isNaN(num)) {
+                            return
+                        }
+
+                        Router.setSimulatorSettings(key, params.map((paramIter) => {
+                            if (paramIter.attribute === param.attribute) {
+                                paramIter.value = num
+                            }
+
+                            return paramIter
+                        }))
+                    }}
+                >
+
+                </Form.Control>
+            )
+            break
+        case 'string':
+            // Strings are rendered as a text input field.
+            inputField = (
+                <Form.Control
+                    type='string'
+                    value={param.value}
+                    onChange={(e) => {
+                        if (e.target.value === '') {
+                            return
+                        }
+
+                        Router.setSimulatorSettings(key, params.map((paramIter) => {
+                            if (paramIter.attribute === param.attribute) {
+                                paramIter.value = e.target.value
+                            }
+
+                            return paramIter
+                        }))
+                    }}
+                >
+
+                </Form.Control>
+            )
+    }
+
     return (
-        <>
+        <ListGroup.Item key={index}>
+            <Row>
+                <Col>
+                    {param.attribute}
+                </Col>
+                <Col>
+                    {param.type}
+                </Col>
+                <Col>
+                    {inputField}
+                </Col>
+                <Col>
+                    {param.value !== param.defaultValue &&
+                        <Button variant='primary' onClick={() => {
+                            Router.setSimulatorSettings(key, params.map((paramIter) => {
+                                if (paramIter.attribute === param.attribute) {
+                                    paramIter.value = paramIter.defaultValue
+                                }
+
+                                return paramIter
+                            }))
+                        }}>Reset</Button>
+                    }
+                </Col>
+            </Row>
+        </ListGroup.Item>
+    )
+}
+
+// Renders the simulator settings.
+function renderSimulatorSettings(key: string, params: SimulatorParam[],
+    setSimOptionsSelection: React.Dispatch<React.SetStateAction<string | null>>) {
+
+    const closeButton = (
             <Row>
                 <Col md={{span: 2}}>
                     <CloseButton onClick={()=>{setSimOptionsSelection(null)}}>
@@ -22,137 +160,20 @@ function renderSimulatorSettings(key: string, params: SimulatorParam[], setSimOp
                     </CloseButton>
                 </Col>
             </Row>
+    )
 
-            <ListGroup>
+    const simList = (
+        <ListGroup>
                 {params.map((param, index) => {
-                    let inputField = <></>
-
-                    switch (param.type) {
-                        case 'boolean':
-                            inputField = (
-                                <Dropdown onSelect={(item) => {
-                                    Router.setSimulatorSettings(key, params.map((paramIter) => {
-                                        if (paramIter.attribute === param.attribute) {
-                                            paramIter.value = item === 'true'
-                                        }
-
-                                        return paramIter
-                                    }))
-                                }}>
-                                    <Dropdown.Toggle>{param.value === true ? 'True' : 'False'}</Dropdown.Toggle>
-                                    <Dropdown.Menu>
-                                        <Dropdown.Item key='true' eventKey={'true'} active={param.value}>True</Dropdown.Item>
-                                        <Dropdown.Item key='false' eventKey={'false'} active={!param.value}>False</Dropdown.Item>
-                                    </Dropdown.Menu>
-                                </Dropdown>
-                            )
-                            break
-                        case 'integer':
-                            inputField = (
-                                <Form.Control
-                                    type='number'
-                                    value={param.value}
-                                    onChange={(e) => {
-                                        let num = Number(e.target.value)
-
-                                        if (!Number.isInteger(num)) {
-                                            return
-                                        }
-
-                                        Router.setSimulatorSettings(key, params.map((paramIter) => {
-                                            if (paramIter.attribute === param.attribute) {
-                                                paramIter.value = num
-                                            }
-
-                                            return paramIter
-                                        }))
-                                    }}
-                                >
-
-                                </Form.Control>
-                            )
-                            break
-                        case 'float':
-                            inputField = (
-                                <Form.Control
-                                    type='number'
-                                    step={0.1}
-                                    value={param.value}
-                                    onChange={(e) => {
-                                        let num = parseFloat(e.target.value)
-
-                                        if (isNaN(num)) {
-                                            return
-                                        }
-
-                                        Router.setSimulatorSettings(key, params.map((paramIter) => {
-                                            if (paramIter.attribute === param.attribute) {
-                                                paramIter.value = num
-                                            }
-
-                                            return paramIter
-                                        }))
-                                    }}
-                                >
-
-                                </Form.Control>
-                            )
-                            break
-                        case 'string':
-                            inputField = (
-                                <Form.Control
-                                    type='string'
-                                    value={param.value}
-                                    onChange={(e) => {
-                                        if (e.target.value === '') {
-                                            return
-                                        }
-
-                                        Router.setSimulatorSettings(key, params.map((paramIter) => {
-                                            if (paramIter.attribute === param.attribute) {
-                                                paramIter.value = e.target.value
-                                            }
-
-                                            return paramIter
-                                        }))
-                                    }}
-                                >
-
-                                </Form.Control>
-                            )
-
-                    }
-
-                    return (
-                        <ListGroup.Item key={index}>
-                            <Row>
-                                <Col>
-                                    {param.attribute}
-                                </Col>
-                                <Col>
-                                    {param.type}
-                                </Col>
-                                <Col>
-                                    {inputField}
-                                </Col>
-                                <Col>
-                                    {param.value !== param.defaultValue &&
-                                        <Button variant='primary' onClick={() => {
-                                            Router.setSimulatorSettings(key, params.map((paramIter) => {
-                                                if (paramIter.attribute === param.attribute) {
-                                                    paramIter.value = paramIter.defaultValue
-                                                }
-
-                                                return paramIter
-                                            }))
-                                        }}>Reset</Button>
-                                    }
-                                </Col>
-                            </Row>
-                        </ListGroup.Item>
-                    )
+                    return renderSimItem(param, index, key, params)
                 })}
             </ListGroup>
+    )
+
+    return (
+        <>
+            {closeButton}
+            {simList}
         </>
     )
 }
@@ -177,6 +198,7 @@ function renderValidateButton(simKey: string | null, validated: 'valid' | 'unkno
     }}>Validate</Button>
 }
 
+// Renders the simulator options and list.
 export function SimulatorTab() {
     const { state,  } = useContext(UserDataContext)
 
@@ -192,6 +214,7 @@ export function SimulatorTab() {
             return
         }
 
+        // If the selected simulator is not generating or idle, then reset the selection.
         if (state?.simulators.filter((sim) => {
             return (sim.key === simOptionsSelection && (sim.state === 'generating' || sim.state === 'idle'))
         }).length === 0) {
@@ -203,6 +226,7 @@ export function SimulatorTab() {
         return <></>
     }
 
+    // Renders the simulator list.
     const sims = state?.simulators.map((sim, index) => {
         let buttonVariant = 'outline-secondary'
 
@@ -252,8 +276,11 @@ export function SimulatorTab() {
             </ListGroup.Item>
         )
     })
+
+    // Flag for if the simulator is generating.
     const disabled = stepCount <= 0 || selectedSim === '' || state.state !== 'idle'
 
+    // Renders the simulator controls.
     const simulatorControl = state.graphIndexCount > 1 ? (
         <Row>
             <Col>
@@ -284,6 +311,7 @@ export function SimulatorTab() {
 
     var playbutton = (<></>)
 
+    // Renders the play/pause button.
     if (state.playmode) {
         playbutton = (
             <Col>
@@ -312,31 +340,30 @@ export function SimulatorTab() {
     const res = simOptionsSelection === null ? (
         <>
             <Row>
-                    <Col md={{span: 12}}>
-                            <InputGroup>
-                                <InputGroup.Text>Simulator URL:</InputGroup.Text>
-                                <Form.Control
-                                    readOnly
-                                    value={state.sessionURL} ref={sessionRef}/>
-                                <Button variant="outline-secondary"
-                                    id="button-copy"
-                                    onClick={() => {
-                                        if (window.isSecureContext && navigator.clipboard) {
-                                            navigator.clipboard.writeText(state.websocketPort)
-                                        } else {
-                                            // @ts-ignore
-                                            sessionRef.current.select()
+                <Col md={{span: 12}}>
+                        <InputGroup>
+                            <InputGroup.Text>Simulator URL:</InputGroup.Text>
+                            <Form.Control
+                                readOnly
+                                value={state.sessionURL} ref={sessionRef}/>
+                            <Button variant="outline-secondary"
+                                id="button-copy"
+                                onClick={() => {
+                                    if (window.isSecureContext && navigator.clipboard) {
+                                        navigator.clipboard.writeText(state.websocketPort)
+                                    } else {
+                                        // @ts-ignore
+                                        sessionRef.current.select()
 
-                                            document.execCommand('copy')
-                                        }
-                                    }}>
-                                    Copy
-                                </Button>
-                            </InputGroup>
-                        </Col>
+                                        document.execCommand('copy')
+                                    }
+                                }}>
+                                Copy
+                            </Button>
+                        </InputGroup>
+                    </Col>
                 </Row>
                 <Row>
-
                     <Col md={{span: 6}}>
                         <InputGroup>
                             <InputGroup.Text>Simulator port:</InputGroup.Text>
@@ -407,7 +434,9 @@ export function SimulatorTab() {
             </Row>
             {simulatorControl}
         </>
-    ) : renderSimulatorSettings(simOptionsSelection, state.simulators.filter((sim) => {return sim.key === simOptionsSelection})[0].options, setSimOptionsSelection)
+    ) : renderSimulatorSettings(simOptionsSelection,
+            state.simulators.filter((sim) => {return sim.key === simOptionsSelection})[0].options,
+            setSimOptionsSelection)
 
     return (
         <Container fluid>

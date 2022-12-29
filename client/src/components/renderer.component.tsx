@@ -6,7 +6,6 @@ import { VisGraph } from '../types'
 import { SelectionDataReducerAction, SelectionDataState } from "../reducers/selection.reducer"
 
 import { API } from '../services/api.service'
-import { forEach } from "mathjs"
 
 // Create and load bitmap font.
 PIXI.BitmapFont.from('font', {
@@ -19,8 +18,6 @@ PIXI.BitmapFont.from('font', {
     wordWrapWidth: 5,
     breakWords: true
 })
-
-type NodeData = [PIXI.Sprite, PIXI.BitmapText]
 
 interface RenderedNode extends VisGraph.HashedGraphNode {
     nodesprite: PIXI.Sprite,
@@ -38,7 +35,7 @@ interface RendererProps {
 
 PIXI.settings.GC_MAX_IDLE = 100000;
 PIXI.settings.PREFER_ENV = PIXI.ENV.WEBGL2
-// PIXI.settings.FILTER_MULTISAMPLE = PIXI.MSAA_QUALITY.HIGH
+PIXI.settings.FILTER_RESOLUTION = PIXI.MSAA_QUALITY.HIGH
 
 const app = new PIXI.Application({
     width:window.innerWidth,
@@ -47,9 +44,6 @@ const app = new PIXI.Application({
     backgroundColor: 0xFFFFFF,
     antialias: true
 })
-
-const circleTexture = PIXI.Texture.from('https://dev.visgraph:3001/circle.png')
-const amongusTexture = PIXI.Texture.from('https://dev.visgraph:3001/amongus.png')
 
 const SPRITESCALE = 2.5
 
@@ -126,8 +120,6 @@ class SpriteCache {
 
         return this.cache[shapeString].pop()!
     }
-
-
 
     static clearCache() {
         Object.values(this.cache).forEach((sprites) => {

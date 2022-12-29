@@ -174,10 +174,6 @@ function NodeTab(
     )
 }
 
-function SelectionTab() {
-
-}
-
 function EdgeTab(
     id: string,
     source: string,

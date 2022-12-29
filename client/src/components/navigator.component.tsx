@@ -3,7 +3,7 @@ import { Tabs, Tab, Container, Collapse, Button } from 'react-bootstrap'
 import MappingTab from './mapping.component'
 import SessionTab from './session.component'
 import { SimulatorTab } from './simulate.component'
-import InspectTab from './inspect.component'
+import ObjectListTab from './objectlist.component'
 import { VisGraph } from '../types'
 
 import { Simulator } from '../reducers/sessiondata.reducer'
@@ -40,7 +40,7 @@ export default function Navigator(
                     <SimulatorTab />
                 </Tab>
                 <Tab eventKey='Search' title='Search'>
-                    <InspectTab />
+                    <ObjectListTab />
                 </Tab>
                 <Tab eventKey='Session' title={props.disconnected ? <GrCircleAlert></GrCircleAlert> : 'Session'} >
                     <SessionTab />
