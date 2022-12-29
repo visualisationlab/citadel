@@ -153,6 +153,21 @@ class WebsocketService {
             return
         }
 
+        // Store session ID in localstorage.
+
+        let prevSessionsString = localStorage.getItem('prevSessions')
+        let prevSessions = []
+
+        if (prevSessionsString !== null) {
+            prevSessions = JSON.parse(prevSessionsString)
+        }
+
+        if (!prevSessions.includes(splitString[2])) {
+            prevSessions.unshift(splitString[2])
+        }
+
+        localStorage.setItem('prevSessions', JSON.stringify(prevSessions.slice(0, 5)))
+
         this.connect(splitString[2])
     }
 

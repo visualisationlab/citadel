@@ -1,7 +1,16 @@
-import React, { useState } from 'react'
+/**
+ * @author Miles van der Lely <m.vanderlely@uva.nl>
+ *
+ * This file contains the main App component, which is the root of the React app.
+ * It contains the routing logic for the app. It allows users to upload a graph
+ * and then view it in the main component, or to join an existing session.
+ * It also contains information about the project.
+ */
+
+import { useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { Form, Button, Container, Row, Col, Table, Spinner } from 'react-bootstrap'
-import { userService } from '../services/user.service';
+import { userService } from '../services/user.service'
 
 import './home.component.css'
 
@@ -10,10 +19,17 @@ export default function Home() {
     const [errors, setErrors] = useState<[string, string][]>([])
     const [loading, setLoading] = useState<boolean>(false)
 
-    let history = useHistory();
+    let history = useHistory()
 
-    function joinSession() {
-        history.push(`/sessions/${sid}`)
+    const [sid, setSid] = useState('')
+
+    function joinSession(newSid: string | null) {
+        if (newSid === null) {
+            history.push(`/sessions/${sid}`)
+        }
+        else {
+            history.push(`/sessions/${newSid}`)
+        }
     }
 
     function startSession(url: string) {
@@ -43,8 +59,6 @@ export default function Home() {
             }
         )
     }
-
-    const [sid, setSid] = useState('')
 
     let errorText = errors.length === 0 ? [] : (
         <Row>
@@ -82,6 +96,13 @@ export default function Home() {
             </Col>
         </Row>
     )
+
+    const prevSessions = localStorage.getItem('prevSessions')
+    let parsedPrevSessions : string[] = []
+
+    if (prevSessions !== null) {
+        parsedPrevSessions = JSON.parse(prevSessions)
+    }
 
     let but = !loading ? (
         <Button variant='primary'
@@ -165,11 +186,45 @@ export default function Home() {
                                 marginTop: '20px'
                             }}>
                             <Col >
-                                <Button variant='primary' type='submit' disabled={sid === ''} onClick={joinSession}>
+                                <Button variant='primary' type='submit' disabled={sid === ''} onClick={() => joinSession(null)}>
                                     Join Session
                                 </Button>
                             </Col>
                         </Row>
+
+                    </Col>
+                </Row>
+                <Row>
+                    <Col>
+                        <h4>Previous sessions</h4>
+                        <Table striped bordered hover>
+                            <thead>
+                                <tr>
+                                    <th>Session ID</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {parsedPrevSessions.map((val, index) => {
+                                    return (
+                                        <tr key={val}>
+                                            <td>{val}</td>
+                                            <td><Button onClick={() => {
+                                                console.log("Connecting to session " + val)
+
+                                                joinSession(val)
+                                            }}>Connect</Button></td>
+                                        </tr>
+                                    )
+                                })}
+                            </tbody>
+                        </Table>
+                    </Col>
+                </Row>
+            </Container>
+            <Container className="shadow p-3 bg-white rounded" style={{ width: '50%', marginTop: '30px' }}>
+                <Row>
+                    <Col>
+                        <h2>About Citadel</h2>
                     </Col>
                 </Row>
             </Container>

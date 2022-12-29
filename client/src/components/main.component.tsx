@@ -85,8 +85,6 @@ export default function Main() {
     const [qrCode, setqrCode] = useState('')
 
     useEffect(() => {
-
-
         window.addEventListener('resize', () => {
             API.setWindowSize(window.innerWidth, window.innerHeight)
         })
@@ -100,8 +98,9 @@ export default function Main() {
 
         QR.registerFun(setqrCode)
 
-        API.setWindowSize(window.innerWidth, window.innerHeight)
 
+
+        API.setWindowSize(window.innerWidth, window.innerHeight)
     }, [])
 
     if (qrCode !== '') {
