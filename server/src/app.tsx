@@ -1,33 +1,51 @@
+/**
+ * @author Miles van der Lely <m.vanderlely@uva.nl>
+ *
+ */
+
 require('dotenv').config({path:__dirname + '/../.env'})
+
 import express, { RequestHandler, Request, Response } from 'express'
 import { body } from 'express-validator'
 import { WebSocket, WebSocketServer } from 'ws'
-import { Session } from './session.class'
 import { IncomingMessage } from 'http'
 import uid from 'uid-safe'
 import { rm, createWriteStream, unlink } from 'fs'
 import { Validator } from 'jsonschema'
-import { exit } from 'process'
 import {GraphFormatConverter} from 'graph-format-converter'
 import { createLogger, format, transports } from 'winston'
-
 import https from 'https'
 
-if (process.env.NODE_ENV !== 'production') {
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-}
+import { Session } from './session.class'
 
 const path = require('path')
 const cors = require('cors')
 const fs = require('fs')
 
+let sessions: {[sid: string]: (Session | null)} = {}
+
+// Check if CHECK_INTERVAL is set in ENV.
+if (process.env.CHECK_INTERVAL === undefined) {
+    throw new Error('CHECK_INTERVAL not set in ENV')
+}
+
+let checkInterval = parseInt(process.env.CHECK_INTERVAL)
+
+// Disable TLS certificate check. Only for development.
+if (process.env.NODE_ENV !== 'production') {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+}
+
+// Check if HOST is set in ENV.
 if (process.env.HOST == undefined || process.env.HOST == '') {
-    exit(0)
+    throw new Error('HOST not set in ENV')
+}
+
+if (process.env.WSCLIENTPORT === undefined) {
+    throw new Error('WSCLIENTPORT not set in ENV')
 }
 
 let localAddress = process.env.HOST
-
-let sessions: {[sid: string]: (Session | null)} = {}
 
 const logger = createLogger({
     level: 'info',
@@ -53,12 +71,10 @@ logger.add(new transports.Console({
     )
 }))
 
-if (process.env.WSCLIENTPORT === undefined) {
-    throw new Error('WSCLIENTPORT not set in ENV')
-}
-
+// Create express app.
 var app = express()
 
+// Set up CORS.
 let corsOptions
 
 corsOptions = {
@@ -67,12 +83,13 @@ corsOptions = {
 
 app.use(cors(corsOptions))
 
+// Set up express app.
 var httpsServer = https.createServer({
     key: fs.readFileSync(process.env["KEY"], 'utf8'),
     cert: fs.readFileSync(process.env["CERT"], 'utf8')
 }, app)
 
-const server = new WebSocketServer({
+const WSserver = new WebSocketServer({
     server: httpsServer,
     clientTracking: true,
     perMessageDeflate: true
@@ -81,7 +98,7 @@ const server = new WebSocketServer({
 /*
  * Websocket event handlers.
     */
-server.on('connection', (socket: WebSocket, req: IncomingMessage) => {
+WSserver.on('connection', (socket: WebSocket, req: IncomingMessage) => {
     // If URL is not set in header, exit.
     if (req.url === undefined) {
         socket.close()
@@ -126,7 +143,6 @@ server.on('connection', (socket: WebSocket, req: IncomingMessage) => {
         }
 
         socket.on('close', (code, reason) => {
-
             if (sessions[sid] === undefined || sessions[sid] === null) {
                 return
             }
@@ -177,7 +193,8 @@ server.on('connection', (socket: WebSocket, req: IncomingMessage) => {
     }
 })
 
-server.on('close', () => {
+// Close all sessions when server is closed.
+WSserver.on('close', () => {
     Object.keys(sessions).forEach((key) => {
         const session = sessions[key]
 
@@ -203,15 +220,13 @@ setInterval(() => {
         logger.log('info', `Session ${key} timed out`)
         sessions[key]!.destroy()
     })
-}, 5000)
+}, checkInterval)
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, '/../public')));
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
+app.use(express.static(path.join(__dirname, '/../public')))
 
-/*
- * Express routes.
-    */
+// Express routes.
 let getGraphs : RequestHandler = (_, res, next) => {
     fs.readdir("./public/graphs", (err: Error, graphs: string[]) => {
         if (err) {
@@ -229,12 +244,17 @@ let getGraphs : RequestHandler = (_, res, next) => {
 }
 
 app.get('/graphs', getGraphs, (req: Request, res: Response) => {
-    res.json(res.locals.graphs);
+    res.json(res.locals.graphs)
+})
+
+app.get('/status/:session', (req: Request, res: Response) => {
+    res.send(
+        sessions[req.params.session] !== undefined
+    )
 })
 
 var graphSchema = {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    // "$id": "https://example.com/product.schema.json",
     "type": "object",
     "description": "Network data",
     "properties": {
@@ -363,6 +383,7 @@ app.post('/urls', body('url').trim().unescape(),  (req, res) => {
                     logger.log('error', `Error downloading graph from URL ${url}: ${err}`)
 
                     res.status(404).json({msg: "Error downloading graph data", errors: []})
+
                     unlink(dest, (err) => {
                         if (err === null) {
                             return
@@ -371,7 +392,9 @@ app.post('/urls', body('url').trim().unescape(),  (req, res) => {
                 })
             } catch (e) {
                 logger.log('error', `Error downloading graph from URL ${url}: ${e}`)
+
                 res.status(404).json({msg: "Error downloading graph data", errors: []})
+
                 unlink(dest, (err) => {
                     if (err === null) {
                         return
@@ -384,7 +407,7 @@ app.post('/urls', body('url').trim().unescape(),  (req, res) => {
 })
 
 app.get('/ws', (req: Request, res: Response) => {
-    res.json(server);
+    res.json(WSserver)
 })
 
 app.get('/')
@@ -396,14 +419,9 @@ logger.log({
     clientport: process.env.CLIENTPORT,
     serverport: process.env.SERVERPORT,
     websocket: process.env.WSCLIENTPORT,
-
+    checkInterval: checkInterval,
 })
-
-// console.log(fs.readFileSync('../certs/key.pem'))
-// console.log(fs.readFileSync('../certs/cert.pem'))
-
-
 
 httpsServer.listen(process.env.SERVERPORT);
 
-module.exports = app;
+module.exports = app

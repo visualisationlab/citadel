@@ -42,6 +42,10 @@ class UserService {
         console.log(url)
         return axios.post(URL + '/urls', { url: url})
     }
+
+    getSessionStatus(sid: string) {
+        return axios.get(URL + '/status/' + sid)
+    }
 }
 
 export const userService = new UserService()

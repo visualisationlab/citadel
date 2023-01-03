@@ -7,7 +7,7 @@
  * It also contains information about the project.
  */
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { Form, Button, Container, Row, Col, Table, Spinner } from 'react-bootstrap'
 import { userService } from '../services/user.service'
@@ -18,10 +18,37 @@ export default function Home() {
     const [url, setURL] = useState('')
     const [errors, setErrors] = useState<[string, string][]>([])
     const [loading, setLoading] = useState<boolean>(false)
+    const [sessionStatusList, setSessionStatusList] = useState<boolean[]>([false, false, false, false, false])
 
     let history = useHistory()
 
     const [sid, setSid] = useState('')
+
+    const prevSessions = localStorage.getItem('prevSessions')
+
+    let parsedPrevSessions : string[] = []
+
+    if (prevSessions !== null) {
+        parsedPrevSessions = JSON.parse(prevSessions)
+    }
+
+    useEffect(() => {
+        let res: boolean[] = []
+
+        parsedPrevSessions.forEach((val, index) => {
+            userService.getSessionStatus(val).then(
+                response => {
+                    console.log(response.data)
+                    res.push(response.data)
+
+                    if (res.length === parsedPrevSessions.length - 1) {
+                        setSessionStatusList(res)
+                    }
+                }
+            )
+        })
+
+    }, [])
 
     function joinSession(newSid: string | null) {
         if (newSid === null) {
@@ -44,6 +71,7 @@ export default function Home() {
             },
             error => {
                 setLoading(false)
+
                 console.log(error.response)
                 if (error.response.status === 404) {
                     setErrors([["server", "Couldn't fetch data from remote"]])
@@ -97,12 +125,6 @@ export default function Home() {
         </Row>
     )
 
-    const prevSessions = localStorage.getItem('prevSessions')
-    let parsedPrevSessions : string[] = []
-
-    if (prevSessions !== null) {
-        parsedPrevSessions = JSON.parse(prevSessions)
-    }
 
     let but = !loading ? (
         <Button variant='primary'
@@ -125,7 +147,6 @@ export default function Home() {
                     <Col md={{span: 10}}>
                         <h1>Citadel</h1>
                         <p className='text-secondary'> Graph Visualisation Software. Create a new session or join an existing one below.</p>
-
                     </Col>
                 </Row>
             </Container>
@@ -205,10 +226,14 @@ export default function Home() {
                             </thead>
                             <tbody>
                                 {parsedPrevSessions.map((val, index) => {
+                                    console.log(val)
+                                    console.log(sessionStatusList[index])
                                     return (
                                         <tr key={val}>
                                             <td>{val}</td>
-                                            <td><Button onClick={() => {
+                                            <td><Button
+                                                disabled={!sessionStatusList[index]}
+                                                onClick={() => {
                                                 console.log("Connecting to session " + val)
 
                                                 joinSession(val)
@@ -221,13 +246,13 @@ export default function Home() {
                     </Col>
                 </Row>
             </Container>
-            <Container className="shadow p-3 bg-white rounded" style={{ width: '50%', marginTop: '30px' }}>
+            {/* <Container className="shadow p-3 bg-white rounded" style={{ width: '50%', marginTop: '30px' }}>
                 <Row>
                     <Col>
                         <h2>About Citadel</h2>
                     </Col>
                 </Row>
-            </Container>
+            </Container> */}
         </>
     )
 }

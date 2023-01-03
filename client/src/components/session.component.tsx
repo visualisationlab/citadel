@@ -10,8 +10,6 @@ import { API } from '../services/api.service'
 
 import { QR } from '../services/qrcode.service'
 
-
-
 function renderUsers(userName: string, users: {userName: string, headsetCount: number}[]): JSX.Element {
     return (
         <ListGroup variant='flush'>
@@ -234,7 +232,6 @@ export default function SessionTab() {
                 {renderUsers(state.userName, state.users)}
             </Row>
             <Row>
-
                 <Col md={{span: 4}}>
                 <h3>Session State</h3>
                 </Col>
