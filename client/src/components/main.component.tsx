@@ -98,8 +98,6 @@ export default function Main() {
 
         QR.registerFun(setqrCode)
 
-
-
         API.setWindowSize(window.innerWidth, window.innerHeight)
     }, [])
 

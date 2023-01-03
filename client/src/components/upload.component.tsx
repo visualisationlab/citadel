@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { Form, Button, Container, Row, Col, Table, Spinner } from 'react-bootstrap'
 import { userService } from '../services/user.service'
+import { round } from 'mathjs'
 
 import './home.component.css'
 
@@ -26,7 +27,8 @@ export default function Home() {
 
     const prevSessions = localStorage.getItem('prevSessions')
 
-    let parsedPrevSessions : string[] = []
+    console.log(prevSessions)
+    let parsedPrevSessions : [string, Date][] = []
 
     if (prevSessions !== null) {
         parsedPrevSessions = JSON.parse(prevSessions)
@@ -35,8 +37,8 @@ export default function Home() {
     useEffect(() => {
         let res: boolean[] = []
 
-        parsedPrevSessions.forEach((val, index) => {
-            userService.getSessionStatus(val).then(
+        parsedPrevSessions.forEach(([sid, date], index) => {
+            userService.getSessionStatus(sid).then(
                 response => {
                     console.log(response.data)
                     res.push(response.data)
@@ -225,18 +227,18 @@ export default function Home() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {parsedPrevSessions.map((val, index) => {
-                                    console.log(val)
-                                    console.log(sessionStatusList[index])
+                                {parsedPrevSessions.map(([sid, date], index) => {
+                                    let elapsedMins = round(((new Date()).getTime() - new Date(date).getTime()) / 1000 / 60, 1)
+
                                     return (
-                                        <tr key={val}>
-                                            <td>{val}</td>
+                                        <tr key={sid}>
+                                            <td>{sid} ({elapsedMins} minutes ago)</td>
                                             <td><Button
                                                 disabled={!sessionStatusList[index]}
                                                 onClick={() => {
-                                                console.log("Connecting to session " + val)
+                                                console.log("Connecting to session " + sid)
 
-                                                joinSession(val)
+                                                joinSession(sid)
                                             }}>Connect</Button></td>
                                         </tr>
                                     )
