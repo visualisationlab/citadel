@@ -350,7 +350,7 @@ export function SimulatorTab() {
                                 id="button-copy"
                                 onClick={() => {
                                     if (window.isSecureContext && navigator.clipboard) {
-                                        navigator.clipboard.writeText(state.websocketPort)
+                                        navigator.clipboard.writeText(state.sessionURL)
                                     } else {
                                         // @ts-ignore
                                         sessionRef.current.select()
