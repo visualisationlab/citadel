@@ -117,7 +117,11 @@ function NodeTab(
             <Row>
                 <p>Node ID: {id}</p>
             </Row>
-            <Row>
+            <Row style={{
+            overflowY: 'scroll',
+            height: '400px',
+            paddingRight: '0px'
+        }}>
                 <p>Attributes</p>
                 {Object.keys(attributes).map((key) => {
                     return (
