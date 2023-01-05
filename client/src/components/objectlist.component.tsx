@@ -84,7 +84,7 @@ function renderListContent(source: string, edges: InspectEdge[],
 function renderMainList(nodes: {[id: string]: InspectEdge[]},
     selectedEdges: string[], selectedNodes: string[], selectionDispatch: React.Dispatch<SelectionDataReducerAction>): JSX.Element {
     return (
-        <Container style={{
+        <Container  style={{
             overflowY: 'scroll',
             height: '400px',
             paddingRight: '0px'

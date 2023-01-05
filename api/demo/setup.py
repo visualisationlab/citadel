@@ -56,4 +56,4 @@ if __name__ == "__main__":
         }
     ]
 
-    asyncio.run(visgraph.connect(url, port, sid, key, title, startParams, simulate))
+    asyncio.run(visgraph.connect(url, port, sid, key, title, startParams, simulate, schema=None))

@@ -1,7 +1,14 @@
+/**
+ * @author Miles van der Lely <m.vanderlely@uva.nl>
+ *
+ * This file contains logic for selecting mappings.
+ */
 import { Set, Map } from 'immutable'
 
+// All available mapping channels.
 export type MappingChannel = 'hue' | 'saturation' | 'lightness' | 'radius' | 'alpha' | 'text' | 'width' | 'opacity' | 'none' | 'region' | 'x-position' | 'y-position'
 
+// A mapping is a mapping channel, an attribute type, an object type, and an attribute name.
 export type MappingType = {
     mappingName: MappingChannel,
     attributeType: 'categorical' | 'ordered',
@@ -9,8 +16,10 @@ export type MappingType = {
     attributeName: string,
 }
 
+// The state of the selected mappings state is a set of mappings.
 export type SelectedMappingsState = Set<Map<string, any>>
 
+// The action type for the selected mappings reducer.
 export type SelectedMappingsReducerAction =
     | { type: 'addEmpty' }
     | { type: 'remove', mapping: MappingType}
@@ -20,13 +29,16 @@ export type SelectedMappingsReducerAction =
 /* global mappingChannels */
 export const mappingChannels = ['hue' , 'saturation' , 'lightness' , 'radius' , 'alpha' , 'text','width','none','region']
 
+// The mapping properties are used to determine which channels can be used for which object types and attribute types.
 type BasicMappingType = {objectType: 'node' | 'edge' | 'all', channelType: 'categorical' | 'ordered'}
 
+// The mapping properties are stored in a map.
 export type MappingProperties = {[key: string]: BasicMappingType}
 
 /* global mappingProperties */
 export let mappingProperties = Map<MappingChannel, BasicMappingType>()
 
+// The mapping properties are initialized here.
 mappingProperties = mappingProperties.set('hue', {objectType: 'all', channelType: 'categorical'})
 mappingProperties = mappingProperties.set('saturation', {objectType: 'all', channelType: 'ordered'})
 mappingProperties = mappingProperties.set('lightness', {objectType: 'all', channelType: 'ordered'})
@@ -39,6 +51,7 @@ mappingProperties = mappingProperties.set('region', {objectType: 'node', channel
 mappingProperties = mappingProperties.set('x-position', {objectType: 'node', channelType: 'ordered'})
 mappingProperties = mappingProperties.set('y-position', {objectType: 'node', channelType: 'ordered'})
 
+// The selected mappings reducer.
 export function SelectedMappingsReducer(state: SelectedMappingsState, action: SelectedMappingsReducerAction): SelectedMappingsState {
     switch (action.type) {
         case 'addEmpty':
@@ -49,11 +62,7 @@ export function SelectedMappingsReducer(state: SelectedMappingsState, action: Se
                 attributeName: '',
             })
 
-            console.log(state.has(emptyRow))
             if (state.has(emptyRow)) {
-
-                console.log("Item already exists")
-
                 return state
             }
 

@@ -5,7 +5,7 @@ import { API } from '../services/api.service'
 export type NodeMapping = 'colour' | 'radius' | 'alpha' | 'shape' | 'text'
 export type EdgeMapping = 'colour' | 'width' | 'alpha'
 
-type MetadataType = {
+export type MetadataType = {
     type: 'ordered'
     dataType: 'number'
     min: number

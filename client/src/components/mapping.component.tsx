@@ -4,7 +4,6 @@ import {
     Accordion,
     Row,
     Col,
-    Dropdown,
     Form,
     ListGroup,
     OverlayTrigger,
@@ -15,7 +14,9 @@ import {
     Container,
     CloseButton,
     Spinner,
-    ListGroupItem} from 'react-bootstrap'
+    Dropdown,
+    ListGroupItem,
+    Table} from 'react-bootstrap'
 
 import tinycolor from 'tinycolor2'
 
@@ -545,21 +546,72 @@ function CategoryMapping(   mappingSettingsState: SelectedMappingsState,
                             setSettingsType: React.Dispatch<React.SetStateAction<MappingType | null>>): JSX.Element {
     // Maps categories to indices, with an option to enable.
 
+    console.log(settingsType.objectType)
+
+    let frequencies: [string, number][] = []
+
+    if (settingsType.objectType === 'node') {
+        frequencies = graphState.nodes.metadata[settingsType.attributeName].frequencies
+    }
+    else if (settingsType.objectType === 'edge') {
+        frequencies = graphState.edges.metadata[settingsType.attributeName].frequencies
+    }
+
     return (
         <>
             <Row>
-                <Col md={{span: 1}}>
+                <Col md={{span: 4}}>
                     {settingsType.attributeName}
                 </Col>
-                <Col md={{span: 1}}>
+                <Col md={{span: 4}}>
                     {settingsType.attributeType}
                 </Col>
-                <Col md={{span: 1, offset: 9}}>
+                <Col md={{span: 1}}>
                     <CloseButton
                         onClick={() => setSettingsType(null)}></CloseButton>
                 </Col>
             </Row>
             <Row>
+                <div style={{
+                    overflowY: 'scroll',
+                    height: '400px',
+                }}>
+
+                <Table striped bordered hover>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Frequency</th>
+                                <th>Mapping</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {
+                            frequencies.map(([category, freq], index) => {
+                                return (
+                                    <tr>
+                                        <td>{index}</td>
+                                        <td>{category}</td>
+                                        <td>{freq}</td>
+
+                                        <td>
+                                            <Dropdown>
+                                                <Dropdown.Toggle id={'catdrop' + index}>
+                                                    TEST
+                                                </Dropdown.Toggle>
+                                                <Dropdown.Menu>
+                                                    <Dropdown.Item>THING</Dropdown.Item>
+                                                </Dropdown.Menu>
+                                            </Dropdown>
+                                        </td>
+                                    </tr>
+                                )
+                            })
+                        }
+                        </tbody>
+                    </Table>
+                </div>
             </Row>
         </>
     )
@@ -586,7 +638,9 @@ function generateRow(
             // Dropdown for object type.
 
             const newType: MappingType = {
-                ...mapping,
+                mappingName: 'none',
+                attributeName: '',
+                attributeType: 'categorical',
                 objectType: selected
             }
 
@@ -863,7 +917,7 @@ export default function MappingTab() {
         attributeName: ''
     }
 
-    if (settingsType !== null) {
+    if (settingsType) {
         // If a mapping is selected, show the settings.
         if (mappingProperties.get(settingsType.mappingName)?.channelType === 'categorical') {
             return CategoryMapping(mappingSettingsState, mappingSettingsDispatch, graphState, settingsType, setSettingsType)

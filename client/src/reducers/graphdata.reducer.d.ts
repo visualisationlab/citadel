@@ -1,7 +1,7 @@
 import { VisGraph } from '../types';
 export type NodeMapping = 'colour' | 'radius' | 'alpha' | 'shape' | 'text';
 export type EdgeMapping = 'colour' | 'width' | 'alpha';
-type MetadataType = {
+export type MetadataType = {
     type: 'ordered';
     dataType: 'number';
     min: number;
@@ -57,4 +57,3 @@ export type GraphDataReducerAction = {
     };
 };
 export declare function GraphDataReducer(state: GraphDataState, action: GraphDataReducerAction): GraphDataState;
-export {};

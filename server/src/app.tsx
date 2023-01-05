@@ -368,7 +368,7 @@ app.post('/urls', body('url').trim().unescape(),  (req, res) => {
                         } catch (e) {
                             logger.log('error', `Error parsing graph from URL ${url}: ${e}`)
 
-                            res.status(400).json({msg: "Error(s) loading graph (source was probably not a graph!)", errors: []})
+                            res.status(400).json({msg: "Error(s) loading graph (source was probably not a graph!)", errors: [e]})
 
                             rm(dest, () => {})
 

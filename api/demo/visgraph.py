@@ -1,4 +1,6 @@
 import websockets
+import ssl
+import pathlib
 import json
 from jsonschema import validate
 import jsonschema
@@ -86,6 +88,8 @@ def process_response(response, simulatefun):
 
         params = [res[2][param['attribute']]
                     for param in jsonObj['data']['params']]
+
+        return res
     except Exception as e:
         print(f'Error! {e}')
 
@@ -96,7 +100,6 @@ async def connect(url: str,
                   key: str,
                   title: str,
                   startParams: json,
-                  outputParams: json,
                   simulatefun,
                   schema: json):
     """Connects API to the VisGraph server."""
@@ -114,7 +117,7 @@ async def connect(url: str,
     except Exception as e:
         has_schema = False
 
-    async with(websockets.connect(uri, max_size=2 ** 25)) as websocket:
+    async with(websockets.connect(uri, max_size=2 ** 25, ssl=True)) as websocket:
         print("Connected")
 
         await websocket.send(json.dumps({

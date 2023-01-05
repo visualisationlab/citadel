@@ -1,5 +1,3 @@
-import { VisGraph } from '../types'
-
 type SelectionMode =
     | 'single'
     | 'multi'

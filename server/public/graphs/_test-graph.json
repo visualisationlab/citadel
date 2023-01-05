@@ -11,7 +11,13 @@
             "name": "James",
             "nationality": "british",
             "income": 10000,
-            "height": 180
+            "height": 180,
+            "test0": 0,
+            "test1": 0,
+            "test2": 0,
+            "test3": 0,
+            "test4": 0,
+            "test5": 0
         },
         "id": "james",
         "label": "James"
@@ -19,13 +25,19 @@
       {
         "attributes": {
             "age": 54,
-            "name": "King",
+            "name": "Jordan",
             "nationality": "british",
             "income": 100000,
-            "height": 165
+            "height": 165,
+            "test0": 0,
+            "test1": 0,
+            "test2": 0,
+            "test3": 0,
+            "test4": 0,
+            "test5": 0
         },
-        "id": "king",
-        "label": "King"
+        "id": "jordan",
+        "label": "Jordan"
       },
       {
         "attributes": {
@@ -33,7 +45,13 @@
             "name": "Lisa",
             "nationality": "dutch",
             "income": 85000,
-            "height": 170
+            "height": 170,
+            "test0": 0,
+            "test1": 0,
+            "test2": 0,
+            "test3": 0,
+            "test4": 0,
+            "test5": 0
         },
         "id": "lisa",
         "label": "lisa"
@@ -44,7 +62,13 @@
             "name": "Joanne",
             "nationality": "dutch",
             "income": 23000,
-            "height": 155
+            "height": 155,
+            "test0": 0,
+            "test1": 0,
+            "test2": 0,
+            "test3": 0,
+            "test4": 0,
+            "test5": 0
         },
         "id": "joanne",
         "label": "joanne"
@@ -55,7 +79,13 @@
             "name": "Jacob",
             "nationality": "dutch",
             "income": 70000,
-            "height": 200
+            "height": 200,
+            "test0": 0,
+            "test1": 0,
+            "test2": 0,
+            "test3": 0,
+            "test4": 0,
+            "test5": 0
         },
         "id": "jacob",
         "label": "Jacob"
@@ -66,7 +96,13 @@
             "name": "Walter",
             "nationality": "british",
             "income": 120000,
-            "height": 178
+            "height": 178,
+            "test0": 0,
+            "test1": 0,
+            "test2": 0,
+            "test3": 0,
+            "test4": 0,
+            "test5": 0
         },
         "id": "walter",
         "label": "walter"
@@ -76,7 +112,7 @@
         {
             "attributes": {},
             "id": "family",
-            "source": "king",
+            "source": "jordan",
             "target": "lisa"
         },
         {
@@ -88,7 +124,7 @@
         {
             "attributes": {},
             "id": "employment",
-            "source": "king",
+            "source": "jordan",
             "target": "walter"
         },
         {
