@@ -3,6 +3,7 @@ function resetState(state) {
         return state;
     }
     if (state.selectionMode === 'multi') {
+        console.log('multi reset');
         return state;
     }
     return {
@@ -41,6 +42,7 @@ function setState(type, value, mode) {
 }
 export function SelectionDataReducer(state, action) {
     if (action.type === 'reset') {
+        console.log('resetting selection');
         return resetState(state);
     }
     switch (action.type) {

@@ -272,6 +272,7 @@ export function SimulatorTab() {
                         }
                     </Col>
                     <Col md={{span: 2, offset: 1}}><Button disabled variant={buttonVariant}>{sim.state}</Button></Col>
+
                 </Row>
             </ListGroup.Item>
         )

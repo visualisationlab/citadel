@@ -228,11 +228,11 @@ export default function Home() {
                             </thead>
                             <tbody>
                                 {parsedPrevSessions.map(([sid, date], index) => {
-                                    let elapsedMins = round(((new Date()).getTime() - new Date(date).getTime()) / 1000 / 60, 1)
+                                    let elapsedMins = round(((new Date()).getTime() - new Date(date).getTime()) / 1000 / 60, 0)
 
                                     return (
                                         <tr key={sid}>
-                                            <td>{sid} ({elapsedMins} minutes ago)</td>
+                                            <td>{sid + ((elapsedMins > 120) ? '' : ' (' + elapsedMins + ' minute(s) ago)')} </td>
                                             <td><Button
                                                 disabled={!sessionStatusList[index]}
                                                 onClick={() => {

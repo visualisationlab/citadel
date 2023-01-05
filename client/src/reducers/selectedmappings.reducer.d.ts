@@ -1,5 +1,5 @@
 import { Set, Map } from 'immutable';
-export type MappingChannel = 'hue' | 'saturation' | 'lightness' | 'radius' | 'alpha' | 'shape' | 'text' | 'width' | 'opacity' | 'none' | 'region' | 'x-position' | 'y-position';
+export type MappingChannel = 'hue' | 'saturation' | 'lightness' | 'radius' | 'alpha' | 'text' | 'width' | 'opacity' | 'none' | 'region' | 'x-position' | 'y-position';
 export type MappingType = {
     mappingName: MappingChannel;
     attributeType: 'categorical' | 'ordered';

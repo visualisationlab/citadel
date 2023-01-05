@@ -1,6 +1,6 @@
 import { Set, Map } from 'immutable'
 
-export type MappingChannel = 'hue' | 'saturation' | 'lightness' | 'radius' | 'alpha' | 'shape' | 'text' | 'width' | 'opacity' | 'none' | 'region' | 'x-position' | 'y-position'
+export type MappingChannel = 'hue' | 'saturation' | 'lightness' | 'radius' | 'alpha' | 'text' | 'width' | 'opacity' | 'none' | 'region' | 'x-position' | 'y-position'
 
 export type MappingType = {
     mappingName: MappingChannel,
@@ -18,7 +18,7 @@ export type SelectedMappingsReducerAction =
     | { type: 'load', mappings: SelectedMappingsState }
 
 /* global mappingChannels */
-export const mappingChannels = ['hue' , 'saturation' , 'lightness' , 'radius' , 'alpha' , 'shape','text','width','none','region']
+export const mappingChannels = ['hue' , 'saturation' , 'lightness' , 'radius' , 'alpha' , 'text','width','none','region']
 
 type BasicMappingType = {objectType: 'node' | 'edge' | 'all', channelType: 'categorical' | 'ordered'}
 
@@ -32,7 +32,6 @@ mappingProperties = mappingProperties.set('saturation', {objectType: 'all', chan
 mappingProperties = mappingProperties.set('lightness', {objectType: 'all', channelType: 'ordered'})
 mappingProperties = mappingProperties.set('radius', {objectType: 'node', channelType: 'ordered'})
 mappingProperties = mappingProperties.set('alpha', {objectType: 'all', channelType: 'ordered'})
-mappingProperties = mappingProperties.set('shape', {objectType: 'node', channelType: 'categorical'})
 mappingProperties = mappingProperties.set('text', {objectType: 'all', channelType: 'categorical'})
 mappingProperties = mappingProperties.set('width', {objectType: 'edge', channelType: 'ordered'})
 mappingProperties = mappingProperties.set('none', {objectType: 'all', channelType: 'categorical'})

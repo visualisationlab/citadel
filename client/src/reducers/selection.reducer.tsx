@@ -28,6 +28,7 @@ function resetState(state: SelectionDataState): SelectionDataState {
     }
 
     if (state.selectionMode === 'multi') {
+        console.log('multi reset')
         return state
     }
 
@@ -75,6 +76,7 @@ function setState(type: AttributeType, value: string[], mode: SelectionMode): Se
 
 export function SelectionDataReducer(state: SelectionDataState, action: SelectionDataReducerAction): SelectionDataState {
     if (action.type === 'reset') {
+        console.log('resetting selection')
         return resetState(state)
     }
 

@@ -52,11 +52,8 @@ let nodeDict: {[key: string]: VisGraph.GraphNode} = {}
 let renderedEdges: VisGraph.RenderedEdge[] = []
 
 let renderedNodes: RenderedNode[] = []
-let nodeIndex = 0
-
-let pan = true
+let panEnabled = true
 let startupFlag = false
-let zooming = false
 
 let selectionBox = {
     x0: 0,
@@ -66,9 +63,7 @@ let selectionBox = {
 }
 
 const animationSpeed = 0.04
-
-const edgeStartingCount = 1
-const nodeStartingCount = 1
+const multiSelectDelay = 250
 
 let transformX = 0
 let transformY = 0
@@ -136,13 +131,12 @@ class SpriteCache {
  * @returns void
  */
 function setTransformCallback(transformUpdate: () => void) {
-    if (zooming || !pan) {
+    if (!panEnabled) {
         return
     }
 
     transformHandler = (event: any) => {
-        if (!pan && prevTransform) {
-
+        if (!panEnabled && prevTransform) {
             // Draw selection box.
             selectionRect.destroy()
 
@@ -163,7 +157,7 @@ function setTransformCallback(transformUpdate: () => void) {
             return
         }
 
-        if (!pan) {
+        if (!panEnabled) {
             return
         }
 
@@ -182,8 +176,8 @@ function setTransformCallback(transformUpdate: () => void) {
         .call(d3.zoom()
         .scaleExtent([0.01, 3])
         .on('start', () => {
-            if (prevTransform !== null) {
-
+            if (prevTransform) {
+                console.log('Resetting view')
                 // @ts-ignore
                 d3.select('.render').call(d3.zoom().transform, prevTransform)
             }
@@ -193,8 +187,7 @@ function setTransformCallback(transformUpdate: () => void) {
         .on('zoom', (event) => {
             transformHandler(event)
         }).on("end", () => {
-            zooming = false
-        }))
+    }))
 }
 
 function getSprite(shape: VisGraph.Shape) {
@@ -251,39 +244,37 @@ function renderBackground(stage: PIXI.Container,
 
     stage.addChild(background)
 
-    var timer: ReturnType<typeof setTimeout> | null = null
+    var multiSelectTimer: ReturnType<typeof setTimeout> | null = null
 
+    // Pointer down event.
     background.on(('pointerdown'), (event: any) => {
-
-
-        if (timer !== null) {
-            return
+        // If timer is running, clear it.
+        if (multiSelectTimer) {
+            clearTimeout(multiSelectTimer)
+            multiSelectTimer = null
+            prevTransform = null
         }
 
-        if (timer) {
-            clearTimeout(timer)
-            timer = null
-        }
+        // Start timer.
+        multiSelectTimer = setTimeout(() => {
+            // If timer is still running, it's a multi-select.
+            panEnabled = false
 
-        timer = setTimeout(() => {
-            pan = false
-            timer = null
+            multiSelectTimer = null
 
             selectionBox.x0 = event.data.global.x
             selectionBox.y0 = event.data.global.y
+
             // @ts-ignore
             prevTransform = d3.zoomTransform(d3.select('.render').node())
-
-
-        }, 250)
+        }, multiSelectDelay)
     })
 
-    background.on(('mouseup'), () => {
-        if (prevTransform !== null) {
-
+    // Pointer up event.
+    background.on(('pointerup'), () => {
+        if (!panEnabled) {
             selectionRect.destroy()
             selectionRect = new PIXI.Graphics()
-
 
             nodes.forEach((node) => {
                 if (node.x * transformK + transformX > selectionBox.x0
@@ -300,9 +291,9 @@ function renderBackground(stage: PIXI.Container,
             })
         }
 
-        if (timer) {
-
-            pan = true
+        if (multiSelectTimer) {
+            console.log('Single select')
+            panEnabled = true
 
             if (dispatch) {
                 dispatch({
@@ -310,14 +301,15 @@ function renderBackground(stage: PIXI.Container,
                 })
             }
 
-            clearTimeout(timer)
-            timer = null
+            clearTimeout(multiSelectTimer)
+            multiSelectTimer = null
+            prevTransform = null
 
             return
         }
     })
 
-    background.on(('mouseupoutside'), () => {
+    background.on(('pointerupoutside'), () => {
         if (prevTransform !== null) {
 
             selectionRect.destroy()
@@ -337,23 +329,25 @@ function renderBackground(stage: PIXI.Container,
             })
         }
 
-        if (timer !== null) {
+        if (multiSelectTimer !== null) {
 
-            pan = true
+            panEnabled = true
 
-            clearTimeout(timer)
-            timer = null
+            clearTimeout(multiSelectTimer)
+            multiSelectTimer = null
 
             return
         }
     })
 
     background.on(('pointermove'), () => {
-        if (timer !== null) {
-            pan = true
+        if (multiSelectTimer) {
+            panEnabled = true
 
-            clearTimeout(timer)
-            timer = null
+            clearTimeout(multiSelectTimer)
+
+            multiSelectTimer = null
+            prevTransform = null
         }
     })
 
@@ -670,8 +664,9 @@ export function Renderer({
     app.render()
 
     nodeDict = {}
+
     /* Update node gfx. */
-    var timer: ReturnType<typeof setTimeout> | null = null
+    var multiSelectTimer: ReturnType<typeof setTimeout> | null = null
 
     renderedNodes = nodes.map((node) => {
         const nodeSprite = getSprite(node.visualAttributes.shape)
@@ -703,16 +698,16 @@ export function Renderer({
                 return
             }
 
-            if (timer !== null) {
+            if (multiSelectTimer !== null) {
                 return
             }
 
-            if (timer) {
-                clearTimeout(timer)
-                timer = null
+            if (multiSelectTimer) {
+                clearTimeout(multiSelectTimer)
+                multiSelectTimer = null
             }
 
-            timer = setTimeout(() => {selectionDispatch({
+            multiSelectTimer = setTimeout(() => {selectionDispatch({
                 'attribute': 'node',
                 'type': 'longClick',
                 'id': id
@@ -724,11 +719,11 @@ export function Renderer({
                 return
             }
 
-            if (timer !== null) {
+            if (multiSelectTimer !== null) {
 
-                clearTimeout(timer)
+                clearTimeout(multiSelectTimer)
 
-                timer = null
+                multiSelectTimer = null
             }
 
 
@@ -745,9 +740,9 @@ export function Renderer({
                 return
             }
 
-            if (timer !== null) {
-                clearTimeout(timer)
-                timer = null
+            if (multiSelectTimer !== null) {
+                clearTimeout(multiSelectTimer)
+                multiSelectTimer = null
             }
         })
 
