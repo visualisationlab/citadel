@@ -404,12 +404,6 @@ function CategoryMapping(   mappingSettingsState: SelectedMappingsState,
     return (
         <>
             <Row>
-                {/* <Col md={{span: 4}}>
-                    {settingsType.attributeName}
-                </Col>
-                <Col md={{span: 4}}>
-                    {settingsType.attributeType}
-                </Col> */}
                 <Col md={{span: 1, offset: 11}}>
                     <CloseButton
                         onClick={() => setSettingsType(null)}></CloseButton>
