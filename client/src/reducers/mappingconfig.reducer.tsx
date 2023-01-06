@@ -17,13 +17,13 @@ export type MappingSettings = {
 }
 
 // The action type for the selected mappings reducer.
-export type SelectedMappingsReducerAction =
+export type MappingConfigReducerAction =
     | { type: 'updateData', key: MappingType, value: {[key: string]: number}}
     | { type: 'updateHueSettings', key: MappingType, value: string}
     | { type: 'updateRegionSettings', key: MappingType, value: number}
 
 // The selected mappings reducer.
-export function SelectedMappingsReducer(state: MappingConfigState, action: SelectedMappingsReducerAction): MappingConfigState {
+export function MappingConfigReducer(state: MappingConfigState, action: MappingConfigReducerAction): MappingConfigState {
     switch (action.type) {
         case 'updateData':
             if (state.has(action.key)) {

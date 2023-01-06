@@ -13,7 +13,7 @@ export type MappingSettings = {
         [key: string]: number;
     };
 };
-export type SelectedMappingsReducerAction = {
+export type MappingConfigReducerAction = {
     type: 'updateData';
     key: MappingType;
     value: {
@@ -28,4 +28,4 @@ export type SelectedMappingsReducerAction = {
     key: MappingType;
     value: number;
 };
-export declare function SelectedMappingsReducer(state: MappingConfigState, action: SelectedMappingsReducerAction): MappingConfigState;
+export declare function MappingConfigReducer(state: MappingConfigState, action: MappingConfigReducerAction): MappingConfigState;
