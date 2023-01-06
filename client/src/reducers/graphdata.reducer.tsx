@@ -1,10 +1,13 @@
+/**
+ * @author Miles van der Lely <m.vanderlely@uva.nl>
+ *
+ * This file contains the graph data reducer, which is used to store the graph data.
+ */
 import { VisGraph } from '../types'
 
 import { API } from '../services/api.service'
 
-export type NodeMapping = 'colour' | 'radius' | 'alpha' | 'shape' | 'text'
-export type EdgeMapping = 'colour' | 'width' | 'alpha'
-
+// Metadata is used for mappings.
 export type MetadataType = {
     type: 'ordered'
     dataType: 'number'
@@ -20,6 +23,7 @@ export type MetadataType = {
     frequencyDict: {[key: string]: number}
 }
 
+// The graph data state is a set of nodes and edges.
 export interface GraphDataState {
     nodes: {
         data: VisGraph.GraphNode[]
@@ -45,6 +49,7 @@ export type GraphDataReducerAction =
         attributes: {[key: string]: string}
     } }
 
+// The graph data reducer is used to update the graph data state.
 function updateData(state: GraphDataState, action: GraphDataReducerAction): GraphDataState {
     if (action.type !== 'update') {
         return state

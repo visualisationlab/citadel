@@ -1,7 +1,8 @@
 /**
  * @author Miles van der Lely <m.vanderlely@uva.nl>
  *
- * This file contains logic for selecting mappings.
+ * This file contains logic for selecting mappings. Mapping settings are
+ * stored separately.
  */
 import { Set, Map } from 'immutable';
 export type MappingChannel = 'hue' | 'saturation' | 'lightness' | 'radius' | 'alpha' | 'text' | 'width' | 'opacity' | 'none' | 'region' | 'x-position' | 'y-position';

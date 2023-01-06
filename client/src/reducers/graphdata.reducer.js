@@ -1,4 +1,5 @@
 import { API } from '../services/api.service';
+// The graph data reducer is used to update the graph data state.
 function updateData(state, action) {
     if (action.type !== 'update') {
         return state;

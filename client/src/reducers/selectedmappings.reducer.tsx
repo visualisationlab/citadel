@@ -1,7 +1,8 @@
 /**
  * @author Miles van der Lely <m.vanderlely@uva.nl>
  *
- * This file contains logic for selecting mappings.
+ * This file contains logic for selecting mappings. Mapping settings are
+ * stored separately.
  */
 import { Set, Map } from 'immutable'
 
@@ -17,6 +18,9 @@ export type MappingType = {
 }
 
 // The state of the selected mappings state is a set of mappings.
+// Javascript doesn't support object sets, so we use immutable.js sets.
+// The immutable.js sets are implemented as maps, so we use the Map type.
+// This keeps the reducer logic simple.
 export type SelectedMappingsState = Set<Map<string, any>>
 
 // The action type for the selected mappings reducer.
@@ -26,7 +30,6 @@ export type SelectedMappingsReducerAction =
     | { type: 'editRow', prevItem: MappingType, newItem: MappingType }
     | { type: 'load', mappings: SelectedMappingsState }
 
-/* global mappingChannels */
 export const mappingChannels = ['hue' , 'saturation' , 'lightness' , 'radius' , 'alpha' , 'text','width','none','region']
 
 // The mapping properties are used to determine which channels can be used for which object types and attribute types.
@@ -35,7 +38,6 @@ type BasicMappingType = {objectType: 'node' | 'edge' | 'all', channelType: 'cate
 // The mapping properties are stored in a map.
 export type MappingProperties = {[key: string]: BasicMappingType}
 
-/* global mappingProperties */
 export let mappingProperties = Map<MappingChannel, BasicMappingType>()
 
 // The mapping properties are initialized here.

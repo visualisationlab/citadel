@@ -1,6 +1,9 @@
+/**
+ * @author Miles van der Lely <m.vanderlely@uva.nl>
+ *
+ * This file contains the graph data reducer, which is used to store the graph data.
+ */
 import { VisGraph } from '../types';
-export type NodeMapping = 'colour' | 'radius' | 'alpha' | 'shape' | 'text';
-export type EdgeMapping = 'colour' | 'width' | 'alpha';
 export type MetadataType = {
     type: 'ordered';
     dataType: 'number';

@@ -1,5 +1,12 @@
 
-import React, { useContext, useReducer, useEffect, Dispatch, useState, useRef } from 'react'
+/**
+ * @author Miles van der Lely <m.vanderlely@uva.nl>
+ *
+ * This file contains logic for the mapping component, used to map
+ * the graph data to visual channels.
+ */
+
+import React, { useContext, useReducer, useEffect, useState } from 'react'
 import {
     Accordion,
     Row,
@@ -9,13 +16,10 @@ import {
     OverlayTrigger,
     Button,
     Tooltip,
-    ButtonGroup,
-    DropdownButton,
     Container,
     CloseButton,
     Spinner,
     Dropdown,
-    ListGroupItem,
     Table} from 'react-bootstrap'
 
 import tinycolor from 'tinycolor2'
@@ -23,7 +27,7 @@ import tinycolor from 'tinycolor2'
 import { UserDataContext } from '../components/main.component'
 import { GraphDataContext } from '../components/main.component'
 import { MappingSettingsContext } from '../components/main.component'
-import { GraphDataReducerAction, GraphDataState, NodeMapping, EdgeMapping } from '../reducers/graphdata.reducer'
+import { GraphDataState } from '../reducers/graphdata.reducer'
 import { ServerState } from '../reducers/sessiondata.reducer'
 
 import { LayoutSettingsReducer, LayoutSettingsState, LayoutSettingsReducerAction, AvailableLayout } from '../reducers/layoutsettings.reducer'
@@ -35,168 +39,6 @@ import { SelectedMappingsReducerAction, SelectedMappingsState, mappingProperties
 import { API } from '../services/api.service'
 import { Map } from 'immutable'
 import './home.component.css'
-
-type InfoCard = {
-    img: string,
-    title: string,
-    description: string
-}
-
-const nodeMappingTitles: { [key in NodeMapping]: InfoCard} = {
-    'colour': {img: 'colourImg', title: 'Fill Colour', description: 'Maps a node attribute to its colour.'},
-    'radius': {img: 'radiusImg', title: 'Radius', description: 'Maps a node attribute to its radius.'},
-    'alpha': {img: 'alphaImg', title: 'Alpha', description: 'Maps a node attribute to its alpha channel (transparency).'},
-    'shape': {img: 'colourImg', title: 'Shape', description: 'Maps a node attribute to its shape.'},
-    'text': {img: 'colourImg', title: 'Text', description: 'Maps a node attribute to its label.'},
-}
-
-const edgeMappingTitles: { [key in EdgeMapping]: InfoCard} = {
-    'colour': {img: 'colourImg', title: 'Fill Colour', description: 'Maps an edge attribute to its colour.'},
-    'alpha': {img: 'alphaImg', title: 'Alpha', description: 'Maps an edge attribute to its transparency.'},
-    'width': {img: 'widthImg', title: 'Width', description: 'Maps an edge attribute to its width.'},
-}
-
-// function NodeMappingWindow(nodeSettings: string, setNodeSettingState: React.Dispatch<React.SetStateAction<string>>, graphState: GraphDataState, dispatch: Dispatch<GraphDataReducerAction>): JSX.Element {
-//     const rows = Object.entries(nodeMappingTitles).map(([key, value], index) => {
-//             const title = graphState.nodes.mapping.generators[key as NodeMapping].attribute
-
-//             return (
-//                 <ListGroup.Item variant={title !== '' ? 'outline-primary' : ''}>
-//                     <Row>
-//                         <Col md={{span: 2}}>
-//                             {value.title}
-//                         </Col>
-//                         <Col md={{span: 4}}>
-//                             {value.description}
-//                         </Col>
-//                         <Col md={{span: 6}}>
-//                             <ListGroup className="list-group-flush">
-//                                 <ListGroup.Item>
-//                                     <ButtonGroup>
-
-//                                         <DropdownButton as={ButtonGroup} title={title === '' ? 'none' : title} onSelect={(item) => {
-//                                         if (item === null) {
-//                                             return
-//                                         }
-
-//                                         dispatch({
-//                                             type: 'set',
-//                                             property: 'mapping',
-//                                             object: 'node',
-//                                             map: key as NodeMapping,
-//                                             fun: 'linearmap',
-//                                             key: item
-//                                         })
-//                                         }}>
-//                                             <Dropdown.Item eventKey={''}>none</Dropdown.Item>
-//                                             {Object.keys(graphState.nodes.data[0]?.attributes).map((attribute) => {
-//                                                 return (
-//                                                     <Dropdown.Item key={attribute} eventKey={attribute}>{attribute}</Dropdown.Item>
-//                                                 )
-//                                             })}
-
-//                                         </DropdownButton>
-//                                         <Button onClick={() => setNodeSettingState(key)}><BiCog></BiCog></Button>
-//                                     </ButtonGroup>
-//                                 </ListGroup.Item>
-//                             </ListGroup>
-//                         </Col>
-//                     </Row>
-//                 </ListGroup.Item>
-//             )
-//         })
-
-//     return (
-//         <Accordion.Item eventKey='nodemap'>
-//             <Accordion.Header>Node Mapping</Accordion.Header>
-//             <Accordion.Body style={{
-//                 overflowY: 'scroll',
-//                 height: '400px'
-//             }}>
-//                 <Container>
-//                     { nodeSettings !== '' &&
-//                         SettingsComponent(nodeSettings, setNodeSettingState, graphState, dispatch)}
-//                     { nodeSettings === '' &&
-
-//                     <ListGroup>
-//                         {rows}
-//                     </ListGroup>}
-//                 </Container>
-//             </Accordion.Body>
-//         </Accordion.Item>
-//     )
-// }
-
-// function edgeMapping(graphState: GraphDataState, dispatch: Dispatch<GraphDataReducerAction>): JSX.Element {
-//     if (graphState.edges.data.length === 0) {
-//         return <></>
-//     }
-
-//     const rows = Object.entries(edgeMappingTitles).map(([key, value], index) => {
-//         const title = graphState.edges.mapping.generators[key as EdgeMapping].attribute
-
-//         return (
-//             <ListGroup.Item variant={title !== '' ? 'outline-primary' : ''}>
-//                 <Row>
-//                     <Col md={{span: 2}}>
-//                         {value.title}
-//                     </Col>
-//                     <Col md={{span: 4}}>
-//                         {value.description}
-//                     </Col>
-//                     <Col md={{span: 4}}>
-//                         <ListGroup className="list-group-flush">
-//                             <ListGroup.Item>
-//                                 <ButtonGroup>
-//                                     {/* <Button>Settings</Button> */}
-//                                     <DropdownButton as={ButtonGroup} title={title === '' ? 'none' : title} onSelect={(item) => {
-//                                     if (item === null) {
-//                                         return
-//                                     }
-
-//                                     dispatch({
-//                                         type: 'set',
-//                                         property: 'mapping',
-//                                         object: 'edge',
-//                                         map: key as EdgeMapping,
-//                                         fun: 'linearmap',
-//                                         key: item
-//                                     })
-//                                     }}>
-//                                         <Dropdown.Item eventKey={''}>none</Dropdown.Item>
-//                                         {Object.keys(graphState.edges.data[0]?.attributes).map((attribute) => {
-//                                             return (
-//                                                 <Dropdown.Item key={attribute} eventKey={attribute}>{attribute}</Dropdown.Item>
-//                                             )
-//                                         })}
-
-//                                     </DropdownButton>
-//                                 </ButtonGroup>
-//                             </ListGroup.Item>
-//                         </ListGroup>
-//                     </Col>
-//                 </Row>
-//             </ListGroup.Item>
-//         )
-//     })
-
-//     return (
-//         <Accordion.Item eventKey='edgemap'>
-//             <Accordion.Header>Edge Mapping</Accordion.Header>
-//             <Accordion.Body style={{
-//                 overflowY: 'scroll',
-//                 height: '300px'
-//             }}>
-//                 <Container>
-//                     <ListGroup>
-//                         {rows}
-//                         {/* {settingsBorder([])} */}
-//                     </ListGroup>
-//                 </Container>
-//             </Accordion.Body>
-//         </Accordion.Item>
-//     )
-// }
 
 function layoutMapping(layouts: string[], layoutInfo: LayoutSettingsState,
     layoutSettingsDispatch: React.Dispatch<LayoutSettingsReducerAction>,
@@ -409,6 +251,8 @@ async function getClipboardData() {
     return await navigator.clipboard.readText()
 }
 
+// TODO: Reuse for hue. This is a bit of a mess
+
 // function ColourSettingsComponent(props: {graphState: GraphDataState, dispatch: Dispatch<GraphDataReducerAction>, objectType: 'node' | 'edge'}): JSX.Element {
 //     let colours = props.objectType === 'node' ? props.graphState.nodes.mapping.settings.colours : props.graphState.edges.mapping.settings.colours
 
@@ -560,13 +404,13 @@ function CategoryMapping(   mappingSettingsState: SelectedMappingsState,
     return (
         <>
             <Row>
-                <Col md={{span: 4}}>
+                {/* <Col md={{span: 4}}>
                     {settingsType.attributeName}
                 </Col>
                 <Col md={{span: 4}}>
                     {settingsType.attributeType}
-                </Col>
-                <Col md={{span: 1}}>
+                </Col> */}
+                <Col md={{span: 1, offset: 11}}>
                     <CloseButton
                         onClick={() => setSettingsType(null)}></CloseButton>
                 </Col>
@@ -695,7 +539,7 @@ function generateRow(
                 >
                 <span style={{whiteSpace: 'nowrap', overflow: 'hidden', float: 'left', display: 'inline-block', width: '100px', textOverflow:'ellipsis'}}>{mapping.attributeName === '' ? 'none' : mapping.attributeName}</span>
             </Dropdown.Toggle>
-            <Dropdown.Menu>
+            <Dropdown.Menu style={{overflowY: 'scroll', maxHeight: 200}}>
                 {Object.values(attributeList).map((attribute) => {
                     return (
                         <Dropdown.Item key={attribute} eventKey={attribute}>
@@ -966,8 +810,4 @@ export default function MappingTab() {
                 state.state)}
         </Accordion>
     )
-
-            {/* {NodeMappingWindow(nodeSettingState, setNodeSettingState, graphState, graphDispatch)} */}
-            {/* {edgeMapping(graphState, graphDispatch)} */}
-
 }
