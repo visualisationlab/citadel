@@ -1,3 +1,9 @@
+/**
+ * @author Miles van der Lely <m.vanderlely@uva.nl>
+ *
+ * This file contains the Session class, which is the main class of the server.
+ *
+ */
 /// <reference types="node" />
 import { WebSocket } from 'ws';
 import { Worker } from 'worker_threads';
@@ -20,6 +26,8 @@ type SimulatorParam = {
     value: string;
 };
 export declare module MessageTypes {
+    export type GetType = 'graphState' | 'sessionState' | 'layouts' | 'apiKey' | 'QR';
+    export type SetType = 'playstate' | 'graphState' | 'simulator' | 'simulatorInstance' | 'layout' | 'username' | 'graphIndex' | 'headset' | 'windowSize' | 'pan';
     export interface OutMessage {
         sessionID: string;
         sessionState: SessionState;
@@ -56,8 +64,6 @@ export declare module MessageTypes {
             params: any;
         };
     }
-    export type GetType = 'graphState' | 'sessionState' | 'layouts' | 'apiKey' | 'QR';
-    export type SetType = 'playstate' | 'graphState' | 'simulator' | 'simulatorInstance' | 'layout' | 'username' | 'graphIndex' | 'headset' | 'windowSize' | 'pan';
     export interface GetMessage extends InMessage {
         messageSource: 'user';
         messageType: 'get';
@@ -202,11 +208,11 @@ type LayoutSettings = {
     }[];
 };
 export declare class Session {
-    private readonly sourceURL;
     private readonly sessionID;
+    private expirationDate;
+    private readonly sourceURL;
     private readonly localAddress;
     private readonly websocketPort;
-    private expirationDate;
     private cy;
     private sessionState;
     private users;

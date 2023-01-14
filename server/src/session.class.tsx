@@ -1,3 +1,10 @@
+/**
+ * @author Miles van der Lely <m.vanderlely@uva.nl>
+ *
+ * This file contains the Session class, which is the main class of the server.
+ *
+ */
+
 import uid from 'uid-safe'
 import cytoscape from 'cytoscape'
 import { WebSocket } from 'ws'
@@ -5,9 +12,6 @@ import { Worker } from 'worker_threads'
 import { setTimeout } from 'timers/promises'
 import { gzip, gunzip } from 'node:zlib'
 import { gzipSync } from 'zlib'
-
-import QRCode from 'qrcode'
-
 import { Logger } from 'winston'
 
 type SessionState = 'idle' | 'busy'
@@ -30,6 +34,7 @@ type Headset = {
     socket: WebSocket | null
 }
 
+// Starting parameters for the simulator.
 type SimulatorParam =
     {
         attribute: string,
@@ -50,6 +55,7 @@ type SimulatorParam =
         value: string
     }
 
+// Simulator instance.
 type Simulator = {
     readonly apikey: string | null,
     readonly userID: string,
@@ -62,6 +68,12 @@ type Simulator = {
 }
 
 export module MessageTypes {
+    export type GetType = 'graphState' | 'sessionState' | 'layouts' | 'apiKey' | 'QR'
+    export type SetType = 'playstate' | 'graphState' | 'simulator'
+                                      | 'simulatorInstance' | 'layout'
+                                      | 'username' | 'graphIndex'
+                                      | 'headset' | 'windowSize' | 'pan'
+
     export interface OutMessage {
         sessionID: string,
         sessionState: SessionState,
@@ -101,9 +113,6 @@ export module MessageTypes {
             params: any
         }
     }
-
-    export type GetType = 'graphState' | 'sessionState' | 'layouts' | 'apiKey' | 'QR'
-    export type SetType = 'playstate' | 'graphState' | 'simulator' | 'simulatorInstance' | 'layout' | 'username' | 'graphIndex' | 'headset' | 'windowSize' | 'pan'
 
     export interface GetMessage extends InMessage {
         messageSource: 'user'
@@ -476,13 +485,17 @@ type SimState = {
 }
 
 export class Session {
-    private readonly sourceURL: string
     private readonly sessionID: string
+    private expirationDate: Date
 
+    /* URL of the source file. */
+    private readonly sourceURL: string
+
+    /* Connection settings. */
     private readonly localAddress: string
     private readonly websocketPort: string
 
-    private expirationDate: Date
+    /* Used to store current session graph state. */
     private cy: cytoscape.Core
 
     /* Server idle/busy. */
@@ -493,10 +506,15 @@ export class Session {
 
     private messageQueue: MessageTypes.InMessage[]
 
-    /* Session destructor function. */
+    /* Type dec for session destructor. */
     private readonly destroyFun: (sid: string) => void
 
-    /* Simulation state. */
+    /* Simulation state.
+     * step: current step
+     * stepMax: max (last) step
+     * apiKey: API key for the current simulation
+     * params: parameters for the current simulation
+     */
     private simState: SimState = {
         step: 0,
         stepMax: 0,
@@ -506,10 +524,13 @@ export class Session {
 
     /* Stores graph slices for timeline. */
     private graphHistory: [string, AvailableLayout | null][]
+
+    /* Current graph index. */
     private graphIndex = 0
 
     private logger: Logger
 
+    /* True if session is in 'play mode' used to demonstrate the simulation. */
     private playmode: boolean
 
     private currentLayout: AvailableLayout | null
