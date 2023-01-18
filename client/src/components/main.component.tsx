@@ -8,10 +8,7 @@ import Layout from './layout.component'
 import { SessionDataReducer, SessionState, SessionReducer } from '../reducers/sessiondata.reducer'
 import { GraphDataReducerAction, GraphDataState, GraphDataReducer } from '../reducers/graphdata.reducer'
 import { SelectionDataReducerAction, SelectionDataState, SelectionDataReducer } from '../reducers/selection.reducer'
-import { SelectedMappingsReducerAction, SelectedMappingsState, SelectedMappingsReducer, MappingType } from '../reducers/selectedmappings.reducer'
-
-import { SchemeReducerAction, SchemeReducer, SchemeState } from '../reducers/schemes.reducer'
-import { MappingConfigReducerAction, MappingConfigState, MappingConfigReducer, MappingSettings } from '../reducers/mappingconfig.reducer'
+import { MappingsReducer, MappingsReducerAction, MappingsState } from '../reducers/selectedmappings.reducer'
 
 import { websocketService } from '../services/websocket.service'
 
@@ -33,9 +30,9 @@ export const GraphDataContext = createContext({
     graphDispatch: null as React.Dispatch<GraphDataReducerAction> | null
 })
 
-export const MappingSettingsContext = createContext({
-    mappingSettingsState: null as SelectedMappingsState | null,
-    mappingSettingsDispatch: null as React.Dispatch<SelectedMappingsReducerAction> | null
+export const MappingContext = createContext({
+    mappingsState: null as MappingsState | null,
+    mappingsDispatch: null as React.Dispatch<MappingsReducerAction> | null
 })
 
 export const SelectionDataContext = createContext({
@@ -43,18 +40,13 @@ export const SelectionDataContext = createContext({
     selectionDispatch: null as React.Dispatch<SelectionDataReducerAction> | null
 })
 
-export const SchemeContext = createContext({
-    schemeState: null as SchemeState | null,
-    schemeDispatch: null as React.Dispatch<SchemeReducerAction> | null
-})
-
-export const MappingConfigContext = createContext({
-    mappingConfigState: null as MappingConfigState | null,
-    mappingConfigDispatch: null as React.Dispatch<MappingConfigReducerAction> | null
-})
-
 export default function Main() {
-    let [mappingSettings, mappingSettingsDispatch] = useReducer<Reducer<SelectedMappingsState, SelectedMappingsReducerAction>>(SelectedMappingsReducer, Set<Map<string, any>>())
+    let [mappingsState, mappingsDispatch] = useReducer<Reducer<MappingsState, MappingsReducerAction>>(MappingsReducer,
+        {
+            schemes: Map(),
+            config: Map(),
+            selectedMappings: Set()
+        })
 
     let [selectionData, selectionDataDispatch] = useReducer(SelectionDataReducer, {
         selectedNodes: [],
@@ -96,10 +88,6 @@ export default function Main() {
         directed: false
     })
 
-    let [schemeData, schemeDispatch] = useReducer<Reducer<SchemeState, SchemeReducerAction>>(SchemeReducer, Map<string, number[]>())
-
-    let [mappingConfig, mappingConfigDispatch] = useReducer<Reducer<MappingConfigState, MappingConfigReducerAction>>(MappingConfigReducer, Map<MappingType, MappingSettings>())
-
     const [qrCode, setqrCode] = useState('')
 
     useEffect(() => {
@@ -134,20 +122,16 @@ export default function Main() {
     return (
         <>
             <SelectionDataContext.Provider value={{ selectionState: selectionData, selectionDispatch: selectionDataDispatch}}>
-            <MappingSettingsContext.Provider value={{ mappingSettingsState: mappingSettings, mappingSettingsDispatch: mappingSettingsDispatch}}>
+            <MappingContext.Provider value={{ mappingsState: mappingsState, mappingsDispatch: mappingsDispatch}}>
             <GraphDataContext.Provider value={{ graphState: graphData, graphDispatch: graphDataDispatch }}>
-            <SchemeContext.Provider value={{ schemeState: schemeData, schemeDispatch: schemeDispatch }}>
-            <MappingConfigContext.Provider value={{ mappingConfigState: mappingConfig, mappingConfigDispatch: mappingConfigDispatch }}>
                 <UserDataContext.Provider value={{ state: sessionData, dispatch: sessionDataDispatch}}>
                         <Navigator disconnected = {sessionData.state === 'disconnected'}/>
                         <InspectionTab/>
                 </UserDataContext.Provider>
 
                 <Layout/>
-            </MappingConfigContext.Provider>
-            </SchemeContext.Provider>
             </GraphDataContext.Provider>
-            </MappingSettingsContext.Provider>
+            </MappingContext.Provider>
             </SelectionDataContext.Provider>
         </>
     )

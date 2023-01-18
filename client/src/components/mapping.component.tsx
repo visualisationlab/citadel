@@ -26,18 +26,18 @@ import tinycolor from 'tinycolor2'
 
 import { UserDataContext } from '../components/main.component'
 import { GraphDataContext } from '../components/main.component'
-import { MappingSettingsContext } from '../components/main.component'
+import { MappingContext } from '../components/main.component'
 import { GraphDataState } from '../reducers/graphdata.reducer'
 import { ServerState } from '../reducers/sessiondata.reducer'
 
 import { LayoutSettingsReducer, LayoutSettingsState, LayoutSettingsReducerAction, AvailableLayout } from '../reducers/layoutsettings.reducer'
+import { MappingsReducerAction, MappingsState, mappingProperties, MappingChannel, mappingChannels, MappingType } from '../reducers/selectedmappings.reducer'
 
 import { BiCog } from 'react-icons/bi'
 
-import { SelectedMappingsReducerAction, SelectedMappingsState, mappingProperties, MappingChannel, mappingChannels, MappingType } from '../reducers/selectedmappings.reducer'
-
 import { API } from '../services/api.service'
 import { Map } from 'immutable'
+
 import './home.component.css'
 
 function layoutMapping(layouts: string[], layoutInfo: LayoutSettingsState,
@@ -383,8 +383,8 @@ async function getClipboardData() {
 //     )
 // }
 
-function CategoryMapping(   mappingSettingsState: SelectedMappingsState,
-                            mappingSettingsDispatch: React.Dispatch<SelectedMappingsReducerAction>,
+function CategoryMapping(   mappingsState: MappingsState,
+                            mappingsDispatch: React.Dispatch<MappingsReducerAction>,
                             graphState: GraphDataState,
                             settingsType: MappingType,
                             setSettingsType: React.Dispatch<React.SetStateAction<MappingType | null>>): JSX.Element {
@@ -434,12 +434,12 @@ function CategoryMapping(   mappingSettingsState: SelectedMappingsState,
                                         <td>{freq}</td>
 
                                         <td>
-                                            <Dropdown>
+                                            <Dropdown >
                                                 <Dropdown.Toggle id={'catdrop' + index}>
                                                     TEST
                                                 </Dropdown.Toggle>
                                                 <Dropdown.Menu>
-                                                    <Dropdown.Item>THING</Dropdown.Item>
+                                                    <Dropdown.Item key='thing' eventKey='thing'>THING</Dropdown.Item>
                                                 </Dropdown.Menu>
                                             </Dropdown>
                                         </td>
@@ -456,14 +456,14 @@ function CategoryMapping(   mappingSettingsState: SelectedMappingsState,
 }
 
 function generateRow(
-    mappingSettingsState: SelectedMappingsState,
-    mappingSettingsDispatch: React.Dispatch<SelectedMappingsReducerAction>,
+    mappingsState: MappingsState,
+    mappingsDispatch: React.Dispatch<MappingsReducerAction>,
     graphState: GraphDataState,
     mapping: MappingType,
     setSettingsType: React.Dispatch<React.SetStateAction<MappingType | null>>
     ): JSX.Element {
 
-    if (mappingSettingsState.get(Map(mapping)) === undefined) {
+    if (mappingsState.selectedMappings.get(Map(mapping)) === undefined) {
         return <></>
     }
 
@@ -482,10 +482,11 @@ function generateRow(
                 objectType: selected
             }
 
-            mappingSettingsDispatch({
-                type: 'editRow',
-                newItem: newType,
-                prevItem: mapping,
+            mappingsDispatch({
+                type: 'selection',
+                action: 'edit',
+                newMapping: newType,
+                prevMapping: mapping,
             })
         }}>
             <Dropdown.Toggle
@@ -520,10 +521,11 @@ function generateRow(
         <Dropdown onSelect={(selected: any) => {
             // Dropdown for attribute selection.
 
-            mappingSettingsDispatch({
-                type: 'editRow',
-                prevItem: mapping,
-                newItem: {...mapping, attributeName: selected, attributeType: mapping.objectType === 'node' ? graphState.nodes.metadata[selected].type : graphState.edges.metadata[selected].type, mappingName: 'none'}
+            mappingsDispatch({
+                type: 'selection',
+                action: 'edit',
+                prevMapping: mapping,
+                newMapping: {...mapping, attributeName: selected, attributeType: mapping.objectType === 'node' ? graphState.nodes.metadata[selected].type : graphState.edges.metadata[selected].type, mappingName: 'none'}
             })
 
             }}>
@@ -588,10 +590,11 @@ function generateRow(
                 mappingName: selected
             }
 
-            mappingSettingsDispatch({
-                type: 'editRow',
-                prevItem: mapping,
-                newItem: newType
+            mappingsDispatch({
+                type: 'selection',
+                action: 'edit',
+                prevMapping: mapping,
+                newMapping: newType
             })
             }}>
             <Dropdown.Toggle
@@ -660,8 +663,9 @@ function generateRow(
                 }
                 <Col md={{span: 1}}>
                     <Button variant='outline-danger' onClick={() => {
-                        mappingSettingsDispatch({
-                            type: 'remove',
+                        mappingsDispatch({
+                            type: 'selection',
+                            action: 'remove',
                             mapping: mapping
                         })
                     }}>X</Button>
@@ -672,12 +676,12 @@ function generateRow(
 }
 
 function MappingList(
-    mappingSettingsState: SelectedMappingsState,
-    mappingSettingsDispatch: React.Dispatch<SelectedMappingsReducerAction>,
+    mappingsState: MappingsState,
+    mappingsDispatch: React.Dispatch<MappingsReducerAction>,
     graphState: GraphDataState,
     setSettingsType: React.Dispatch<React.SetStateAction<MappingType | null>>): JSX.Element {
 
-    if (Object.keys(mappingSettingsState).length === 0) {
+    if (Object.keys(mappingsState.selectedMappings).length === 0) {
         // If there are no mappings selected, default message.
         return (
             <ListGroup>
@@ -695,10 +699,10 @@ function MappingList(
     return (
         <ListGroup>
             {
-            mappingSettingsState.toList().map((mapping) => {
+            mappingsState.selectedMappings.toList().map((mapping) => {
                 return generateRow(
-                    mappingSettingsState,
-                    mappingSettingsDispatch,
+                    mappingsState,
+                    mappingsDispatch,
                     graphState,
                     mapping.toJS() as any,
                     setSettingsType)}
@@ -710,13 +714,12 @@ function MappingList(
 
 export default function MappingTab() {
     const { state } = useContext(UserDataContext)
-
     const { graphState, graphDispatch } = useContext(GraphDataContext)
-    const { mappingSettingsState, mappingSettingsDispatch } = useContext(MappingSettingsContext)
+    const { mappingsState, mappingsDispatch } = useContext(MappingContext)
 
     const [ layoutSettingsState, layoutSettingsReducer ] = useReducer(LayoutSettingsReducer, null)
 
-    const [settingsType, setSettingsType] = useState<MappingType | null>(null)
+    const [ settingsType, setSettingsType ] = useState<MappingType | null>(null)
 
     useEffect(() => {
         if (state?.layouts === undefined) {
@@ -737,8 +740,8 @@ export default function MappingTab() {
         return <></>
     }
 
-    if (mappingSettingsState == null || mappingSettingsDispatch == null) {
-        console.log('Mapping settings is null!')
+    if (mappingsState == null || mappingsDispatch == null) {
+        console.log('Mapping state is null!')
         return <></>
     }
 
@@ -758,7 +761,7 @@ export default function MappingTab() {
     if (settingsType) {
         // If a mapping is selected, show the settings.
         if (mappingProperties.get(settingsType.mappingName)?.channelType === 'categorical') {
-            return CategoryMapping(mappingSettingsState, mappingSettingsDispatch, graphState, settingsType, setSettingsType)
+            return CategoryMapping(mappingsState, mappingsDispatch, graphState, settingsType, setSettingsType)
         }
 
         return (
@@ -769,9 +772,10 @@ export default function MappingTab() {
     }
 
     let addButton = (
-        <Button variant='outline-success' disabled={mappingSettingsState.has(Map(newItem))} onClick={() => {
-            mappingSettingsDispatch({
-                type: 'addEmpty'
+        <Button variant='outline-success' disabled={mappingsState.selectedMappings.has(Map(newItem))} onClick={() => {
+            mappingsDispatch({
+                type: 'selection',
+                action: 'add'
             })
         }}>Add map</Button>
     )
@@ -781,7 +785,7 @@ export default function MappingTab() {
             <Container>
                 <Row>
                     <Col>
-                        {MappingList(mappingSettingsState, mappingSettingsDispatch, graphState, setSettingsType)}
+                        {MappingList(mappingsState, mappingsDispatch, graphState, setSettingsType)}
                     </Col>
                 </Row>
                 <Row>

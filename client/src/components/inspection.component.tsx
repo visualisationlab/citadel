@@ -259,6 +259,8 @@ export default function InspectionTab(): JSX.Element {
     const [ selectedAttribute, setSelectedAttribute ] = useState('')
     const [ attributeSelectionList, setAttributeSelectionList ] = useState<string[]>([])
 
+    const [ tabHidden, setTabHidden ] = useState(false)
+
     useEffect(() => {
         if (selectionState === null || graphState === null) {
             return
@@ -364,6 +366,8 @@ export default function InspectionTab(): JSX.Element {
                     position:'absolute'}}>
                     <Tabs>
                         {ClusterTab(attributeSelectionList, selectionDispatch, clusterAttributes, selectedAttribute, setSelectedAttribute)}
+                        <Tab eventKey='Hide' title='Hide'>
+                        </Tab>
                     </Tabs>
                 </Container>
             )
@@ -388,9 +392,11 @@ export default function InspectionTab(): JSX.Element {
                 padding: '0px', top: '50px',
                 right: '50px',
                 position:'absolute'}}>
-                <Tabs >
+                <Tabs>
                     <Tab eventKey='Node' title='Node'>
                         {NodeTab(node.id, attributes, setAttributes, graphDispatch, graphState)}
+                    </Tab>
+                    <Tab eventKey='Hide' title='Hide'>
                     </Tab>
                 </Tabs>
             </Container>

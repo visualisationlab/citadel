@@ -12,7 +12,7 @@ import { VisGraph } from '../types'
 import { Renderer } from './renderer.component'
 import { GraphDataContext } from '../components/main.component'
 import { SelectionDataContext } from "./main.component"
-import { MappingSettingsContext } from '../components/main.component'
+import { MappingContext } from '../components/main.component'
 import { MappingType } from '../reducers/selectedmappings.reducer';
 
 /**
@@ -58,7 +58,7 @@ function lerp(colour0: VisGraph.Colour, colour1: VisGraph.Colour, value: number)
 export default function Layout() {
     const { graphState } = useContext(GraphDataContext)
     const { selectionState, selectionDispatch } = useContext(SelectionDataContext)
-    const { mappingSettingsState } = useContext(MappingSettingsContext)
+    const { mappingsState } = useContext(MappingContext)
 
     const containerRef = useRef(null)
 
@@ -66,7 +66,7 @@ export default function Layout() {
      * Updates the container reference with graph visualization.
      */
     React.useEffect(() => {
-        if (graphState === null || mappingSettingsState === null) {
+        if (graphState === null || mappingsState === null) {
             return
         }
 
@@ -88,7 +88,7 @@ export default function Layout() {
             node.visualAttributes.lightness = 0.5
             node.visualAttributes.saturation = 1
 
-            mappingSettingsState.forEach((mapping) => {
+            mappingsState.selectedMappings.forEach((mapping) => {
                 let mapJS = mapping.toJS() as MappingType
 
                 if (mapJS.objectType === 'edge')
@@ -228,7 +228,7 @@ export default function Layout() {
             edge.visualAttributes.text = ''
             edge.visualAttributes.width = 2
 
-            mappingSettingsState.forEach((mapping) => {
+            mappingsState.selectedMappings.forEach((mapping) => {
                 let mapJS = mapping.toJS() as MappingType
 
                 if (mapJS.objectType === 'node')
@@ -324,7 +324,7 @@ export default function Layout() {
     }, [graphState,
         selectionDispatch,
         selectionState,
-        mappingSettingsState])
+        mappingsState])
 
     return <div ref={containerRef} className="render" />
 }
