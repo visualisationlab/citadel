@@ -383,6 +383,21 @@ async function getClipboardData() {
 //     )
 // }
 
+function ColourBox(colour: number | null): JSX.Element {
+    if (colour === null) {
+        return <>Select a colour</>
+    }
+
+    return (<div className="input-color">
+            <div className="color-box" style={{
+                backgroundColor: 'hsl(' + colour + ', 50%, 50%)',
+                width: '30px',
+                height: '15px'
+            }}></div>
+        </div>
+    )
+}
+
 function CategoryMapping(   mappingsState: MappingsState,
                             mappingsDispatch: React.Dispatch<MappingsReducerAction>,
                             graphState: GraphDataState,
@@ -401,6 +416,9 @@ function CategoryMapping(   mappingsState: MappingsState,
         frequencies = graphState.edges.metadata[settingsType.attributeName].frequencies
     }
 
+    const colourScheme = mappingsState.config.get(JSON.stringify(settingsType))!.colourScheme
+
+
     return (
         <>
             <Row>
@@ -414,6 +432,34 @@ function CategoryMapping(   mappingsState: MappingsState,
                     overflowY: 'scroll',
                     height: '400px',
                 }}>
+
+                {settingsType.mappingName === 'hue' &&
+                    <Dropdown onSelect={(select) => {
+                        if (select === null) {
+                            return
+                        }
+
+                        mappingsDispatch({
+                            type: 'settings',
+                            action: 'edit',
+                            mapping: settingsType,
+                            settings: {
+                                ...mappingsState.config.get(JSON.stringify(settingsType))!,
+                                colourScheme: select
+                            }})
+                        }}>
+                        <Dropdown.Toggle variant='outline-primary' id='dropdown-basic'>
+                            {mappingsState.config.get(JSON.stringify(settingsType))!.colourScheme ?? 'Select a colour scheme'}
+                        </Dropdown.Toggle>
+                        <Dropdown.Menu>
+                            {mappingsState.schemes.toArray().map(([scheme, nums]) => {
+                                return (
+                                    <Dropdown.Item eventKey={scheme}>{scheme}</Dropdown.Item>
+                                )
+                            })}
+                        </Dropdown.Menu>
+                    </Dropdown>
+                }
 
                 <Table striped bordered hover>
                         <thead>
@@ -434,12 +480,64 @@ function CategoryMapping(   mappingsState: MappingsState,
                                         <td>{freq}</td>
 
                                         <td>
-                                            <Dropdown >
+                                            <Dropdown onSelect={(select) => {
+                                                if (select === null) {
+                                                    return
+                                                }
+
+                                                console.log(mappingsState.config)
+                                                console.log(parseInt(select))
+                                                console.log(mappingsState.config.get(JSON.stringify(settingsType))!.settings.set(category, parseInt(select)))
+
+                                                mappingsDispatch({
+                                                    type: 'settings',
+                                                    action: 'edit',
+                                                    mapping: settingsType,
+                                                    settings: {
+                                                        ...mappingsState.config.get(JSON.stringify(settingsType))!,
+                                                        settings: mappingsState.config.get(JSON.stringify(settingsType))!.settings.set(category, parseInt(select))}
+                                                })}}>
                                                 <Dropdown.Toggle id={'catdrop' + index}>
-                                                    TEST
+                                                {settingsType.mappingName === 'text' &&
+                                                    <>
+                                                        {mappingsState.config.get(JSON.stringify(settingsType))?.settings.get(category) === 0 ? 'hidden' : 'visible'}
+                                                    </>
+                                                }
+
+                                                {(settingsType.mappingName === 'hue' && colourScheme !== null) &&
+                                                    <>
+                                                        {ColourBox(mappingsState.schemes.get(colourScheme)![mappingsState.config.get(JSON.stringify(settingsType))?.settings.get(category)!])}
+                                                    </>
+                                                }
                                                 </Dropdown.Toggle>
+
                                                 <Dropdown.Menu>
-                                                    <Dropdown.Item key='thing' eventKey='thing'>THING</Dropdown.Item>
+                                                    {settingsType.mappingName === 'hue' &&
+                                                    <>
+                                                        {mappingsState.schemes.get(mappingsState.config.get(JSON.stringify(settingsType))!.colourScheme!)?.map((num, index) => {
+                                                            return (
+                                                                <Dropdown.Item key={index} eventKey={index}>
+                                                                    <div className="input-color">
+                                                                        <div className="color-box" style={{
+                                                                            backgroundColor: 'hsl(' + num + ', 50%, 50%)',
+                                                                            // width: '10px',
+                                                                            height: '10px'
+                                                                        }}></div>
+                                                                    </div>
+                                                                </Dropdown.Item>
+                                                            )
+
+                                                        }
+                                                        )}
+                                                    </>
+                                                    }
+
+                                                    {settingsType.mappingName === 'text' &&
+                                                    <>
+                                                        <Dropdown.Item key={0} eventKey={0}>hidden</Dropdown.Item>
+                                                        <Dropdown.Item key={1} eventKey={1}>visible</Dropdown.Item>
+                                                    </>
+                                                    }
                                                 </Dropdown.Menu>
                                             </Dropdown>
                                         </td>

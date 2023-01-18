@@ -11,7 +11,9 @@ export type MappingChannel = 'hue' | 'saturation' | 'lightness' | 'radius'
                                    | 'alpha' | 'text' | 'width' | 'opacity'
                                    | 'none' | 'region' | 'x-position' | 'y-position'
 
-export const mappingChannels = ['hue' , 'saturation' , 'lightness' , 'radius' , 'alpha' , 'text','width','none','region']
+export const mappingChannels = ['hue', 'saturation', 'lightness',
+                                'radius', 'alpha', 'text', 'width',
+                                'none', 'region']
 
 // A mapping is a mapping channel, an attribute type, an object type, and an attribute name.
 export type MappingType = {
@@ -21,13 +23,14 @@ export type MappingType = {
     attributeName: string,
 }
 
-export type MappingConfigState = Map<MappingType, MappingSettings>
+// Maps stringified mappingType to settings.
+export type MappingConfigState = Map<string, MappingSettings>
 
 // Defines the number of regions, the colour scheme, and mapping per attribute value.
 export type MappingSettings = {
     regionNum: number,
     colourScheme: string | null,
-    settings: {[key: string]: number}
+    settings: Map<string, number>
 }
 
 export type SchemeState = Map<string, number[]>
@@ -140,21 +143,21 @@ function ConfigReducer(state: MappingsState, action: MappingsReducerAction): Map
 
     switch(action.action) {
         case 'add':
-            if (state.config.get(action.mapping) !== undefined) {
+            if (state.config.get(JSON.stringify(action.mapping)) !== undefined) {
                 console.log('Adding config: Config already exists')
             }
 
-            state.config = state.config.set(action.mapping, action.settings)
+            state.config = state.config.set(JSON.stringify(action.mapping), action.settings)
 
             return state
         case 'edit':
-            if (state.config.get(action.mapping) === undefined) {
+            if (state.config.get(JSON.stringify(action.mapping)) === undefined) {
                 console.log('Editing config: Config does not exist')
 
                 return state
             }
 
-            state.config = state.config.set(action.mapping, action.settings)
+            state.config = state.config.set(JSON.stringify(action.mapping), action.settings)
 
             return state
     }
@@ -196,11 +199,11 @@ export function MappingsReducer(state: MappingsState, action: MappingsReducerAct
 
                     state.selectedMappings = state.selectedMappings.add(Map(action.newMapping))
 
-                    if (!state.config.has(action.newMapping)) {
-                        state.config = state.config.set(action.newMapping, {
+                    if (!state.config.has(JSON.stringify(action.newMapping))) {
+                        state.config = state.config.set(JSON.stringify(action.newMapping), {
                             colourScheme: null,
                             regionNum: 0,
-                            settings: {}
+                            settings: Map(),
                         })
                     }
 

@@ -74,8 +74,6 @@ export default function Layout() {
 
         let nodeMetadata = graphState.nodes.metadata
         let edgeMetadata = graphState.edges.metadata
-
-        let hues = [0, 120, 238]
         let shapes: VisGraph.Shape[] = ['square', 'triangle', 'star']
 
         let hashedNodes = newNodes.map((node) => {
@@ -98,7 +96,12 @@ export default function Layout() {
                     }
 
                 if (mapJS.mappingName === 'text') {
+
                     node.visualAttributes.text = node.attributes[mapJS.attributeName]
+
+                    if (mappingsState.config.get(JSON.stringify(mapping))?.settings.get(node.attributes[mapJS.attributeName]) === 0) {
+                        node.visualAttributes.text = ''
+                    }
                 }
 
                 if (mapJS.mappingName === 'alpha') {
@@ -161,20 +164,30 @@ export default function Layout() {
                 if (mapJS.mappingName === 'hue') {
                     let attributeData = nodeMetadata[mapJS.attributeName]
 
-                    try {
-                        let index = attributeData.frequencyDict[node.attributes[mapJS.attributeName]]
+                    if (mappingsState.config.get(JSON.stringify(mapping))!.colourScheme !== null) {
+                        let hues = mappingsState.schemes.get(mappingsState.config.get(JSON.stringify(mapping))!.colourScheme!)!
 
-                        if (index >= hues.length) {
-                            node.visualAttributes.hue = 60
+                        try {
+                            let index = mappingsState.config.get(JSON.stringify(mapping))!.settings.get(node.attributes[mapJS.attributeName])
+
+                            if (index === undefined) {
+                                node.visualAttributes.hue = 60
+                            }
+                            else {
+                                if (index >= hues.length) {
+                                    node.visualAttributes.hue = 60
+                                }
+                                else {
+                                    node.visualAttributes.hue = hues[index]
+                                }
+                            }
+
                         }
-                        else {
-                            node.visualAttributes.hue = hues[index]
-                        }
+                        catch (e) {
+                            console.log(e)
+                            node.visualAttributes.hue = 50
+                            }
                     }
-                    catch (e) {
-                        console.log(e)
-                        node.visualAttributes.hue = 50
-                        }
                 }
 
                 // if (mapJS.mappingName === 'shape') {
@@ -238,6 +251,7 @@ export default function Layout() {
                     }
 
                 if (mapJS.mappingName === 'text') {
+
                     edge.visualAttributes.text = edge.attributes[mapJS.attributeName]
                 }
 
@@ -284,22 +298,31 @@ export default function Layout() {
                 }
 
                 if (mapJS.mappingName === 'hue') {
+
                     let attributeData = edgeMetadata[mapJS.attributeName]
 
-                    if (attributeData.type === 'categorical') {
-                        try {
-                            let index = attributeData.frequencyDict[edge.attributes[mapJS.attributeName]]
+                    if (mappingsState.config.get(JSON.stringify(mapping))!.colourScheme !== null) {
+                        let hues = mappingsState.schemes.get(mappingsState.config.get(JSON.stringify(mapping))!.colourScheme!)!
 
-                            if (index >= hues.length) {
-                                edge.visualAttributes.hue = hues[hues.length - 1]
-                            }
-                            else {
-                                edge.visualAttributes.hue = hues[index]
-                            }
+                        let index = mappingsState.config.get(JSON.stringify(mapping))!.settings.get(edge.attributes[mapJS.attributeName])
+
+                        if (index === undefined) {
+                            edge.visualAttributes.hue = 60
                         }
-                        catch (e) {
-                            console.log(e)
-                            edge.visualAttributes.hue = 50
+                        else {
+                            try {
+
+                                if (index >= hues.length) {
+                                    edge.visualAttributes.hue = 60
+                                }
+                                else {
+                                    edge.visualAttributes.hue = hues[index]
+                                }
+                            }
+                            catch (e) {
+                                console.log(e)
+                                edge.visualAttributes.hue = 60
+                            }
                         }
                     }
                 }

@@ -43,7 +43,7 @@ export const SelectionDataContext = createContext({
 export default function Main() {
     let [mappingsState, mappingsDispatch] = useReducer<Reducer<MappingsState, MappingsReducerAction>>(MappingsReducer,
         {
-            schemes: Map(),
+            schemes: Map<string, number[]>().set('Default', [0, 50, 100, 200, 250]),
             config: Map(),
             selectedMappings: Set()
         })

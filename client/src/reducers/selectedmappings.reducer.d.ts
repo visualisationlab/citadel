@@ -13,13 +13,11 @@ export type MappingType = {
     objectType: 'none' | 'node' | 'edge';
     attributeName: string;
 };
-export type MappingConfigState = Map<MappingType, MappingSettings>;
+export type MappingConfigState = Map<string, MappingSettings>;
 export type MappingSettings = {
     regionNum: number;
     colourScheme: string | null;
-    settings: {
-        [key: string]: number;
-    };
+    settings: Map<string, number>;
 };
 export type SchemeState = Map<string, number[]>;
 export type SchemeReducerAction = {
