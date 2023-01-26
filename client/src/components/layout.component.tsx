@@ -298,9 +298,6 @@ export default function Layout() {
                 }
 
                 if (mapJS.mappingName === 'hue') {
-
-                    let attributeData = edgeMetadata[mapJS.attributeName]
-
                     if (mappingsState.config.get(JSON.stringify(mapping))!.colourScheme !== null) {
                         let hues = mappingsState.schemes.get(mappingsState.config.get(JSON.stringify(mapping))!.colourScheme!)!
 

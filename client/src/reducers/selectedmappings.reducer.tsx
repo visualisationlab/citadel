@@ -60,9 +60,9 @@ export type MappingsReducerAction =
     | { type: 'selection', action: 'clear' }
     | { type: 'settings', action: 'add', mapping: MappingType, settings: MappingSettings }
     | { type: 'settings', action: 'edit', mapping: MappingType, settings: MappingSettings }
-    | { type: 'scheme', action: 'add', key: string, value: number[]}
+    | { type: 'scheme', action: 'add', key: string}
     | { type: 'scheme', action: 'remove', key: string}
-    | { type: 'scheme', action: 'update', key: string, value: number[]}
+    | { type: 'scheme', action: 'update', key: string, values: number[]}
     | { type: 'scheme', action: 'load', state: SchemeState }
 
 
@@ -99,7 +99,7 @@ function SchemeReducer(state: MappingsState, action: MappingsReducerAction): Map
                 return state
             }
 
-            state.schemes = state.schemes.set(action.key, action.value)
+            state.schemes = state.schemes.set(action.key, [])
 
             return state
         case 'remove':
@@ -127,7 +127,7 @@ function SchemeReducer(state: MappingsState, action: MappingsReducerAction): Map
                 return state
             }
 
-            state.schemes = state.schemes.set(action.key, action.value)
+            state.schemes = state.schemes.set(action.key, action.values)
 
             return state
         case 'load':

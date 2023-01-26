@@ -55,195 +55,185 @@ function layoutMapping(layouts: string[], layoutInfo: LayoutSettingsState,
 
     if (selectedLayout === undefined || selectedLayout.length === 0) {
         return (
-            <Accordion.Item eventKey='layoutmap'>
-                <Accordion.Header>Layout Mapping</Accordion.Header>
-                <Accordion.Body>
-                    <ListGroup variant='flush'>
-                        <ListGroup.Item>
-                            <Row>
-                                <Col md={{span: 4}}>
-                                    <p>
-                                        Layout Algorithm:
-                                    </p>
-                                </Col>
-                                <Col md={{span: 4}}>
-                                    <Dropdown onSelect={(item) => {
-                                        if (item === null) {
-                                            return
-                                        }
+            <ListGroup variant='flush'>
+                <ListGroup.Item>
+                    <Row>
+                        <Col md={{span: 4}}>
+                            <p>
+                                Layout Algorithm:
+                            </p>
+                        </Col>
+                        <Col md={{span: 4}}>
+                            <Dropdown onSelect={(item) => {
+                                if (item === null) {
+                                    return
+                                }
 
-                                        layoutSettingsDispatch({
-                                            attribute: 'selectedLayout',
-                                            value: item
-                                        })
-                                    }}>
-                                        <Dropdown.Toggle>
-                                            {layoutInfo?.selectedLayout === null ? 'none' : layoutInfo?.selectedLayout}
-                                        </Dropdown.Toggle>
-                                        <Dropdown.Menu>
-                                            <Dropdown.Item key='None' eventKey={''}>none</Dropdown.Item>
-                                            {layouts.map((layout) => {
-                                                return <Dropdown.Item key={layout} eventKey={layout}>{layout + (currentLayout === layout ? ' (selected)' : '')}</Dropdown.Item>
-                                            })}
-                                        </Dropdown.Menu>
-                                    </Dropdown>
-                                </Col>
-                            </Row>
-                        </ListGroup.Item>
-                    </ListGroup>
-                </Accordion.Body>
-            </Accordion.Item>
+                                layoutSettingsDispatch({
+                                    attribute: 'selectedLayout',
+                                    value: item
+                                })
+                            }}>
+                                <Dropdown.Toggle>
+                                    {layoutInfo?.selectedLayout === null ? 'none' : layoutInfo?.selectedLayout}
+                                </Dropdown.Toggle>
+                                <Dropdown.Menu>
+                                    <Dropdown.Item key='None' eventKey={''}>none</Dropdown.Item>
+                                    {layouts.map((layout) => {
+                                        return <Dropdown.Item key={layout} eventKey={layout}>{layout + (currentLayout === layout ? ' (selected)' : '')}</Dropdown.Item>
+                                    })}
+                                </Dropdown.Menu>
+                            </Dropdown>
+                        </Col>
+                    </Row>
+                </ListGroup.Item>
+            </ListGroup>
         )
     }
 
     let res = selectedLayout[0]
 
     return (
-        <Accordion.Item eventKey='layoutmap'>
-            <Accordion.Header>Layout Mapping</Accordion.Header>
-            <Accordion.Body>
-                <ListGroup variant='flush'>
-                    <ListGroup.Item>
-                        <Row>
-                            <Col md={{span: 4}}>
-                                <p>
-                                    Layout Algorithm:
-                                </p>
-                            </Col>
-                            <Col md={{span: 4}}>
-                                <Dropdown onSelect={(item) => {
-                                    if (item === null) {
-                                        return
-                                    }
-
-                                    layoutSettingsDispatch({
-                                        attribute: 'selectedLayout',
-                                        value: item
-                                    })
-                                }}>
-                                    <Dropdown.Toggle>
-                                        {layoutInfo?.selectedLayout === null ? 'none' : layoutInfo?.selectedLayout}
-                                    </Dropdown.Toggle>
-                                    <Dropdown.Menu>
-                                        <Dropdown.Item key='None' eventKey={''}>none</Dropdown.Item>
-                                        {layouts.map((layout) => {
-                                            return <Dropdown.Item key={layout} eventKey={layout}>{layout}</Dropdown.Item>
-                                        })}
-                                    </Dropdown.Menu>
-                                </Dropdown>
-                            </Col>
-                            <Col md={{span: 4}}>
-                                <OverlayTrigger
-                                    key={'title'}
-                                    placement={'top'}
-                                    overlay={
-                                        <Tooltip id={`tooltip-title`}>
-                                            {res.description}
-                                        </Tooltip>
-                                    }
-                                >
-                                    <Button variant='outline-secondary'>Info</Button>
-                                </OverlayTrigger>
-                            </Col>
-                        </Row>
-                        {res.settings.map((setting) => {
-                            return (
-                                <Row key={setting.name}>
-                                    <Col>
-                                        <p>{setting.name}</p>
-                                    </Col>
-                                    <Col>
-                                        {
-                                            setting.type === 'number' &&
-                                            <Form.Control
-                                            type='number'
-                                            onChange={
-                                                (e) => {
-                                                    layoutSettingsDispatch({
-                                                        attribute: 'property',
-                                                        key: setting.name,
-                                                        value: parseFloat(e.target.value)
-                                                    })
-                                                }
-                                            }
-                                            value={setting.value}
-                                            placeholder={setting.defaultValue.toString()}>
-
-                                            </Form.Control>
-                                        }
-                                        {
-                                            setting.type === 'boolean' &&
-                                            <Form.Check
-                                            type='checkbox'
-                                            onChange={
-                                                (e) => {
-                                                    layoutSettingsDispatch({
-                                                        attribute: 'property',
-                                                        key: setting.name,
-                                                        value: e.target.checked
-                                                    })
-                                                }
-                                            }
-                                            checked={setting.value}
-                                            >
-                                            </Form.Check>
-                                        }
-                                            {/* <Dropdown onSelect={(item) => {
-                                                if (item === null) {
-                                                    return
-                                                }
-
-                                                layoutSettingsDispatch({
-                                                    attribute: 'property',
-                                                    key: setting.name,
-                                                    value: item === 'true'
-                                                })
-                                                }}>
-                                                <Dropdown.Toggle>
-                                                    {setting.value ? 'true' : 'false'}
-                                                </Dropdown.Toggle>
-                                                <Dropdown.Menu>
-                                                    <Dropdown.Item key='True' eventKey={'true'}>true</Dropdown.Item>
-                                                    <Dropdown.Item key='False' eventKey={'false'}>false</Dropdown.Item>
-                                                </Dropdown.Menu>
-                                            </Dropdown> */}
-                                        {/* } */}
-                                    </Col>
-                                </Row>
-                            )
-                        })}
-                        <Row>
-                            <Col>
-                                randomize starting positions
-                            </Col>
-                            <Col>
-                            <Form.Check
-                            type='checkbox'
-                            onChange={
-                                (e) => {
-                                    layoutSettingsDispatch({
-                                        attribute: 'property',
-                                        key: 'randomize',
-                                        value: e.target.checked
-                                    })
-                                }
+        <ListGroup variant='flush'>
+            <ListGroup.Item>
+                <Row>
+                    <Col md={{span: 4}}>
+                        <p>
+                            Layout Algorithm:
+                        </p>
+                    </Col>
+                    <Col md={{span: 4}}>
+                        <Dropdown onSelect={(item) => {
+                            if (item === null) {
+                                return
                             }
-                            checked={res.randomize}>
-                            </Form.Check>
+
+                            layoutSettingsDispatch({
+                                attribute: 'selectedLayout',
+                                value: item
+                            })
+                        }}>
+                            <Dropdown.Toggle>
+                                {layoutInfo?.selectedLayout === null ? 'none' : layoutInfo?.selectedLayout}
+                            </Dropdown.Toggle>
+                            <Dropdown.Menu>
+                                <Dropdown.Item key='None' eventKey={''}>none</Dropdown.Item>
+                                {layouts.map((layout) => {
+                                    return <Dropdown.Item key={layout} eventKey={layout}>{layout}</Dropdown.Item>
+                                })}
+                            </Dropdown.Menu>
+                        </Dropdown>
+                    </Col>
+                    <Col md={{span: 4}}>
+                        <OverlayTrigger
+                            key={'title'}
+                            placement={'top'}
+                            overlay={
+                                <Tooltip id={`tooltip-title`}>
+                                    {res.description}
+                                </Tooltip>
+                            }
+                        >
+                            <Button variant='outline-secondary'>Info</Button>
+                        </OverlayTrigger>
+                    </Col>
+                </Row>
+                {res.settings.map((setting) => {
+                    return (
+                        <Row key={setting.name}>
+                            <Col>
+                                <p>{setting.name}</p>
+                            </Col>
+                            <Col>
+                                {
+                                    setting.type === 'number' &&
+                                    <Form.Control
+                                    type='number'
+                                    onChange={
+                                        (e) => {
+                                            layoutSettingsDispatch({
+                                                attribute: 'property',
+                                                key: setting.name,
+                                                value: parseFloat(e.target.value)
+                                            })
+                                        }
+                                    }
+                                    value={setting.value}
+                                    placeholder={setting.defaultValue.toString()}>
+
+                                    </Form.Control>
+                                }
+                                {
+                                    setting.type === 'boolean' &&
+                                    <Form.Check
+                                    type='checkbox'
+                                    onChange={
+                                        (e) => {
+                                            layoutSettingsDispatch({
+                                                attribute: 'property',
+                                                key: setting.name,
+                                                value: e.target.checked
+                                            })
+                                        }
+                                    }
+                                    checked={setting.value}
+                                    >
+                                    </Form.Check>
+                                }
+                                    {/* <Dropdown onSelect={(item) => {
+                                        if (item === null) {
+                                            return
+                                        }
+
+                                        layoutSettingsDispatch({
+                                            attribute: 'property',
+                                            key: setting.name,
+                                            value: item === 'true'
+                                        })
+                                        }}>
+                                        <Dropdown.Toggle>
+                                            {setting.value ? 'true' : 'false'}
+                                        </Dropdown.Toggle>
+                                        <Dropdown.Menu>
+                                            <Dropdown.Item key='True' eventKey={'true'}>true</Dropdown.Item>
+                                            <Dropdown.Item key='False' eventKey={'false'}>false</Dropdown.Item>
+                                        </Dropdown.Menu>
+                                    </Dropdown> */}
+                                {/* } */}
                             </Col>
                         </Row>
-                        <Row>
-                            <Col md={{offset: 8, span: 4}}>
-                                <Button variant='outline-primary'
-                                    onClick={() => {
-                                        API.setLayout(res)
-                                    }}>Apply</Button>
-                            </Col>
-                        </Row>
-                    </ListGroup.Item>
-                </ListGroup>
-            </Accordion.Body>
-        </Accordion.Item>
+                    )
+                })}
+                <Row>
+                    <Col>
+                        randomize starting positions
+                    </Col>
+                    <Col>
+                    <Form.Check
+                    type='checkbox'
+                    onChange={
+                        (e) => {
+                            layoutSettingsDispatch({
+                                attribute: 'property',
+                                key: 'randomize',
+                                value: e.target.checked
+                            })
+                        }
+                    }
+                    checked={res.randomize}>
+                    </Form.Check>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col md={{offset: 8, span: 4}}>
+                        <Button variant='outline-primary'
+                            onClick={() => {
+                                API.setLayout(res)
+                            }}>Apply</Button>
+                    </Col>
+                </Row>
+            </ListGroup.Item>
+        </ListGroup>
     )
 }
 
@@ -398,16 +388,123 @@ function ColourBox(colour: number | null): JSX.Element {
     )
 }
 
+function PaletteSettings(props: {mappingsState: MappingsState,
+    mappingsDispatch: React.Dispatch<MappingsReducerAction>,
+    setSettingsType: React.Dispatch<React.SetStateAction<MappingType | 'palette' | null>>}   ) {
+
+    let [selectedPalette, setSelectedPalette] = useState<string | null>(null)
+
+    let schemeSettings = <></>
+
+    if (selectedPalette !== null) {
+        schemeSettings = (
+            <>
+                {props.mappingsState.schemes.get(selectedPalette)?.map((colour, index) => {
+                    return (
+                        <Row>
+                            <Col md={{span: 2}}>
+                                <Form.Label>Colour {index}</Form.Label>
+                            </Col>
+                            <Col md={{span: 2}}>
+                                {ColourBox(colour)}
+                            </Col>
+                            <Col md={{span: 2}}>
+                                <Form.Control type='number' value={colour} onChange={(e) => {
+                                    let newColours = props.mappingsState.schemes.get(selectedPalette!)!
+
+                                    newColours[index] = parseInt(e.target.value)
+
+                                    props.mappingsDispatch({
+                                        type: 'scheme',
+                                        action: 'update',
+                                        key: selectedPalette!,
+                                        values: newColours
+                                    })
+                                }}></Form.Control>
+                            </Col>
+                        </Row>
+                    )
+                })
+                }
+                <Row>
+                    <Col md={{span: 2}}>
+                        <Button variant='outline-primary' onClick={() => {
+                            let newColours = props.mappingsState.schemes.get(selectedPalette!)!
+
+                            newColours.push(0)
+
+                            props.mappingsDispatch({
+                                type: 'scheme',
+                                action: 'update',
+                                key: selectedPalette!,
+                                values: newColours
+                            })
+                        }}>Add colour</Button>
+                    </Col>
+                </Row>
+            </>
+        )
+    }
+
+    return (
+        <>
+            <Row>
+                <Col md={{span: 1, offset: 11}}>
+                    <CloseButton
+                        onClick={() => props.setSettingsType(null)}></CloseButton>
+                </Col>
+            </Row>
+            <Row>
+
+                <Col>
+                <Dropdown onSelect={(select) => {
+                    if (select === null) {
+                        return
+                    }
+
+                    setSelectedPalette(select)
+                }}>
+                    <Dropdown.Toggle variant='outline-primary' id='dropdown-basic'>
+                        {selectedPalette === null ? 'No palette selected' : selectedPalette}
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu>
+                        {props.mappingsState.schemes.toArray().map(([scheme, nums]) => {
+                            return (
+                                <Dropdown.Item eventKey={scheme}>{scheme}</Dropdown.Item>
+                            )
+                        })}
+                    </Dropdown.Menu>
+                </Dropdown>
+            </Col>
+            <Col md={{}}>
+                <Button variant='outline-primary' onClick={() => {
+                    props.mappingsDispatch({
+                        type: 'scheme',
+                        action: 'add',
+                        key: 'New scheme'
+                    })
+
+                    setSelectedPalette('New scheme')
+                }}>Add new colour scheme</Button>
+            </Col>
+            </Row>
+            <Row>
+                {schemeSettings}
+            </Row>
+        </>
+    )
+
+}
+
 function CategoryMapping(   mappingsState: MappingsState,
                             mappingsDispatch: React.Dispatch<MappingsReducerAction>,
                             graphState: GraphDataState,
                             settingsType: MappingType,
-                            setSettingsType: React.Dispatch<React.SetStateAction<MappingType | null>>): JSX.Element {
+                            setSettingsType: React.Dispatch<React.SetStateAction<MappingType | 'palette' | null>>): JSX.Element {
     // Maps categories to indices, with an option to enable.
 
-    console.log(settingsType.objectType)
-
     let frequencies: [string, number][] = []
+
 
     if (settingsType.objectType === 'node') {
         frequencies = graphState.nodes.metadata[settingsType.attributeName].frequencies
@@ -417,7 +514,6 @@ function CategoryMapping(   mappingsState: MappingsState,
     }
 
     const colourScheme = mappingsState.config.get(JSON.stringify(settingsType))!.colourScheme
-
 
     return (
         <>
@@ -434,31 +530,46 @@ function CategoryMapping(   mappingsState: MappingsState,
                 }}>
 
                 {settingsType.mappingName === 'hue' &&
-                    <Dropdown onSelect={(select) => {
-                        if (select === null) {
-                            return
-                        }
+                    <>
+                    <Row>
+                        <Col>
+                            <Dropdown onSelect={(select) => {
+                                if (select === null) {
+                                    return
+                                }
 
-                        mappingsDispatch({
-                            type: 'settings',
-                            action: 'edit',
-                            mapping: settingsType,
-                            settings: {
-                                ...mappingsState.config.get(JSON.stringify(settingsType))!,
-                                colourScheme: select
-                            }})
-                        }}>
-                        <Dropdown.Toggle variant='outline-primary' id='dropdown-basic'>
-                            {mappingsState.config.get(JSON.stringify(settingsType))!.colourScheme ?? 'Select a colour scheme'}
-                        </Dropdown.Toggle>
-                        <Dropdown.Menu>
-                            {mappingsState.schemes.toArray().map(([scheme, nums]) => {
-                                return (
-                                    <Dropdown.Item eventKey={scheme}>{scheme}</Dropdown.Item>
-                                )
-                            })}
-                        </Dropdown.Menu>
-                    </Dropdown>
+                                mappingsDispatch({
+                                    type: 'settings',
+                                    action: 'edit',
+                                    mapping: settingsType,
+                                    settings: {
+                                        ...mappingsState.config.get(JSON.stringify(settingsType))!,
+                                        colourScheme: select
+                                    }})
+                                }}>
+                                <Dropdown.Toggle variant='outline-primary' id='dropdown-basic'>
+                                    {mappingsState.config.get(JSON.stringify(settingsType))!.colourScheme ?? 'Select a colour scheme'}
+                                </Dropdown.Toggle>
+                                <Dropdown.Menu>
+                                    {mappingsState.schemes.toArray().map(([scheme, nums]) => {
+                                        return (
+                                            <Dropdown.Item eventKey={scheme}>{scheme}</Dropdown.Item>
+                                        )
+                                    })}
+                                </Dropdown.Menu>
+                            </Dropdown>
+                        </Col>
+                        <Col md={{}}>
+                            <Button variant='outline-primary' onClick={() => {
+                                mappingsDispatch({
+                                    type: 'scheme',
+                                    action: 'add',
+                                    key: 'New scheme'
+                                })
+                            }}>Add new colour scheme</Button>
+                        </Col>
+                        </Row>
+                    </>
                 }
 
                 <Table striped bordered hover>
@@ -484,11 +595,6 @@ function CategoryMapping(   mappingsState: MappingsState,
                                                 if (select === null) {
                                                     return
                                                 }
-
-                                                console.log(mappingsState.config)
-                                                console.log(parseInt(select))
-                                                console.log(mappingsState.config.get(JSON.stringify(settingsType))!.settings.set(category, parseInt(select)))
-
                                                 mappingsDispatch({
                                                     type: 'settings',
                                                     action: 'edit',
@@ -558,7 +664,7 @@ function generateRow(
     mappingsDispatch: React.Dispatch<MappingsReducerAction>,
     graphState: GraphDataState,
     mapping: MappingType,
-    setSettingsType: React.Dispatch<React.SetStateAction<MappingType | null>>
+    setSettingsType: React.Dispatch<React.SetStateAction<MappingType | 'palette' | null>>
     ): JSX.Element {
 
     if (mappingsState.selectedMappings.get(Map(mapping)) === undefined) {
@@ -777,7 +883,7 @@ function MappingList(
     mappingsState: MappingsState,
     mappingsDispatch: React.Dispatch<MappingsReducerAction>,
     graphState: GraphDataState,
-    setSettingsType: React.Dispatch<React.SetStateAction<MappingType | null>>): JSX.Element {
+    setSettingsType: React.Dispatch<React.SetStateAction<MappingType | 'palette' | null>>): JSX.Element {
 
     if (Object.keys(mappingsState.selectedMappings).length === 0) {
         // If there are no mappings selected, default message.
@@ -817,7 +923,7 @@ export default function MappingTab() {
 
     const [ layoutSettingsState, layoutSettingsReducer ] = useReducer(LayoutSettingsReducer, null)
 
-    const [ settingsType, setSettingsType ] = useState<MappingType | null>(null)
+    const [ settingsType, setSettingsType ] = useState<MappingType | 'palette' | null>(null)
 
     useEffect(() => {
         if (state?.layouts === undefined) {
@@ -856,7 +962,11 @@ export default function MappingTab() {
         attributeName: ''
     }
 
-    if (settingsType) {
+    if (settingsType !== null) {
+        if (settingsType === 'palette') {
+            return <PaletteSettings mappingsState={mappingsState} mappingsDispatch={mappingsDispatch} setSettingsType={setSettingsType}></PaletteSettings>
+        }
+
         // If a mapping is selected, show the settings.
         if (mappingProperties.get(settingsType.mappingName)?.channelType === 'categorical') {
             return CategoryMapping(mappingsState, mappingsDispatch, graphState, settingsType, setSettingsType)
@@ -878,32 +988,52 @@ export default function MappingTab() {
         }}>Add map</Button>
     )
 
+    let editPaletteButton = (
+        <Button variant='outline-primary' disabled={mappingsState.selectedMappings.has(Map(newItem))} onClick={() => {
+            setSettingsType('palette')
+        }}>Edit palettes</Button>
+    )
+
     return (
         <Accordion defaultActiveKey='nodemap'>
-            <Container>
-                <Row>
-                    <Col>
-                        {MappingList(mappingsState, mappingsDispatch, graphState, setSettingsType)}
-                    </Col>
-                </Row>
-                <Row>
-                    {/* <Col>
-                        <Button variant='outline-primary'>Save</Button>
-                    </Col>
-                    <Col>
-                        <Button variant='outline-primary'>Load</Button>
-                    </Col> */}
-                    <Col>
-                        {addButton}
-                    </Col>
-                </Row>
-            </Container>
-            {layoutMapping(
-                state.layouts.map((layout) => {return layout.name}),
-                layoutSettingsState,
-                layoutSettingsReducer,
-                state.currentLayout,
-                state.state)}
+            <Accordion.Item eventKey='nodemap'>
+                <Accordion.Header>Selected Mappings</Accordion.Header>
+                <Accordion.Body>
+                    <Container>
+                        <Row>
+                            <Col>
+                                {MappingList(mappingsState, mappingsDispatch, graphState, setSettingsType)}
+                            </Col>
+                        </Row>
+                        <Row>
+                            {/* <Col>
+                                <Button variant='outline-primary'>Save</Button>
+                                </Col>
+                                <Col>
+                                <Button variant='outline-primary'>Load</Button>
+                            </Col> */}
+                            <Col>
+                                {addButton}
+                            </Col>
+                            <Col>
+                                {editPaletteButton}
+                            </Col>
+                        </Row>
+                    </Container>
+                </Accordion.Body>
+            </Accordion.Item>
+
+            <Accordion.Item eventKey='layoutmap'>
+                <Accordion.Header>Layout Mapping</Accordion.Header>
+                <Accordion.Body>
+                    {layoutMapping(
+                        state.layouts.map((layout) => {return layout.name}),
+                        layoutSettingsState,
+                        layoutSettingsReducer,
+                        state.currentLayout,
+                        state.state)}
+                </Accordion.Body>
+            </Accordion.Item>
         </Accordion>
     )
 }

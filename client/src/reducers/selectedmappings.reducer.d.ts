@@ -70,7 +70,6 @@ export type MappingsReducerAction = {
     type: 'scheme';
     action: 'add';
     key: string;
-    value: number[];
 } | {
     type: 'scheme';
     action: 'remove';
@@ -79,7 +78,7 @@ export type MappingsReducerAction = {
     type: 'scheme';
     action: 'update';
     key: string;
-    value: number[];
+    values: number[];
 } | {
     type: 'scheme';
     action: 'load';
