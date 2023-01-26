@@ -101,6 +101,8 @@ function SchemeReducer(state: MappingsState, action: MappingsReducerAction): Map
 
             state.schemes = state.schemes.set(action.key, [])
 
+            localStorage.setItem('schemes', JSON.stringify(state.schemes.toJS()))
+
             return state
         case 'remove':
             if (state.schemes.get(action.key) === undefined) {
@@ -119,6 +121,8 @@ function SchemeReducer(state: MappingsState, action: MappingsReducerAction): Map
 
             state.schemes = state.schemes.delete(action.key)
 
+            localStorage.setItem('schemes', JSON.stringify(state.schemes.toJS()))
+
             return state
         case 'update':
             if (state.schemes.get(action.key) === undefined) {
@@ -128,6 +132,8 @@ function SchemeReducer(state: MappingsState, action: MappingsReducerAction): Map
             }
 
             state.schemes = state.schemes.set(action.key, action.values)
+
+            localStorage.setItem('schemes', JSON.stringify(state.schemes.toJS()))
 
             return state
         case 'load':

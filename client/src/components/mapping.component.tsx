@@ -388,6 +388,8 @@ function ColourBox(colour: number | null): JSX.Element {
     )
 }
 
+// Palette (colour scheme settings) are stored in mappingState.schemes
+// Each scheme is a list of colours, each colour is a number between 0 and 255
 function PaletteSettings(props: {mappingsState: MappingsState,
     mappingsDispatch: React.Dispatch<MappingsReducerAction>,
     setSettingsType: React.Dispatch<React.SetStateAction<MappingType | 'palette' | null>>}   ) {
@@ -410,6 +412,11 @@ function PaletteSettings(props: {mappingsState: MappingsState,
                             </Col>
                             <Col md={{span: 2}}>
                                 <Form.Control type='number' value={colour} onChange={(e) => {
+                                    let newValue = parseInt(e.target.value)
+
+                                    if (newValue < 0 || newValue > 255) {
+                                        return
+                                    }
                                     let newColours = props.mappingsState.schemes.get(selectedPalette!)!
 
                                     newColours[index] = parseInt(e.target.value)

@@ -41,9 +41,11 @@ export const SelectionDataContext = createContext({
 })
 
 export default function Main() {
+
+
     let [mappingsState, mappingsDispatch] = useReducer<Reducer<MappingsState, MappingsReducerAction>>(MappingsReducer,
         {
-            schemes: Map<string, number[]>(),
+            schemes: Map(),
             config: Map(),
             selectedMappings: Set()
         })
@@ -110,6 +112,24 @@ export default function Main() {
 
         // Communicate window size to remote.
         API.setWindowSize(window.innerWidth, window.innerHeight)
+
+        let schemes = Map<string, number[]>()
+
+        try {
+            schemes = Map(JSON.parse(localStorage.getItem('schemes') || ''))
+
+            console.log("loaded schemes from localstorage")
+
+            mappingsDispatch({
+                type: 'scheme',
+                action: 'load',
+                state: schemes
+            })
+
+        } catch (e) {
+            console.log('failed to load schemes from localstorage')
+            console.log(e)
+        }
     }, [])
 
     // If we have a QR code, display it.
