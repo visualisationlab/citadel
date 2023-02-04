@@ -50,7 +50,8 @@
     "typescript": "^4.7.4",
     "uid-safe": "^2.1.5",
     "winston": "^3.8.2",
-    "ws": "^8.5.0"
+    "ws": "^8.5.0",
+    "immutable": "^4.1.0"
   },
   "devDependencies": {
     "@types/cytoscape": "^3.19.5",

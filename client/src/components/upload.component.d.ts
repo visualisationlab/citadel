@@ -6,6 +6,5 @@
  * and then view it in the main component, or to join an existing session.
  * It also contains information about the project.
  */
-/// <reference types="react" />
 import './home.component.css';
 export default function Home(): JSX.Element;

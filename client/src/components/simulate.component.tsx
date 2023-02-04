@@ -124,30 +124,33 @@ function renderSimItem(param: SimulatorParam, index: number, key: string, params
 
     return (
         <ListGroup.Item key={index}>
-            <Row>
-                <Col>
-                    {param.attribute}
-                </Col>
-                <Col>
-                    {param.type}
-                </Col>
-                <Col>
-                    {inputField}
-                </Col>
-                <Col>
-                    {param.value !== param.defaultValue &&
-                        <Button variant='primary' onClick={() => {
-                            Router.setSimulatorSettings(key, params.map((paramIter) => {
-                                if (paramIter.attribute === param.attribute) {
-                                    paramIter.value = paramIter.defaultValue
-                                }
+            <Container fluid>
 
-                                return paramIter
-                            }))
-                        }}>Reset</Button>
-                    }
-                </Col>
-            </Row>
+                <Row>
+                    <Col>
+                        {param.attribute}
+                    </Col>
+                    <Col>
+                        {param.type}
+                    </Col>
+                    <Col>
+                        {inputField}
+                    </Col>
+                    <Col>
+                        {param.value !== param.defaultValue &&
+                            <Button variant='primary' onClick={() => {
+                                Router.setSimulatorSettings(key, params.map((paramIter) => {
+                                    if (paramIter.attribute === param.attribute) {
+                                        paramIter.value = paramIter.defaultValue
+                                    }
+
+                                    return paramIter
+                                }))
+                            }}>Reset</Button>
+                        }
+                    </Col>
+                </Row>
+            </Container>
         </ListGroup.Item>
     )
 }
@@ -244,42 +247,44 @@ export function SimulatorTab() {
 
         return (
             <ListGroup.Item key={index}>
-                <Row >
-                    <Col md={{span: 1}}>
-                        { sim.key !== null &&
-                            <Form.Check
-                                checked={selectedSim === sim.key}
-                                type='radio'
-                                onChange={(() => {
-                                    if (sim.key === null)
-                                        return
+                <Container fluid>
+                    <Row >
+                        <Col md={{span: 1}}>
+                            { sim.key !== null &&
+                                <Form.Check
+                                    checked={selectedSim === sim.key}
+                                    type='radio'
+                                    onChange={(() => {
+                                        if (sim.key === null)
+                                            return
 
-                                    setSelectedSim(sim.key)
-                            })}></Form.Check>
-                        }
-                    </Col>
-                    <Col md={{span: 2}}>
-                        {((sim.username !== null && sim.username !== '') || !sim.validator) ? sim.username : (
+                                        setSelectedSim(sim.key)
+                                })}></Form.Check>
+                            }
+                        </Col>
+                        <Col md={{span: 2}}>
+                            {((sim.username !== null && sim.username !== '') || !sim.validator) ? sim.username : (
 
-                                renderValidateButton(sim.key, sim.valid)
-                        )}
-                    </Col>
-                    <Col md={{span: 2}}>
-                        {sim.key}
-                    </Col>
-                    <Col md={{span: 2}}>
-                        {sim.title}
-                    </Col>
-                    <Col md={{span: 1}}>
-                        {
-                            sim.options.length > 0 &&
+                                    renderValidateButton(sim.key, sim.valid)
+                            )}
+                        </Col>
+                        <Col md={{span: 2}}>
+                            {sim.key}
+                        </Col>
+                        <Col md={{span: 2}}>
+                            {sim.title}
+                        </Col>
+                        <Col md={{span: 1}}>
+                            {
+                                sim.options.length > 0 &&
 
-                            <Button onClick={()=> {setSimOptionsSelection(sim.key)}}>Options</Button>
-                        }
-                    </Col>
-                    <Col md={{span: 2, offset: 1}}><Button disabled variant={buttonVariant}>{sim.state}</Button></Col>
+                                <Button onClick={()=> {setSimOptionsSelection(sim.key)}}>Options</Button>
+                            }
+                        </Col>
+                        <Col md={{span: 2, offset: 1}}><Button disabled variant={buttonVariant}>{sim.state}</Button></Col>
 
-                </Row>
+                    </Row>
+                </Container>
             </ListGroup.Item>
         )
     })
@@ -345,72 +350,92 @@ export function SimulatorTab() {
     }
 
     const res = simOptionsSelection === null ? (
-        <>
+        <Container fluid style={{
+            paddingBottom: '10px',
+            paddingTop: '10px',
+        }}>
+            <Row>
+                <h3>Simulate</h3>
+            </Row>
             <Row>
                 <Col md={{span: 12}}>
-                        <InputGroup>
-                            <InputGroup.Text>Simulator URL:</InputGroup.Text>
-                            <Form.Control
-                                readOnly
-                                value={state.sessionURL} ref={sessionRef}/>
-                            <Button variant="outline-secondary"
-                                id="button-copy"
-                                onClick={() => {
-                                    if (window.isSecureContext && navigator.clipboard) {
-                                        navigator.clipboard.writeText(state.sessionURL)
-                                    } else {
-                                        // @ts-ignore
-                                        sessionRef.current.select()
+                    <InputGroup>
+                        <InputGroup.Text>Simulator URL:</InputGroup.Text>
+                        <Form.Control
+                            readOnly
+                            value={state.sessionURL} ref={sessionRef}/>
+                        <Button variant="outline-secondary"
+                            id="button-copy"
+                            onClick={() => {
+                                if (window.isSecureContext && navigator.clipboard) {
+                                    navigator.clipboard.writeText(state.sessionURL)
+                                } else {
+                                    // @ts-ignore
+                                    sessionRef.current.select()
 
-                                        document.execCommand('copy')
-                                    }
-                                }}>
-                                Copy
-                            </Button>
-                        </InputGroup>
-                    </Col>
-                </Row>
-                <Row>
-                    <Col md={{span: 6}}>
-                        <InputGroup>
-                            <InputGroup.Text>Simulator port:</InputGroup.Text>
-                            <Form.Control
-                                readOnly
-                                value={state.websocketPort} ref={textRef}/>
-                            <Button variant="outline-secondary"
-                                id="button-copy"
-                                onClick={() => {
-                                    if (window.isSecureContext && navigator.clipboard) {
-                                        navigator.clipboard.writeText(state.websocketPort)
-                                    } else {
-                                        // @ts-ignore
-                                        textRef.current.select()
+                                    document.execCommand('copy')
+                                }
+                            }}>
+                            Copy
+                        </Button>
+                    </InputGroup>
+                </Col>
+            </Row>
+            <Row style={{
+                marginBottom: '10px',
+            }}>
+                <Col md={{span: 6}}>
+                    <InputGroup>
+                        <InputGroup.Text>Simulator port:</InputGroup.Text>
+                        <Form.Control
+                            readOnly
+                            value={state.websocketPort} ref={textRef}/>
+                        <Button variant="outline-secondary"
+                            id="button-copy"
+                            onClick={() => {
+                                if (window.isSecureContext && navigator.clipboard) {
+                                    navigator.clipboard.writeText(state.websocketPort)
+                                } else {
+                                    // @ts-ignore
+                                    textRef.current.select()
 
-                                        document.execCommand('copy')
-                                    }
-                                }}>
-                                Copy
-                            </Button>
-                        </InputGroup>
-                    </Col>
-                </Row>
-            <Row>
-                <ListGroup>
-                    {sims}
-                    <ListGroup.Item>
-                            <Row>
-                                <Col md={{
-                                    span: 3,
-                                    offset: 9
-                                }}>
-                                    <Button onClick={() => {API.addSim()}}
-                                        variant='outline-success'>
-                                        Add
-                                    </Button>
-                                </Col>
-                            </Row>
-                        </ListGroup.Item>
-                </ListGroup>
+                                    document.execCommand('copy')
+                                }
+                            }}>
+                            Copy
+                        </Button>
+                    </InputGroup>
+                </Col>
+            </Row>
+            <Row style={{
+                marginBottom: '10px',
+            }}>
+                <Col>
+                    <ListGroup>
+                        <div style={{
+
+                            overflowY: 'auto',
+                            height: '200px',
+                        }}>
+                            {sims}
+                        </div>
+                        <ListGroup.Item>
+                                <Container fluid>
+                                    <Row>
+                                        <Col md={{
+                                            span: 3,
+                                            offset: 9
+                                        }}>
+                                            <Button onClick={() => {API.addSim()}}
+                                                variant='outline-success'>
+                                                Add
+                                            </Button>
+                                        </Col>
+                                    </Row>
+                                </Container>
+                            </ListGroup.Item>
+                    </ListGroup>
+                </Col>
             </Row>
             <Row>
                 {playbutton}
@@ -440,14 +465,10 @@ export function SimulatorTab() {
                 </Col>
             </Row>
             {simulatorControl}
-        </>
+        </Container>
     ) : renderSimulatorSettings(simOptionsSelection,
             state.simulators.filter((sim) => {return sim.key === simOptionsSelection})[0].options,
             setSimOptionsSelection)
 
-    return (
-        <Container fluid>
-                {res}
-        </Container>
-    )
+    return res
 }

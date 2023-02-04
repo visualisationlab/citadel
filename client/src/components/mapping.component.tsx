@@ -57,35 +57,35 @@ function layoutMapping(layouts: string[], layoutInfo: LayoutSettingsState,
         return (
             <ListGroup variant='flush'>
                 <ListGroup.Item>
-                    <Row>
-                        <Col md={{span: 4}}>
-                            <p>
-                                Layout Algorithm:
-                            </p>
-                        </Col>
-                        <Col md={{span: 4}}>
-                            <Dropdown onSelect={(item) => {
-                                if (item === null) {
-                                    return
-                                }
+                        <Row>
+                            <Col md={{span: 4}}>
+                                <p>
+                                    Layout Algorithm:
+                                </p>
+                            </Col>
+                            <Col md={{span: 4}}>
+                                <Dropdown onSelect={(item) => {
+                                    if (item === null) {
+                                        return
+                                    }
 
-                                layoutSettingsDispatch({
-                                    attribute: 'selectedLayout',
-                                    value: item
-                                })
-                            }}>
-                                <Dropdown.Toggle>
-                                    {layoutInfo?.selectedLayout === null ? 'none' : layoutInfo?.selectedLayout}
-                                </Dropdown.Toggle>
-                                <Dropdown.Menu>
-                                    <Dropdown.Item key='None' eventKey={''}>none</Dropdown.Item>
-                                    {layouts.map((layout) => {
-                                        return <Dropdown.Item key={layout} eventKey={layout}>{layout + (currentLayout === layout ? ' (selected)' : '')}</Dropdown.Item>
-                                    })}
-                                </Dropdown.Menu>
-                            </Dropdown>
-                        </Col>
-                    </Row>
+                                    layoutSettingsDispatch({
+                                        attribute: 'selectedLayout',
+                                        value: item
+                                    })
+                                }}>
+                                    <Dropdown.Toggle>
+                                        {layoutInfo?.selectedLayout === null ? 'none' : layoutInfo?.selectedLayout}
+                                    </Dropdown.Toggle>
+                                    <Dropdown.Menu>
+                                        <Dropdown.Item key='None' eventKey={''}>none</Dropdown.Item>
+                                        {layouts.map((layout) => {
+                                            return <Dropdown.Item key={layout} eventKey={layout}>{layout + (currentLayout === layout ? ' (selected)' : '')}</Dropdown.Item>
+                                        })}
+                                    </Dropdown.Menu>
+                                </Dropdown>
+                            </Col>
+                        </Row>
                 </ListGroup.Item>
             </ListGroup>
         )
@@ -242,13 +242,18 @@ function ColourBox(colour: number | null): JSX.Element {
         return <>Select a colour</>
     }
 
-    return (<div className="input-color">
+    return (
             <div className="color-box" style={{
                 backgroundColor: 'hsl(' + colour + ', 50%, 50%)',
-                width: '30px',
-                height: '15px'
+                // flexGrow: 1,
+                // flexShrink: 0,
+                // flexBasis: 'auto',
+                width: '100%',
+                height: '80%',
+                paddingTop: '10px',
+                // Rounded corners
+                margin: '5px',
             }}></div>
-        </div>
     )
 }
 
@@ -282,39 +287,76 @@ function PaletteSettings(props: {mappingsState: MappingsState,
                         }}></Form.Control>
                     </Col>
                 </Row>
-                {props.mappingsState.schemes.get(selectedPalette)?.map((colour, index) => {
-                    return (
-                        <Row>
-                            <Col md={{span: 2}}>
-                                <Form.Label>Colour {index}</Form.Label>
-                            </Col>
-                            <Col md={{span: 2}}>
-                                {ColourBox(colour)}
-                            </Col>
-                            <Col md={{span: 2}}>
-                                <Form.Control type='number' value={colour} onChange={(e) => {
-                                    let newValue = parseInt(e.target.value)
+                <Row style={{
+                    overflowY: 'scroll',
+                    height: '400px',
+                    paddingRight: '0px',
+                    width: '100%'
+                    }}>
+                    <Col>
+                        {props.mappingsState.schemes.get(selectedPalette)?.map((colour, index) => {
+                            return (
 
-                                    if (newValue < 0 || newValue > 255) {
-                                        return
-                                    }
+                                    <Row>
+                                        <Col md={{span: 2}}>
+                                            <Form.Label>Colour {index}</Form.Label>
+                                        </Col>
+                                        <Col md={{span: 4}}>
+                                            {ColourBox(colour)}
+                                        </Col>
+                                        <Col md={{span: 2}}>
+                                            <Form.Control type='number' value={colour} onChange={(e) => {
+                                                let newValue = parseInt(e.target.value)
 
-                                    let newColours = props.mappingsState.schemes.get(selectedPalette!)!
+                                                if (newValue < 0 || newValue > 360) {
+                                                    return
+                                                }
 
-                                    newColours[index] = parseInt(e.target.value)
+                                                let newColours = props.mappingsState.schemes.get(selectedPalette!)!
 
-                                    props.mappingsDispatch({
-                                        type: 'scheme',
-                                        action: 'update',
-                                        key: selectedPalette!,
-                                        values: newColours
-                                    })
-                                }}></Form.Control>
-                            </Col>
-                        </Row>
-                    )
-                })
-                }
+                                                newColours[index] = parseInt(e.target.value)
+
+                                                props.mappingsDispatch({
+                                                    type: 'scheme',
+                                                    action: 'update',
+                                                    key: selectedPalette!,
+                                                    values: newColours
+                                                })
+                                            }}></Form.Control>
+                                        </Col>
+                                        <Col md={{span: 4}}>
+                                            {/* Slider */}
+                                            <Form.Control type='range' min='0' max='360' value={colour} onChange={(e) => {
+                                                let newColours = props.mappingsState.schemes.get(selectedPalette!)!
+
+                                                newColours[index] = parseInt(e.target.value)
+
+                                                props.mappingsDispatch({
+                                                    type: 'scheme',
+                                                    action: 'update',
+                                                    key: selectedPalette!,
+                                                    values: newColours
+                                                })
+                                            }} style={{
+                                                // Multi stop gradient from 0 to 360
+                                                background: 'linear-gradient(to right, hsl(0, 50%, 50%), hsl(60, 50%, 50%), hsl(120, 50%, 50%), hsl(180, 50%, 50%), hsl(240, 50%, 50%), hsl(300, 50%, 50%), hsl(360, 50%, 50%))',
+
+                                                // backgroundSize: '80% 100%',
+                                                // // Background image position same as slider selection bar
+                                                // backgroundPosition: '10% 0%',
+                                                padding: '0px',
+                                                // Rounded corners
+                                                // borderRadius: '5px',
+
+                                            }}></Form.Control>
+                                        </Col>
+                                    </Row>
+
+                            )
+                        })
+                        }
+                    </Col>
+                </Row>
                 <Row>
                     <Col md={{span: 2}}>
                         <Button variant='outline-primary' onClick={() => {
@@ -336,51 +378,54 @@ function PaletteSettings(props: {mappingsState: MappingsState,
     }
 
     return (
-        <>
+        <Container style={{
+            paddingBottom: '10px',
+            paddingTop: '10px',
+        }}>
             <Row>
-                <Col md={{span: 1, offset: 11}}>
+                <Col>
+                    <h3>Palettes</h3>
+                </Col>
+                <Col md={{span: 1, offset: 8}}>
                     <CloseButton
                         onClick={() => props.setSettingsType(null)}></CloseButton>
                 </Col>
             </Row>
             <Row>
-
                 <Col>
-                <Dropdown onSelect={(select) => {
-                    if (select === null) {
-                        return
-                    }
+                    <Dropdown onSelect={(select) => {
+                        if (select === null) {
+                            return
+                        }
 
-                    setSelectedPalette(select)
-                }}>
-                    <Dropdown.Toggle variant='outline-primary' id='dropdown-basic'>
-                        {selectedPalette === null ? 'No palette selected' : selectedPalette}
-                    </Dropdown.Toggle>
-                    <Dropdown.Menu>
-                        {props.mappingsState.schemes.toArray().map(([scheme, nums]) => {
-                            return (
-                                <Dropdown.Item eventKey={scheme}>{scheme}</Dropdown.Item>
-                            )
-                        })}
-                    </Dropdown.Menu>
-                </Dropdown>
-            </Col>
-            <Col md={{}}>
-                <Button variant='outline-primary' onClick={() => {
-                    props.mappingsDispatch({
-                        type: 'scheme',
-                        action: 'add',
-                        key: 'New scheme'
-                    })
+                        setSelectedPalette(select)
+                    }}>
+                        <Dropdown.Toggle variant='outline-primary' id='dropdown-basic'>
+                            {selectedPalette === null ? 'No palette selected' : selectedPalette}
+                        </Dropdown.Toggle>
+                        <Dropdown.Menu>
+                            {props.mappingsState.schemes.toArray().map(([scheme, nums]) => {
+                                return (
+                                    <Dropdown.Item eventKey={scheme}>{scheme}</Dropdown.Item>
+                                )
+                            })}
+                        </Dropdown.Menu>
+                    </Dropdown>
+                </Col>
+                <Col md={{}}>
+                    <Button variant='outline-primary' onClick={() => {
+                        props.mappingsDispatch({
+                            type: 'scheme',
+                            action: 'add',
+                            key: 'New scheme'
+                        })
 
-                    setSelectedPalette('New scheme')
-                }}>Add new colour scheme</Button>
-            </Col>
+                        setSelectedPalette('New scheme')
+                    }}>Add new colour scheme</Button>
+                </Col>
             </Row>
-            <Row>
-                {schemeSettings}
-            </Row>
-        </>
+            {schemeSettings}
+        </Container>
     )
 
 }
@@ -419,46 +464,45 @@ function CategoryMapping(   mappingsState: MappingsState,
                 }}>
 
                 {settingsType.mappingName === 'hue' &&
-                    <>
-                    <Row>
-                        <Col>
-                            <Dropdown onSelect={(select) => {
-                                if (select === null) {
-                                    return
-                                }
+                        <Row>
+                            <Col>
+                                <Dropdown onSelect={(select) => {
+                                    if (select === null) {
+                                        return
+                                    }
 
-                                mappingsDispatch({
-                                    type: 'settings',
-                                    action: 'edit',
-                                    mapping: settingsType,
-                                    settings: {
-                                        ...mappingsState.config.get(JSON.stringify(settingsType))!,
-                                        colourScheme: select
-                                    }})
-                                }}>
-                                <Dropdown.Toggle variant='outline-primary' id='dropdown-basic'>
-                                    {mappingsState.config.get(JSON.stringify(settingsType))!.colourScheme ?? 'Select a colour scheme'}
-                                </Dropdown.Toggle>
-                                <Dropdown.Menu>
-                                    {mappingsState.schemes.toArray().map(([scheme, nums]) => {
-                                        return (
-                                            <Dropdown.Item eventKey={scheme}>{scheme}</Dropdown.Item>
-                                        )
-                                    })}
-                                </Dropdown.Menu>
-                            </Dropdown>
-                        </Col>
-                        <Col md={{}}>
-                            <Button variant='outline-primary' onClick={() => {
-                                mappingsDispatch({
-                                    type: 'scheme',
-                                    action: 'add',
-                                    key: 'New scheme'
-                                })
-                            }}>Add new colour scheme</Button>
-                        </Col>
+                                    mappingsDispatch({
+                                        type: 'settings',
+                                        action: 'edit',
+                                        mapping: settingsType,
+                                        settings: {
+                                            ...mappingsState.config.get(JSON.stringify(settingsType))!,
+                                            colourScheme: select
+                                        }})
+                                    }}>
+                                    <Dropdown.Toggle variant='outline-primary' id='dropdown-basic'>
+                                        {mappingsState.config.get(JSON.stringify(settingsType))!.colourScheme ?? 'Select a colour scheme'}
+                                    </Dropdown.Toggle>
+                                    <Dropdown.Menu>
+                                        {mappingsState.schemes.toArray().map(([scheme, nums]) => {
+                                            return (
+                                                <Dropdown.Item eventKey={scheme}>{scheme}</Dropdown.Item>
+                                            )
+                                        })}
+                                    </Dropdown.Menu>
+                                </Dropdown>
+                            </Col>
+                            <Col md={{}}>
+                                <Button variant='outline-primary' onClick={() => {
+                                    mappingsDispatch({
+                                        type: 'scheme',
+                                        action: 'add',
+                                        key: 'New scheme'
+                                    })
+                                }}>Add new colour scheme</Button>
+                            </Col>
                         </Row>
-                    </>
+
                 }
 
                 <Table striped bordered hover>
@@ -729,41 +773,43 @@ function generateRow(
 
     return (
         <ListGroup.Item key={JSON.stringify(mapping)}>
-            <Row>
-                <Col md={{span: 2}}>
-                    {objectTypeDropdown}
-                </Col>
-                <Col md={{span: 4}}>
-                    {attributeDropdown}
-                </Col>
-                <Col md={{span: 3}}>
-                    {channelDropdown}
-                </Col>
-                {(mapping.mappingName !== 'none' && mappingProperties.get(mapping.mappingName)?.channelType === 'categorical') &&
-                        <Col md={{offset: 1, span: 1}}>
-                            <Button variant='outline-primary' onClick={
-                                () => {
-                                    setSettingsType(mapping)
-                                }
-                            }>
-                                <BiCog></BiCog>
-                            </Button>
-                        </Col>
-                }
-                {!(mapping.mappingName !== 'none' && mappingProperties.get(mapping.mappingName)?.channelType === 'categorical') &&
-                    <Col md={{span: 2}}>
+
+                <Row>
+                    <Col >
+                        {objectTypeDropdown}
                     </Col>
-                }
-                <Col md={{span: 1}}>
-                    <Button variant='outline-danger' onClick={() => {
-                        mappingsDispatch({
-                            type: 'selection',
-                            action: 'remove',
-                            mapping: mapping
-                        })
-                    }}>X</Button>
-                </Col>
-            </Row>
+                    <Col >
+                        {attributeDropdown}
+                    </Col>
+                    <Col >
+                        {channelDropdown}
+                    </Col>
+                    {(mapping.mappingName !== 'none' && mappingProperties.get(mapping.mappingName)?.channelType === 'categorical') &&
+                            <Col >
+                                <Button variant='outline-primary' onClick={
+                                    () => {
+                                        setSettingsType(mapping)
+                                    }
+                                }>
+                                    <BiCog></BiCog>
+                                </Button>
+                            </Col>
+                    }
+                    {!(mapping.mappingName !== 'none' && mappingProperties.get(mapping.mappingName)?.channelType === 'categorical') &&
+                        <Col>
+                        </Col>
+                    }
+                    <Col md={{order: 'last'}}>
+                        <Button variant='outline-danger' onClick={() => {
+                            mappingsDispatch({
+                                type: 'selection',
+                                action: 'remove',
+                                mapping: mapping
+                            })
+                        }}>X</Button>
+                    </Col>
+                </Row>
+
         </ListGroup.Item>
     )
 }
@@ -777,31 +823,29 @@ function MappingList(
     if (Object.keys(mappingsState.selectedMappings).length === 0) {
         // If there are no mappings selected, default message.
         return (
-            <ListGroup>
                 <ListGroup.Item>
-                    <Row>
-                        <Col>
-                            No mappings
-                        </Col>
-                    </Row>
+                        <Row>
+                            <Col>
+                                No mappings
+                            </Col>
+                        </Row>
                 </ListGroup.Item>
-            </ListGroup>
         )
     }
 
     return (
-        <ListGroup>
+        <>
             {
-            mappingsState.selectedMappings.toList().map((mapping) => {
-                return generateRow(
-                    mappingsState,
-                    mappingsDispatch,
-                    graphState,
-                    mapping.toJS() as any,
-                    setSettingsType)}
-                )
+
+                mappingsState.selectedMappings.toList().map((mapping) => {
+                        return generateRow(
+                            mappingsState,
+                            mappingsDispatch,
+                            graphState,
+                            mapping.toJS() as any,
+                            setSettingsType)})
             }
-        </ListGroup>
+        </>
     )
 }
 
@@ -887,45 +931,64 @@ export default function MappingTab() {
     )
 
     return (
-        <Accordion defaultActiveKey='nodemap'>
-            <Accordion.Item eventKey='nodemap'>
-                <Accordion.Header>Selected Mappings</Accordion.Header>
-                <Accordion.Body>
-                    <Container>
-                        <Row>
-                            <Col>
-                                {MappingList(mappingsState, mappingsDispatch, graphState, setSettingsType)}
-                            </Col>
-                        </Row>
-                        <Row>
-                            {/* <Col>
-                                <Button variant='outline-primary'>Save</Button>
-                                </Col>
-                                <Col>
-                                <Button variant='outline-primary'>Load</Button>
-                            </Col> */}
-                            <Col>
-                                {addButton}
-                            </Col>
-                            <Col>
-                                {editPaletteButton}
-                            </Col>
-                        </Row>
-                    </Container>
-                </Accordion.Body>
-            </Accordion.Item>
+        <Container style={{
+            marginBottom: '10px',
+            marginTop: '10px'
+        }}>
+            <Row>
+                <Col>
+                    <h3>Mapping</h3>
+                </Col>
+            </Row>
+            <Row>
+                <Col>
+                    <Accordion defaultActiveKey='nodemap'>
+                        <Accordion.Item eventKey='nodemap'>
+                            <Accordion.Header>Selected Mappings</Accordion.Header>
+                            <Accordion.Body style={{
+                                padding: '0px',
+                            }}>
+                                <ListGroup>
+                                    <div style={{
+                                        height: '300px',
+                                        overflowY: 'auto',
+                                    }}>
+                                        {MappingList(mappingsState, mappingsDispatch, graphState, setSettingsType)}
+                                    </div>
+                                    <ListGroup.Item>
+                                        <Row>
+                                            {/* <Col>
+                                                <Button variant='outline-primary'>Save</Button>
+                                                </Col>
+                                                <Col>
+                                                <Button variant='outline-primary'>Load</Button>
+                                            </Col> */}
+                                            <Col md={{span: 3}}>
+                                                {addButton}
+                                            </Col>
+                                            <Col md={{span: 4}}>
+                                                {editPaletteButton}
+                                            </Col>
+                                        </Row>
+                                    </ListGroup.Item>
+                                </ListGroup>
+                            </Accordion.Body>
+                        </Accordion.Item>
 
-            <Accordion.Item eventKey='layoutmap'>
-                <Accordion.Header>Layout Mapping</Accordion.Header>
-                <Accordion.Body>
-                    {layoutMapping(
-                        state.layouts.map((layout) => {return layout.name}),
-                        layoutSettingsState,
-                        layoutSettingsReducer,
-                        state.currentLayout,
-                        state.state)}
-                </Accordion.Body>
-            </Accordion.Item>
-        </Accordion>
+                        <Accordion.Item eventKey='layoutmap'>
+                            <Accordion.Header>Layout Mapping</Accordion.Header>
+                            <Accordion.Body>
+                                {layoutMapping(
+                                    state.layouts.map((layout) => {return layout.name}),
+                                    layoutSettingsState,
+                                    layoutSettingsReducer,
+                                    state.currentLayout,
+                                    state.state)}
+                            </Accordion.Body>
+                        </Accordion.Item>
+                    </Accordion>
+                </Col>
+            </Row>
+        </Container>
     )
 }
