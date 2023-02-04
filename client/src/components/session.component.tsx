@@ -140,61 +140,61 @@ export default function SessionTab() {
         )
     }
 
-    var graphSchema = {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        // "$id": "https://example.com/product.schema.json",
-        "type": "object",
-        "description": "Network data",
-        "properties": {
-            "attributes": {
-                "type": "object",
-                "properties": {
-                    "edgeType": {
-                        "type": "string"
-                    }
-                },
-                "required": [ "edgeType" ]
-            },
-            "nodes": {
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "id": {
-                            "type": ["string", "integer"]
-                        },
-                        "attributes": {
-                            "type": "object"
-                        }
-                    },
-                    "required": ["id"]
-                },
-                "minItems": 1,
-                "uniqueItems": true
-            },
-            "edges": {
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "source": {
-                            "type": ["string", "integer"]
-                        },
-                        "target": {
-                            "type": ["string", "integer"]
-                        },
-                        "attributes": {
-                            "type": "object"
-                        }
-                    },
-                    "required": ["source", "target", "attributes"]
-                },
-                "minItems": 1,
-                "uniqueItems": true
-            }
-        },
-        "required": ["attributes", "nodes", "edges"]
-    }
+    // var graphSchema = {
+    //     "$schema": "https://json-schema.org/draft/2020-12/schema",
+    //     // "$id": "https://example.com/product.schema.json",
+    //     "type": "object",
+    //     "description": "Network data",
+    //     "properties": {
+    //         "attributes": {
+    //             "type": "object",
+    //             "properties": {
+    //                 "edgeType": {
+    //                     "type": "string"
+    //                 }
+    //             },
+    //             "required": [ "edgeType" ]
+    //         },
+    //         "nodes": {
+    //             "type": "array",
+    //             "items": {
+    //                 "type": "object",
+    //                 "properties": {
+    //                     "id": {
+    //                         "type": ["string", "integer"]
+    //                     },
+    //                     "attributes": {
+    //                         "type": "object"
+    //                     }
+    //                 },
+    //                 "required": ["id"]
+    //             },
+    //             "minItems": 1,
+    //             "uniqueItems": true
+    //         },
+    //         "edges": {
+    //             "type": "array",
+    //             "items": {
+    //                 "type": "object",
+    //                 "properties": {
+    //                     "source": {
+    //                         "type": ["string", "integer"]
+    //                     },
+    //                     "target": {
+    //                         "type": ["string", "integer"]
+    //                     },
+    //                     "attributes": {
+    //                         "type": "object"
+    //                     }
+    //                 },
+    //                 "required": ["source", "target", "attributes"]
+    //             },
+    //             "minItems": 1,
+    //             "uniqueItems": true
+    //         }
+    //     },
+    //     "required": ["attributes", "nodes", "edges"]
+    // }
 
     let exportData = {
         nodes: graphState.nodes.data.map((data) => {

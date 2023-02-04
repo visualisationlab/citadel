@@ -116,6 +116,10 @@ function renderSimItem(param: SimulatorParam, index: number, key: string, params
 
                 </Form.Control>
             )
+            break
+
+        default:
+            break
     }
 
     return (
@@ -209,18 +213,20 @@ export function SimulatorTab() {
     const textRef = useRef(null)
     const sessionRef = useRef(null)
 
+    let simulators = state?.simulators
+
     useEffect(() => {
-        if (simOptionsSelection === null) {
+        if (simOptionsSelection === null || simulators === undefined) {
             return
         }
 
         // If the selected simulator is not generating or idle, then reset the selection.
-        if (state?.simulators.filter((sim) => {
+        if (simulators.filter((sim) => {
             return (sim.key === simOptionsSelection && (sim.state === 'generating' || sim.state === 'idle'))
         }).length === 0) {
             setSimOptionsSelection(null)
         }
-    }, [simOptionsSelection, state?.simulators])
+    }, [simOptionsSelection, simulators])
 
     if (!state) {
         return <></>

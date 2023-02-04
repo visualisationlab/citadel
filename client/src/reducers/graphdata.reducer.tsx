@@ -85,9 +85,9 @@ function updateData(state: GraphDataState, action: GraphDataReducerAction): Grap
             API.updateGraph(state)
 
             return {...state}
+        default:
+            return state
     }
-
-    return state
 }
 
 function calculateMetadata(data: VisGraph.GraphNode[] | VisGraph.Edge[])
@@ -162,7 +162,6 @@ function calculateMetadata(data: VisGraph.GraphNode[] | VisGraph.Edge[])
         })
     }
 
-    console.log(nodeMetadata)
     return nodeMetadata
 }
 
@@ -185,6 +184,9 @@ function setData(state: GraphDataState, action: GraphDataReducerAction): GraphDa
             state.directed = action.value
 
             return {...state}
+
+        default:
+            return state
     }
 }
 
@@ -211,5 +213,7 @@ export function GraphDataReducer(state: GraphDataState, action: GraphDataReducer
                 edges: {...newState.edges,
                     metadata: calculateMetadata(newState.edges.data)
                 }}
+        default:
+            return state
     }
 }

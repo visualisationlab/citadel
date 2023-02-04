@@ -58,5 +58,7 @@ export function SessionDataReducer(state, action) {
             });
             console.log(state.simulators);
             return Object.assign({}, state);
+        default:
+            return state;
     }
 }

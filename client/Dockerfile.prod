@@ -1,0 +1,20 @@
+# stage1 - build react app first
+FROM node:19 as build
+WORKDIR /app
+ENV PATH /app/node_modules/.bin:$PATH
+COPY ./package.json /app/
+COPY ./yarn.lock /app/
+RUN yarn
+COPY . /app
+RUN yarn build
+
+# stage 2 - build the final image and copy the react build files
+FROM nginx:1.23
+COPY --from=build /app/build /usr/share/nginx/html
+RUN rm /etc/nginx/conf.d/default.conf
+COPY nginx/nginx.conf /etc/nginx/conf.d
+# Copy certs
+# COPY ../certs/dev.visgraph.pem ./dev.visgraph.pem
+# COPY ../certs/dev.visgraph-key.pem ./dev.visgraph-key.pem
+EXPOSE 3000
+CMD ["nginx", "-g", "daemon off;"]

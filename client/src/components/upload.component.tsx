@@ -25,32 +25,39 @@ export default function Home() {
 
     const [sid, setSid] = useState('')
 
-    const prevSessions = localStorage.getItem('prevSessions')
 
-    console.log(prevSessions)
-    let parsedPrevSessions : [string, Date][] = []
+    let [parsedPrevSessions, setParsedPrevSessions] = useState<[string, Date][] | null>([])
 
-    if (prevSessions !== null) {
-        parsedPrevSessions = JSON.parse(prevSessions)
-    }
+    useEffect(() => {
+        const prevSessions = localStorage.getItem('prevSessions')
+
+        if (prevSessions !== null) {
+            setParsedPrevSessions(JSON.parse(prevSessions))
+        } else {
+            return
+        }
+    }, [setParsedPrevSessions])
 
     useEffect(() => {
         let res: boolean[] = []
+        console.log("useEffect called")
+
+        if (parsedPrevSessions === null) {
+            return
+        }
 
         parsedPrevSessions.forEach(([sid, date], index) => {
             userService.getSessionStatus(sid).then(
                 response => {
-                    console.log(response.data)
                     res.push(response.data)
 
-                    if (res.length === parsedPrevSessions.length - 1) {
+                    if (parsedPrevSessions && res.length === parsedPrevSessions.length - 1) {
                         setSessionStatusList(res)
                     }
                 }
             )
         })
-
-    }, [])
+    }, [parsedPrevSessions])
 
     function joinSession(newSid: string | null) {
         if (newSid === null) {
@@ -139,6 +146,37 @@ export default function Home() {
         <Spinner animation='border'></Spinner>
     )
 
+    let prevSessionComponent = parsedPrevSessions === null ? [] : (
+        <Col>
+            <h4>Previous sessions</h4>
+            <Table striped bordered hover>
+                <thead>
+                    <tr>
+                        <th>Session ID</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {parsedPrevSessions.map(([sid, date], index) => {
+                        let elapsedMins = round(((new Date()).getTime() - new Date(date).getTime()) / 1000 / 60, 0)
+
+                        return (
+                            <tr key={sid}>
+                                <td>{sid + ((elapsedMins > 120) ? '' : ' (' + elapsedMins + ' minute(s) ago)')} </td>
+                                <td><Button
+                                    disabled={!sessionStatusList[index]}
+                                    onClick={() => {
+                                    console.log("Connecting to session " + sid)
+
+                                    joinSession(sid)
+                                }}>Connect</Button></td>
+                            </tr>
+                        )
+                    })}
+                </tbody>
+            </Table>
+        </Col>
+    )
+
     return (
         <>
             <Container className="shadow p-3 bg-white rounded" style={{ width: '50%', marginTop: '30px' }}>
@@ -218,34 +256,7 @@ export default function Home() {
                     </Col>
                 </Row>
                 <Row>
-                    <Col>
-                        <h4>Previous sessions</h4>
-                        <Table striped bordered hover>
-                            <thead>
-                                <tr>
-                                    <th>Session ID</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {parsedPrevSessions.map(([sid, date], index) => {
-                                    let elapsedMins = round(((new Date()).getTime() - new Date(date).getTime()) / 1000 / 60, 0)
-
-                                    return (
-                                        <tr key={sid}>
-                                            <td>{sid + ((elapsedMins > 120) ? '' : ' (' + elapsedMins + ' minute(s) ago)')} </td>
-                                            <td><Button
-                                                disabled={!sessionStatusList[index]}
-                                                onClick={() => {
-                                                console.log("Connecting to session " + sid)
-
-                                                joinSession(sid)
-                                            }}>Connect</Button></td>
-                                        </tr>
-                                    )
-                                })}
-                            </tbody>
-                        </Table>
-                    </Col>
+                    {prevSessionComponent}
                 </Row>
             </Container>
             {/* <Container className="shadow p-3 bg-white rounded" style={{ width: '50%', marginTop: '30px' }}>

@@ -259,8 +259,6 @@ export default function InspectionTab(): JSX.Element {
     const [ selectedAttribute, setSelectedAttribute ] = useState('')
     const [ attributeSelectionList, setAttributeSelectionList ] = useState<string[]>([])
 
-    const [ tabHidden, setTabHidden ] = useState(false)
-
     useEffect(() => {
         if (selectionState === null || graphState === null) {
             return

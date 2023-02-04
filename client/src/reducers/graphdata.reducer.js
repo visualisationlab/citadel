@@ -24,8 +24,9 @@ function updateData(state, action) {
             state.nodes.data = newNodes;
             API.updateGraph(state);
             return Object.assign({}, state);
+        default:
+            return state;
     }
-    return state;
 }
 function calculateMetadata(data) {
     let nodeMetadata = {};
@@ -83,7 +84,6 @@ function calculateMetadata(data) {
             nodeMetadata[attribute].frequencyDict[freq[0]] = i;
         });
     }
-    console.log(nodeMetadata);
     return nodeMetadata;
 }
 function setData(state, action) {
@@ -99,6 +99,8 @@ function setData(state, action) {
         case 'directed':
             state.directed = action.value;
             return Object.assign({}, state);
+        default:
+            return state;
     }
 }
 export function GraphDataReducer(state, action) {
@@ -110,5 +112,7 @@ export function GraphDataReducer(state, action) {
         case 'update':
             newState = updateData(state, action);
             return Object.assign(Object.assign({}, newState), { nodes: Object.assign(Object.assign({}, newState.nodes), { metadata: calculateMetadata(newState.nodes.data) }), edges: Object.assign(Object.assign({}, newState.edges), { metadata: calculateMetadata(newState.edges.data) }) });
+        default:
+            return state;
     }
 }

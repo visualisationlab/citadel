@@ -64,6 +64,7 @@ export type MappingsReducerAction =
     | { type: 'scheme', action: 'remove', key: string}
     | { type: 'scheme', action: 'update', key: string, values: number[]}
     | { type: 'scheme', action: 'load', state: SchemeState }
+    | { type: 'scheme', action: 'rename', oldName: string, newName: string}
 
 
 // The mapping properties are used to determine which channels can be used for which object types and attribute types.
@@ -86,6 +87,8 @@ mappingProperties = mappingProperties.set('none', {objectType: 'all', channelTyp
 mappingProperties = mappingProperties.set('region', {objectType: 'node', channelType: 'categorical'})
 mappingProperties = mappingProperties.set('x-position', {objectType: 'node', channelType: 'ordered'})
 mappingProperties = mappingProperties.set('y-position', {objectType: 'node', channelType: 'ordered'})
+
+// TODO: Update schemes when scheme is changed
 
 // Reducer for scheme settings.
 function SchemeReducer(state: MappingsState, action: MappingsReducerAction): MappingsState {
@@ -140,6 +143,24 @@ function SchemeReducer(state: MappingsState, action: MappingsReducerAction): Map
             state.schemes = action.state
 
             return state
+        case 'rename':
+            let oldName = state.schemes.get(action.oldName)
+            if (oldName === undefined) {
+                console.log('Renaming scheme: Scheme does not exist')
+
+                return state
+            }
+
+
+            state.schemes = state.schemes.set(action.newName, oldName)
+            state.schemes = state.schemes.delete(action.oldName)
+
+            localStorage.setItem('schemes', JSON.stringify(state.schemes.toJS()))
+
+            return state
+
+        default:
+            return state
     }
 }
 
@@ -165,6 +186,9 @@ function ConfigReducer(state: MappingsState, action: MappingsReducerAction): Map
 
             state.config = state.config.set(JSON.stringify(action.mapping), action.settings)
 
+            return state
+
+        default:
             return state
     }
 }
@@ -220,13 +244,15 @@ export function MappingsReducer(state: MappingsState, action: MappingsReducerAct
                     state.selectedMappings = Set()
 
                     return {...state}
+                default:
+                    return {...state}
             }
-
-            return {...state}
         case 'settings':
             return {...ConfigReducer(state, action)}
         case 'scheme':
             return {...SchemeReducer(state, action)}
+        default:
+            return {...state}
 
     }
 }

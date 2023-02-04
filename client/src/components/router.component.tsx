@@ -108,6 +108,10 @@ export module Router {
             case 'headset':
                 QR.clearQR()
                 API.sendPan()
+                break
+
+            default:
+                break
         }
     }
 

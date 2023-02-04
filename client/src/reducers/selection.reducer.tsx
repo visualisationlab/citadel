@@ -63,13 +63,14 @@ function setState(type: AttributeType, value: string[], mode: SelectionMode): Se
                 selectedEdges: [],
                 selectionMode: mode
             }
+        default:
+            return {
+                selectedNodes: [],
+                selectedEdges: value,
+                selectionMode: mode
+            }
     }
 
-    return {
-        selectedNodes: [],
-        selectedEdges: value,
-        selectionMode: mode
-    }
 }
 
 export function SelectionDataReducer(state: SelectionDataState, action: SelectionDataReducerAction): SelectionDataState {
@@ -117,5 +118,7 @@ export function SelectionDataReducer(state: SelectionDataState, action: Selectio
             }
 
             return setState(action.attribute, addValue(state.selectedEdges, action.id), 'multi')
+        default:
+            return state
     }
 }

@@ -237,142 +237,6 @@ function layoutMapping(layouts: string[], layoutInfo: LayoutSettingsState,
     )
 }
 
-async function getClipboardData() {
-    return await navigator.clipboard.readText()
-}
-
-// TODO: Reuse for hue. This is a bit of a mess
-
-// function ColourSettingsComponent(props: {graphState: GraphDataState, dispatch: Dispatch<GraphDataReducerAction>, objectType: 'node' | 'edge'}): JSX.Element {
-//     let colours = props.objectType === 'node' ? props.graphState.nodes.mapping.settings.colours : props.graphState.edges.mapping.settings.colours
-
-//     const [colourState, setColourState] = useState(colours)
-//     const sessionRef = useRef(null)
-
-//     useEffect(() => {
-//         if (props.objectType === 'node')
-//             setColourState(props.graphState.nodes.mapping.settings.colours)
-//         else
-//             setColourState(props.graphState.edges.mapping.settings.colours)
-//     }, [props.graphState.nodes.mapping.settings.colours, props.graphState.edges.mapping.settings.colours, props.objectType])
-
-//     let colourRows = colourState.map((colour, index) => {
-//         let val = '#' + colour.map(function (x) {return Math.round(x * 255).toString(16).padStart(2, '0')}).join('')
-
-//         return (
-//             <Row>
-//                 <Col md={{span: 2}}>
-//                     <input type="color" onChange={(val) => {
-//                         let newColours = [...colourState]
-//                         newColours[index] = [tinycolor(val.target.value).toRgb().r / 255, tinycolor(val.target.value).toRgb().g / 255, tinycolor(val.target.value).toRgb().b / 255]
-//                         setColourState(newColours)
-//                     }} value={val}></input>
-//                 </Col>
-//                 {index > 0 &&
-//                     <Col md={{span: 2}}>
-//                         <Button variant='outline-danger' onClick={() => {
-//                             let newColours = [...colourState]
-//                             newColours.splice(index, 1)
-//                             setColourState(newColours)
-//                         }
-//                         }>Remove</Button>
-//                     </Col>
-//                 }
-//             </Row>
-//         )
-//     })
-
-//     return (<>
-//         {colourRows}
-//         <Row>
-//             <Col>
-//                 <Button variant='outline-primary'
-//                     onClick={() => {
-//                         if (props.objectType === 'node') {
-//                             let newColours = [...colourState]
-//                             newColours.push([1.0, 0.0, 0.0])
-//                             setColourState(newColours)
-//                         }
-//                     }
-//                 }>Add Colour</Button>
-//             </Col>
-//         </Row>
-//         <Row>
-//             <Col>
-//                 <Button variant='outline-primary'
-//                     onClick={() => {
-//                         if (props.objectType === 'node') {
-//                             if (window.isSecureContext && navigator.clipboard) {
-//                                 navigator.clipboard.writeText('{"colours":[' + colourState.map((x) => {
-//                                     return '[' + (x.map((n) => {return n.toFixed(2)}).toString()) + ']'
-//                                  }) + ']}')
-//                             } else {
-//                                 console.log("Connection is insecure")
-//                             }
-//                         }
-//                     }
-//                 }>Copy Colours</Button>
-//             </Col>
-//             <Col md={{offset: 4, span: 4}}>
-//                 <Button variant='outline-primary'
-//                     onClick={() => {
-//                         props.dispatch({
-//                             type: 'updateSetting',
-//                             object: 'node',
-//                             attribute: 'colours',
-//                             value: colourState
-//                         })
-//                     }
-//                 }>Apply</Button>
-//             </Col>
-//         </Row>
-//         <Row>
-//             <input type='text' ref={sessionRef} value={'{"colours":[' + colourState.map((x) => {
-//                return '[' + (x.map((n) => {return n.toFixed(2)}).toString()) + ']'
-//             }) + ']}'}></input>
-//         </Row>
-//         <Row>
-//             <Col>
-//                 <Button variant='outline-primary'
-//                     onClick={() => {
-//                         getClipboardData().then((text) => {
-//                             let newColours = JSON.parse(text)
-
-//                             try {
-//                                 colours = newColours['colours']
-
-//                                 setColourState(colours)
-//                             } catch (e) {
-//                                 console.log(e)
-//                             }
-//                         })
-//                     }
-//                 }>Load colours from clipboard</Button>
-//             </Col>
-//         </Row>
-//     </>)
-// }
-
-// function SettingsComponent(nodeSettings: string, setNodeSettingState: React.Dispatch<React.SetStateAction<string>>, graphState: GraphDataState, dispatch: Dispatch<GraphDataReducerAction>): JSX.Element {
-//     let content = <></>
-
-//     if (nodeSettings === 'colour') {
-//         content = <ColourSettingsComponent graphState={graphState} dispatch={dispatch} objectType='node'/>
-//     }
-
-//     return (
-//         <>
-//             <Row>
-//                 <Col>
-//                     <CloseButton
-//                         onClick={() => setNodeSettingState('')}></CloseButton>
-//                 </Col>
-//                 {content}
-//             </Row>
-//         </>
-//     )
-// }
-
 function ColourBox(colour: number | null): JSX.Element {
     if (colour === null) {
         return <>Select a colour</>
@@ -401,6 +265,23 @@ function PaletteSettings(props: {mappingsState: MappingsState,
     if (selectedPalette !== null) {
         schemeSettings = (
             <>
+                <Row>
+                    <Col md={{span: 2}}>
+                        <Form.Label>Rename</Form.Label>
+                    </Col>
+                    <Col md={{span: 4}}>
+                        <Form.Control type='text' value={selectedPalette} onChange={(e) => {
+                            props.mappingsDispatch({
+                                type: 'scheme',
+                                action: 'rename',
+                                oldName: selectedPalette!,
+                                newName: e.target.value
+                            })
+
+                            setSelectedPalette(e.target.value)
+                        }}></Form.Control>
+                    </Col>
+                </Row>
                 {props.mappingsState.schemes.get(selectedPalette)?.map((colour, index) => {
                     return (
                         <Row>
@@ -417,6 +298,7 @@ function PaletteSettings(props: {mappingsState: MappingsState,
                                     if (newValue < 0 || newValue > 255) {
                                         return
                                     }
+
                                     let newColours = props.mappingsState.schemes.get(selectedPalette!)!
 
                                     newColours[index] = parseInt(e.target.value)
@@ -932,19 +814,22 @@ export default function MappingTab() {
 
     const [ settingsType, setSettingsType ] = useState<MappingType | 'palette' | null>(null)
 
+    let layouts = state?.layouts
+    let currentLayout = state?.currentLayout
+
     useEffect(() => {
-        if (state?.layouts === undefined) {
+        if (layouts === undefined) {
             console.log('Layouts undefined')
             return
         }
 
         layoutSettingsReducer({
             attribute: 'layouts',
-            value: state.layouts,
-            currentLayout: state.currentLayout as AvailableLayout
+            value: layouts,
+            currentLayout: currentLayout as AvailableLayout
         })
 
-    }, [state?.layouts, state?.currentLayout])
+    }, [layouts, currentLayout])
 
     if (state === null || graphState == null || graphDispatch == null) {
         console.log('Something is null!')

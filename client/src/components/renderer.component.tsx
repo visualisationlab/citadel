@@ -7,6 +7,7 @@ import { SelectionDataReducerAction, SelectionDataState } from "../reducers/sele
 
 import { API } from '../services/api.service'
 
+
 // Create and load bitmap font.
 PIXI.BitmapFont.from('font', {
     fontFamily: 'sans-serif',
@@ -487,10 +488,10 @@ function updateTransform() {
 
         let lineLength = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
 
-        let nx = dx / lineLength;
-        let ny = dy / lineLength;
+        // let nx = dx / lineLength;
+        // let ny = dy / lineLength;
 
-        let wingLength = 5 * transformK;
+        // let wingLength = 5 * transformK;
 
         edge.gfx.x = (source.x + cosSource) * transformK + transformX
         edge.gfx.y = (source.y + sinSource) * transformK + transformY
@@ -588,10 +589,10 @@ function animator(timestamp: DOMHighResTimeStamp) {
 
             let lineLength = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
 
-            let nx = dx / lineLength;
-            let ny = dy / lineLength;
+            // let nx = dx / lineLength;
+            // let ny = dy / lineLength;
 
-            let wingLength = 5 * transformK;
+            // let wingLength = 5 * transformK;
 
             gfx.tint = PIXI.utils.rgb2hex(hsltorgb(edge.visualAttributes.hue,
                 edge.visualAttributes.saturation,

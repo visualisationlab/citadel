@@ -52,7 +52,7 @@ export function LayoutSettingsReducer(state, action) {
             };
         case 'property':
             if (state === null) {
-                return Object.assign({}, state);
+                return null;
             }
             if (action.key === 'randomize') {
                 state.layouts.filter((layout) => { return layout.name === (state === null || state === void 0 ? void 0 : state.selectedLayout); })[0].randomize = action.value;
@@ -64,6 +64,11 @@ export function LayoutSettingsReducer(state, action) {
                 }
                 return setting;
             });
+            return Object.assign({}, state);
+        default:
+            if (state === null) {
+                return null;
+            }
             return Object.assign({}, state);
     }
 }

@@ -1,7 +1,7 @@
-/// <reference types="react" />
+import React from 'react';
 import './home.component.css';
 interface NavigatorProps {
     disconnected: boolean;
 }
-export default function Navigator(props: NavigatorProps): JSX.Element;
-export {};
+declare const Navigator: React.NamedExoticComponent<NavigatorProps>;
+export default Navigator;

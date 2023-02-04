@@ -15,40 +15,6 @@ import { SelectionDataContext } from "./main.component"
 import { MappingContext } from '../components/main.component'
 import { MappingType } from '../reducers/selectedmappings.reducer';
 
-/**
- * Generates a gradient value based on given colour gradient.
- * @param stops Array of colours
- * @param value value between 0-1
- * @returns Colour
- */
-function linearGradient(stops: VisGraph.Colour[], value: number) : VisGraph.Colour {
-    const stopLength = 1 / (stops.length - 1);
-    const valueRatio = value / stopLength;
-    const stopIndex = Math.floor(valueRatio);
-
-    if (stopIndex === (stops.length - 1)) {
-        return stops[stops.length - 1];
-    }
-
-    const stopFraction = valueRatio % 1;
-
-    return lerp(stops[stopIndex], stops[stopIndex + 1], stopFraction);
-}
-
-/**
- * Lerps between two colours. dev.to/ndesmic/linear-color-gradient
- * @param {Colour} colour0
- * @param {Colour} colour1
- * @param {number} value between 0-1
- * @returns
- */
-function lerp(colour0: VisGraph.Colour, colour1: VisGraph.Colour, value: number) : VisGraph.Colour {
-    return [
-        colour0[0] + (colour1[0] - colour0[0]) * value,
-        colour0[1] + (colour1[1] - colour0[1]) * value,
-        colour0[2] + (colour1[2] - colour0[2]) * value
-    ]
-}
 
 /**
  * Returns a container, which is updated by reference to contain the graph.
@@ -74,7 +40,6 @@ export default function Layout() {
 
         let nodeMetadata = graphState.nodes.metadata
         let edgeMetadata = graphState.edges.metadata
-        let shapes: VisGraph.Shape[] = ['square', 'triangle', 'star']
 
         let hashedNodes = newNodes.map((node) => {
             node.visualAttributes.alpha = 1
@@ -162,31 +127,40 @@ export default function Layout() {
                 }
 
                 if (mapJS.mappingName === 'hue') {
-                    let attributeData = nodeMetadata[mapJS.attributeName]
+                    let mappingConfig = mappingsState.config.get(JSON.stringify(mapping))
 
-                    if (mappingsState.config.get(JSON.stringify(mapping))!.colourScheme !== null) {
-                        let hues = mappingsState.schemes.get(mappingsState.config.get(JSON.stringify(mapping))!.colourScheme!)!
+                    if (mappingConfig === undefined || mappingConfig === null)
+                        return
 
-                        try {
-                            let index = mappingsState.config.get(JSON.stringify(mapping))!.settings.get(node.attributes[mapJS.attributeName])
+                    let colourScheme = mappingConfig.colourScheme
 
-                            if (index === undefined) {
+                    if (colourScheme === undefined || colourScheme === null)
+                        return
+
+                    let hues = mappingsState.schemes.get(colourScheme)
+
+                    if (hues === undefined || hues === null)
+                        return
+
+                    try {
+                        let index = mappingConfig.settings.get(node.attributes[mapJS.attributeName])
+
+                        if (index === undefined) {
+                            node.visualAttributes.hue = 60
+                        }
+                        else {
+                            if (index >= hues.length) {
                                 node.visualAttributes.hue = 60
                             }
                             else {
-                                if (index >= hues.length) {
-                                    node.visualAttributes.hue = 60
-                                }
-                                else {
-                                    node.visualAttributes.hue = hues[index]
-                                }
+                                node.visualAttributes.hue = hues[index]
                             }
-
                         }
-                        catch (e) {
-                            console.log(e)
-                            node.visualAttributes.hue = 50
-                            }
+
+                    }
+                    catch (e) {
+                        console.log(e)
+                        node.visualAttributes.hue = 50
                     }
                 }
 

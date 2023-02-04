@@ -83,6 +83,11 @@ export type MappingsReducerAction = {
     type: 'scheme';
     action: 'load';
     state: SchemeState;
+} | {
+    type: 'scheme';
+    action: 'rename';
+    oldName: string;
+    newName: string;
 };
 type BasicMappingType = {
     objectType: 'node' | 'edge' | 'all';

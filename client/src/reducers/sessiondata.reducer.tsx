@@ -173,5 +173,7 @@ export function SessionDataReducer(state: SessionState, action: SessionReducer):
             console.log(state.simulators)
 
             return {...state}
+        default:
+            return state
     }
 }

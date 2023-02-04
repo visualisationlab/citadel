@@ -111,7 +111,7 @@ export function LayoutSettingsReducer(state: LayoutSettingsState, action: Layout
             }
         case 'property':
             if (state === null) {
-                return {...state!}
+                return null
             }
 
             if (action.key === 'randomize') {
@@ -127,6 +127,12 @@ export function LayoutSettingsReducer(state: LayoutSettingsState, action: Layout
                 return setting
             })
 
-            return {...state!}
+            return {...state}
+        default:
+            if (state === null) {
+                return null
+            }
+
+            return {...state}
     }
 }

@@ -33,12 +33,13 @@ function setState(type, value, mode) {
                 selectedEdges: [],
                 selectionMode: mode
             };
+        default:
+            return {
+                selectedNodes: [],
+                selectedEdges: value,
+                selectionMode: mode
+            };
     }
-    return {
-        selectedNodes: [],
-        selectedEdges: value,
-        selectionMode: mode
-    };
 }
 export function SelectionDataReducer(state, action) {
     if (action.type === 'reset') {
@@ -80,5 +81,7 @@ export function SelectionDataReducer(state, action) {
                 return setState(action.attribute, addValue(state.selectedNodes, action.id), 'multi');
             }
             return setState(action.attribute, addValue(state.selectedEdges, action.id), 'multi');
+        default:
+            return state;
     }
 }

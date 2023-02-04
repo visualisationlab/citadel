@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React, {useState, memo} from 'react'
 import { Tabs, Tab, Container, Collapse, Button } from 'react-bootstrap'
 import MappingTab from './mapping.component'
 import SessionTab from './session.component'
@@ -16,7 +16,7 @@ interface NavigatorProps {
     disconnected: boolean
 }
 
-export default function Navigator(
+const Navigator = memo(function Navigator(
     props: NavigatorProps) {
 
     return (
@@ -48,4 +48,6 @@ export default function Navigator(
             </Tabs>
         </Container>
     )
-}
+})
+
+export default Navigator
