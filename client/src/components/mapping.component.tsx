@@ -340,13 +340,9 @@ function PaletteSettings(props: {mappingsState: MappingsState,
                                             }} style={{
                                                 // Multi stop gradient from 0 to 360
                                                 background: 'linear-gradient(to right, hsl(0, 50%, 50%), hsl(60, 50%, 50%), hsl(120, 50%, 50%), hsl(180, 50%, 50%), hsl(240, 50%, 50%), hsl(300, 50%, 50%), hsl(360, 50%, 50%))',
+                                                // Change slider colour
 
-                                                // backgroundSize: '80% 100%',
-                                                // // Background image position same as slider selection bar
-                                                // backgroundPosition: '10% 0%',
                                                 padding: '0px',
-                                                // Rounded corners
-                                                // borderRadius: '5px',
 
                                             }}></Form.Control>
                                         </Col>
