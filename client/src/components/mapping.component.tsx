@@ -938,7 +938,7 @@ export default function MappingTab() {
             </Row>
             <Row>
                 <Col>
-                    <Accordion defaultActiveKey='nodemap'>
+                    <Accordion defaultActiveKey='layoutmap'>
                         <Accordion.Item eventKey='nodemap'>
                             <Accordion.Header>Selected Mappings</Accordion.Header>
                             <Accordion.Body style={{

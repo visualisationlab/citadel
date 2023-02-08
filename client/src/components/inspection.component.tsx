@@ -113,56 +113,68 @@ function NodeTab(
     graphState: GraphDataState) {
 
     return (
-        <>
-            <Row>
-                <p>Node ID: {id}</p>
-            </Row>
-            <Row style={{
-            overflowY: 'scroll',
-            height: '400px',
-            paddingRight: '0px'
+        <Container style={{
+            paddingBottom: '10px',
+            paddingTop: '10px'
         }}>
-                <p>Attributes</p>
-                {Object.keys(attributes).map((key) => {
-                    return (
-                        <Row>
-                            <Col>
-                                {key}
-                            </Col>
-                            <Col>
-                                <Form.Control
-                                    onChange={
-                                        (e) => {
-                                            let newState = {...attributes}
+            <Row>
+                <Col>
+                    <h3>Node "{id}"</h3>
+                </Col>
+            </Row>
+            <Row>
+                <Col>
+                    <h5>Attributes</h5>
+                </Col>
+            </Row>
+            <Row>
+                <div style={{
+                    overflowY: 'scroll',
+                    height: '200px',
+                }}>
+                <Col>
+                    {Object.keys(attributes).map((key) => {
+                        return (
+                            <Row>
+                                <Col>
+                                    {key}
+                                </Col>
+                                <Col>
+                                    <Form.Control
+                                        onChange={
+                                            (e) => {
+                                                let newState = {...attributes}
 
-                                            newState[key] = e.target.value
+                                                newState[key] = e.target.value
 
-                                            setAttributes(newState)
+                                                setAttributes(newState)
+                                            }
                                         }
-                                    }
-                                    type="text"
-                                    value={attributes[key]}
-                                    defaultValue={attributes[key]}
-                                    placeholder={attributes[key]}></Form.Control>
-                            </Col>
-                        </Row>
-                    )
-                })}
-                <Row>
-                    <Col md={{offset: 6}}>
-                        <Button onClick={() => {
-                            graphDispatch({
-                                type: 'update',
-                                property: 'data',
-                                object: 'node',
-                                value: {
-                                    id: id,
-                                    attributes: attributes
-                                }
-                            })
-                        }} type='submit'>Update</Button>
-                    </Col>
-                </Row>
+                                        type="text"
+                                        value={attributes[key]}
+                                        defaultValue={attributes[key]}
+                                        placeholder={attributes[key]}></Form.Control>
+                                </Col>
+                            </Row>
+                        )
+                    })}
+                </Col>
+                </div>
+            </Row>
+            <Row>
+                <Col md={{offset: 6}}>
+                    <Button onClick={() => {
+                        graphDispatch({
+                            type: 'update',
+                            property: 'data',
+                            object: 'node',
+                            value: {
+                                id: id,
+                                attributes: attributes
+                            }
+                        })
+                    }} type='submit'>Update</Button>
+                </Col>
             </Row>
             <Row>
                 <Col>
@@ -174,7 +186,7 @@ function NodeTab(
                     </Button>
                 </Col>
             </Row>
-        </>
+        </Container>
     )
 }
 
@@ -188,38 +200,42 @@ function EdgeTab(
     graphState: GraphDataState) {
 
     return (
-        <>
+        <Container>
             <Row>
-                <p>Edge ID: {id}</p>
-                <p>Source Node: {source}</p>
-                <p>Target Node: {target}</p>
+                <Col>
+                    <p>Edge ID: {id}</p>
+                    <p>Source Node: {source}</p>
+                    <p>Target Node: {target}</p>
+                </Col>
             </Row>
             <Row>
-                <p>Attributes</p>
-                {Object.keys(attributes).map((key) => {
-                    return (
-                        <Row>
-                            <Col>
-                                {key}
-                            </Col>
-                            <Col>
-                                <Form.Control
-                                    onChange={
-                                        (e) => {
-                                            let newState = {...attributes}
+                <Col>
+                    <p>Attributes</p>
+                    {Object.keys(attributes).map((key) => {
+                        return (
+                            <Row>
+                                <Col>
+                                    {key}
+                                </Col>
+                                <Col>
+                                    <Form.Control
+                                        onChange={
+                                            (e) => {
+                                                let newState = {...attributes}
 
-                                            newState[key] = e.target.value
+                                                newState[key] = e.target.value
 
-                                            setAttributes(newState)
+                                                setAttributes(newState)
+                                            }
                                         }
-                                    }
-                                    value={attributes[key]}
-                                    defaultValue={attributes[key]}
-                                    placeholder={attributes[key]}></Form.Control>
-                            </Col>
-                        </Row>
-                    )
-                })}
+                                        value={attributes[key]}
+                                        defaultValue={attributes[key]}
+                                        placeholder={attributes[key]}></Form.Control>
+                                </Col>
+                            </Row>
+                        )
+                    })}
+                </Col>
                 <Row>
                     <Col md={{offset: 6}}>
                         <Button onClick={() => {
@@ -246,7 +262,127 @@ function EdgeTab(
                     </Button>
                 </Col>
             </Row>
-        </>
+        </Container>
+    )
+}
+
+interface EditTabProps {
+    objectType: 'node' | 'edge',
+    id: string,
+    attributes: {[id: string] : any}
+    setAttributes: React.Dispatch<React.SetStateAction<{[id: string]: any}>>,
+    graphDispatch: React.Dispatch<GraphDataReducerAction>,
+    graphState: GraphDataState
+}
+
+// Edit the attributes of a node or edge or cluster
+function EditTab({
+    objectType,
+    id,
+    attributes,
+    setAttributes,
+    graphDispatch,
+    graphState
+}: EditTabProps) {
+    let header = <></>
+
+    if (objectType === 'node') {
+        header = <h3>Node <i>{id}</i></h3>
+    }
+    else if (objectType === 'edge') {
+        header = <h3>Edge <i>{id}</i></h3>
+    }
+
+    let rows = Object.keys(attributes).map((key) => {
+        return (
+            <Row>
+                <Col>
+                    {key}
+                </Col>
+                <Col>
+                    <Form.Control
+                        onChange={
+                            (e) => {
+                                let newState = {...attributes}
+
+                                newState[key] = e.target.value
+
+                                setAttributes(newState)
+                            }
+
+                        }
+                        value={attributes[key]}
+                        defaultValue={attributes[key]}
+                        placeholder={attributes[key]}></Form.Control>
+                </Col>
+            </Row>
+        )
+    })
+
+    return (
+        <Container style={{
+            marginTop: '10px',
+            marginBottom: '10px'
+        }}>
+            <Row>
+                <Col>
+                    {header}
+                </Col>
+            </Row>
+            <Row>
+                <Col>
+                    <h5>Attributes</h5>
+                </Col>
+            </Row>
+            <Row>
+                <div style={{
+                    maxHeight: '200px',
+                    overflowY: 'auto'
+                }}>
+                <Col>
+                    {rows}
+                </Col>
+                </div>
+            </Row>
+            <Row style={{
+                marginTop: '10px'
+            }}>
+                <Col>
+                    <Button variant='outline-danger'
+                        onClick={() => {
+                            if (objectType === 'node') {
+                                API.removeNode(id, graphState)
+                            }
+                            else if (objectType === 'edge') {
+                                API.removeEdge(id, graphState)
+                            }
+                        }}>
+                        Remove {objectType}
+                    </Button>
+                </Col>
+                <Col>
+                    <Button onClick={() => {
+                        graphDispatch({
+                            type: 'update',
+                            property: 'data',
+                            object: objectType,
+                            value: {
+                                id: id,
+                                attributes: attributes
+                            }
+                        })
+                    }} type='submit'>Update</Button>
+                </Col>
+            </Row>
+        </Container>
+    )
+}
+
+function InfoTab() {
+    return (
+        <Container>
+
+        </Container>
     )
 }
 
@@ -254,93 +390,43 @@ export default function InspectionTab(): JSX.Element {
     const { state } = useContext(UserDataContext)
     const { graphState, graphDispatch } = useContext(GraphDataContext)
     const { selectionState, selectionDispatch } = useContext(SelectionDataContext)
+
     const [ attributes, setAttributes ] = useState<{[id: string]: any}>({})
-    const [ clusterAttributes, setClusterAttributes ] = useState<{[id: string]: any}[]>([])
-    const [ selectedAttribute, setSelectedAttribute ] = useState('')
-    const [ attributeSelectionList, setAttributeSelectionList ] = useState<string[]>([])
+    const [ selectedClusterAttribute, setSelectedClusterAttribute ] = useState<string | null>(null)
 
     useEffect(() => {
         if (selectionState === null || graphState === null) {
             return
         }
 
-        if (selectionState.selectedNodes.length === 0 && selectionState.selectedEdges.length === 0) {
+        if (selectionState.selectedNodes.length === 0
+            && selectionState.selectedEdges.length === 0) {
             return
         }
 
-        if (selectionState.selectedNodes.length > 0) {
-            if (selectionState.selectedNodes.length > 1) {
-                const filteredResult = graphState.nodes.data
-                    .filter((node) => { return selectionState.selectedNodes.includes(node.id)})
+        // If there is a node selected or an edge selected, we want to show the attributes
+        // of the first node or edge in the selection
+        if (selectionState.selectedNodes.length === 1) {
+            let filteredData = graphState.nodes.data.filter((node) => {
+                return node.id === selectionState.selectedNodes[0]
+            })
 
-
-                if (filteredResult.length !== selectionState.selectedNodes.length) {
-                    console.log(`Wrong number of nodes for cluster ${selectionState.selectedNodes.length}: ${filteredResult.length}`)
-
-                    return
-                }
-
-                setAttributeSelectionList(Object.keys(filteredResult[0].attributes))
-
-                const result = filteredResult.map((node) => { return node.attributes })
-                console.log(result)
-
-                setClusterAttributes(result)
-
+            if (filteredData.length === 0) {
                 return
             }
 
-            const id = selectionState.selectedNodes[0]
+            setAttributes(filteredData[0].attributes)
+        } else if (selectionState.selectedEdges.length === 1) {
+            let filteredData = graphState.edges.data.filter((edge) => {
+                return edge.id === selectionState.selectedEdges[0]
+            })
 
-            const result = graphState.nodes.data.filter((node) => {return node.id === id})
-
-            if (result.length === 0 || result.length > 1) {
-                console.log(`Wrong number of nodes with id ${id}: ${result.length}`)
-
+            if (filteredData.length === 0) {
                 return
             }
 
-            setAttributes(result[0].attributes)
-
-            return
+            setAttributes(filteredData[0].attributes)
         }
-
-        if (selectionState.selectedEdges.length > 1) {
-            const filteredResult = graphState.edges.data
-                .filter((edge) => { return selectionState.selectedEdges.includes(edge.id)})
-
-
-            if (filteredResult.length !== selectionState.selectedEdges.length) {
-                console.log(`Wrong number of edges for cluster ${selectionState.selectedEdges.length}: ${filteredResult.length}`)
-
-                return
-            }
-
-            setAttributeSelectionList(Object.keys(filteredResult[0].attributes))
-
-            const result = filteredResult.map((edge) => { return edge.attributes })
-
-            setClusterAttributes(result)
-
-            return
-        }
-
-        const id = selectionState.selectedEdges[0]
-
-        console.log(graphState.edges.data)
-
-        const result = graphState.edges.data.filter((edge) => {return edge.id === id})
-
-        if (result.length === 0 || result.length > 1) {
-            console.log(`Wrong number of edges with id ${id}: ${result.length}`)
-
-            return
-        }
-
-        setAttributes(result[0].attributes)
-
-        return
-
     }, [graphState, selectionState])
 
     if (state === null || graphState == null || graphDispatch == null
@@ -349,82 +435,55 @@ export default function InspectionTab(): JSX.Element {
         return <></>
     }
 
-    if (selectionState.selectedNodes.length === 0 && selectionState.selectedEdges.length === 0) {
+    if (selectionState.selectedNodes.length === 0
+        && selectionState.selectedEdges.length === 0) {
         return <></>
     }
 
-    if (selectionState.selectedNodes.length > 0) {
-        if (selectionState.selectedNodes.length > 1) {
-            return (
-                <Container
-                    className="shadow bg-white rounded"
-                    style={{width: '400px',
-                    padding: '0px', top: '50px',
-                    right: '50px',
-                    position:'absolute'}}>
-                    <Tabs>
-                        {ClusterTab(attributeSelectionList, selectionDispatch, clusterAttributes, selectedAttribute, setSelectedAttribute)}
-                        <Tab eventKey='Hide' title='Hide'>
-                        </Tab>
-                    </Tabs>
-                </Container>
-            )
-        }
-
-        const id = selectionState.selectedNodes[0]
-
-        const result = graphState.nodes.data.filter((node) => {return node.id === id})
-
-        if (result.length === 0 || result.length > 1) {
-            console.log(`Wrong number of nodes with id ${id}: ${result.length}`)
-
-            return <></>
-        }
-
-        const node = result[0]
-
-        return (
-            <Container
-                className="shadow bg-white rounded"
-                style={{width: '400px',
-                padding: '0px', top: '50px',
-                right: '50px',
-                position:'absolute'}}>
-                <Tabs>
-                    <Tab eventKey='Node' title='Node'>
-                        {NodeTab(node.id, attributes, setAttributes, graphDispatch, graphState)}
-                    </Tab>
-                    <Tab eventKey='Hide' title='Hide'>
-                    </Tab>
-                </Tabs>
-            </Container>
-        )
-    }
-
-    const id = selectionState.selectedEdges[0]
-
-    const result = graphState.edges.data.filter((edge) => {return edge.id === id})
-
-    if (result.length === 0 || result.length > 1) {
-        console.log(`Wrong number of edges with id ${id}: ${result.length}`)
-
-        return <></>
-    }
-
-    const edge = result[0]
+    // if (selectedClusterAttribute) {
+    //     return (
+    //         <Container
+    //             className="shadow bg-white rounded"
+    //             style={{
+    //                 width: '400px',
+    //                 paddingTop: '10px',
+    //                 paddingBottom: '10px',
+    //                 top: '50px',
+    //                 right: '50px',
+    //                 position:'absolute'}}>
+    //             <Row>
+    //                 <Col>
+    //                     <h3>Cluster</h3>
+    //                 </Col>
+    //             </Row>
+    //         </Container>
+    //     )
+    // }
 
     return (
-        <Container
+        <div
             className="shadow bg-white rounded"
-            style={{width: '400px',
-            padding: '0px', top: '50px',
-            right: '50px',
-            position:'absolute'}}>
-            <Tabs >
-                <Tab eventKey='Edge' title='Edge'>
-                    {EdgeTab(edge.id, edge.source, edge.target, attributes, setAttributes, graphDispatch, graphState)}
+            style={{
+                width: '400px',
+                top: '50px',
+                right: '50px',
+                position:'absolute'}}>
+
+            <Tabs defaultActiveKey="edit" id="tabs">
+                <Tab eventKey="edit" title="Edit">
+                    <EditTab
+                        objectType={selectionState.selectedNodes.length === 1 ? 'node' : 'edge'}
+                        id={selectionState.selectedNodes.length === 1 ? selectionState.selectedNodes[0] : selectionState.selectedEdges[0]}
+                        attributes={attributes}
+                        setAttributes={setAttributes}
+                        graphDispatch={graphDispatch}
+                        graphState={graphState}
+                    />
+                </Tab>
+                <Tab eventKey="info" title="Info">
+                    <InfoTab />
                 </Tab>
             </Tabs>
-        </Container>
+        </div>
     )
 }

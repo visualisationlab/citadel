@@ -293,7 +293,10 @@ export default function SessionTab() {
     }
 
     return (
-        <Container>
+        <Container style={{
+            marginBottom: '10px',
+            marginTop: '10px',
+        }}>
             <Row>
                 <Col md={{span: 3}}>
                     <h3>Users</h3>
