@@ -4,7 +4,9 @@ import { Row, Col, Button, Container, ListGroup, InputGroup, Form } from 'react-
 
 import './home.component.css'
 
-import { UserDataContext, GraphDataContext } from '../components/main.component'
+import { UserDataContext, GraphDataContext, GlobalSettingsContext } from '../components/main.component'
+
+import { GlobalSettingsReducerAction, GlobalSettingsState } from '../reducers/globalsettings.reducer'
 
 import { API } from '../services/api.service'
 
@@ -123,8 +125,8 @@ function renderSettings(
                     </InputGroup>
                 </Col>
             </Row>
-            <Row className='justify-content-md-center'>
-                <Col md={{span: 3}}>
+            <Row>
+                <Col>
                     <a href={downloadURL} download="graph.json">
                         <Button>
                             Download Graph
@@ -136,16 +138,73 @@ function renderSettings(
     )
 }
 
+function renderGlobalSettings(globalSettingsState: GlobalSettingsState,
+    globalSettingsReducer: React.Dispatch<GlobalSettingsReducerAction>,
+    setShowGlobalSettings: React.Dispatch<React.SetStateAction<boolean>>) {
+
+    return (
+        <Container style={{
+            marginBottom: '10px',
+            marginTop: '10px',
+        }}>
+            <Row>
+                <Col>
+                    <h3>Global Settings</h3>
+                </Col>
+            </Row>
+            <Row style={{
+                marginBottom: '10px',
+            }}>
+                <Col>
+                    <Button onClick={() => {
+                        setShowGlobalSettings(false)
+                    }} >Back</Button>
+                </Col>
+                <Col>
+                    <Button onClick={() => {
+                        globalSettingsReducer({type: 'settingsReset'})
+                    }} >Reset</Button>
+                </Col>
+                <Col>
+                    <Button disabled={globalSettingsState.stateStack.length === 0} onClick={() => {
+                        globalSettingsReducer({type: 'undo'})
+                    }} >Undo</Button>
+                </Col>
+            </Row>
+            <Row>
+                <Col>
+                    <InputGroup>
+                        <InputGroup.Text>Selection Highlight</InputGroup.Text>
+                        <Form.Control
+                            as="select"
+                            value={globalSettingsState.selectionHighlight}
+                            onChange={(e) => {
+                                globalSettingsReducer({type: 'selectionHighlightChanged', payload: {value: e.target.value as any}})
+                            }}>
+                            <option value='none'>None</option>
+                            <option value='transparency'>Transparency</option>
+                            <option value='saturation'>Saturation</option>
+                            <option value='lightness'>Lightness</option>
+                        </Form.Control>
+                    </InputGroup>
+                </Col>
+            </Row>
+        </Container>
+    )
+}
+
 export default function SessionTab() {
     const { state } = useContext(UserDataContext)
     const { graphState } = useContext(GraphDataContext)
+    const { globalSettingsState, globalSettingsDispatch } = useContext(GlobalSettingsContext)
 
     const [newUserName, setNewUserName] = useState('')
+    const [showGlobalSettings, setShowGlobalSettings] = useState(false)
 
     const sessionRef = useRef(null)
     const graphRef = useRef(null)
 
-    if (!state || !graphState) {
+    if (!state || !graphState || !globalSettingsState || !globalSettingsDispatch) {
         return (
             <></>
         )
@@ -225,15 +284,12 @@ export default function SessionTab() {
             edgeType: graphState.directed ? 'directed' : 'undirected'
         }
     }
+
     let blob = new Blob([JSON.stringify(exportData)], {type: 'text/plain'})
     let downloadURL = URL.createObjectURL(blob)
 
-    let sessionVariant = 'primary'
-
-    if (state.state === 'busy') {
-        sessionVariant = 'secondary'
-    } else if (state.state === 'disconnected') {
-        sessionVariant = 'danger'
+    if (showGlobalSettings) {
+        return renderGlobalSettings(globalSettingsState, globalSettingsDispatch, setShowGlobalSettings)
     }
 
     return (
@@ -260,6 +316,18 @@ export default function SessionTab() {
                         sessionRef,
                         graphRef,
                         downloadURL)}
+                </Col>
+            </Row>
+            <Row>
+                <Col md={{span: 3}}>
+                    <h3>Global Settings</h3>
+                </Col>
+                <Col>
+                    <Button variant='outline-primary' onClick={() => {
+                        setShowGlobalSettings(true)
+                    }}>
+                        Edit
+                    </Button>
                 </Col>
             </Row>
             <Row>

@@ -409,36 +409,6 @@ function updateNodePositions(nodes: VisGraph.HashedGraphNode[]) {
 
         edge.sourceNode = source
         edge.targetNode = target
-            // Calculate the angles to get the circle border location.
-        // let angle = Math.atan2(target.y - source.y, target.x - source.x);
-
-        // let sinSource = Math.sin(angle) * source.visualAttributes.radius;
-        // let cosSource = Math.cos(angle) * source.visualAttributes.radius;
-
-        // let sinTarget = Math.sin(angle) * target.visualAttributes.radius;
-        // let cosTarget = Math.cos(angle) * target.visualAttributes.radius;
-
-        // let sourceX = (source.x + cosSource) * transformK;
-        // let sourceY = (source.y + sinSource) * transformK;
-
-        // let targetX = (target.x - cosTarget) * transformK;
-        // let targetY = (target.y - sinTarget) * transformK;
-
-        // let dx = targetX - sourceX;
-        // let dy = targetY - sourceY;
-
-        // let lineLength = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
-
-        // let nx = dx / lineLength;
-        // let ny = dy / lineLength;
-
-        // let wingLength = 5 * transformK;
-
-        // edge.gfx.x = (source.x + cosSource) * transformK + transformX
-        // edge.gfx.y = (source.y + sinSource) * transformK + transformY
-        // edge.gfx.width = lineLength
-        // edge.gfx.height = edge.visualAttributes.width * transformK
-        // edge.gfx.rotation = angle
     })
 
     if (!animatorTriggered) {
@@ -471,11 +441,11 @@ function updateTransform() {
             // Calculate the angles to get the circle border location.
         let angle = Math.atan2(target.y - source.y, target.x - source.x);
 
-        let sinSource = Math.sin(angle) * source.visualAttributes.radius / SPRITESCALE;
-        let cosSource = Math.cos(angle) * source.visualAttributes.radius / SPRITESCALE;
+        let sinSource = Math.sin(angle) * source.visualAttributes.radius / (SPRITESCALE / 2);
+        let cosSource = Math.cos(angle) * source.visualAttributes.radius / (SPRITESCALE / 2);
 
-        let sinTarget = Math.sin(angle) * target.visualAttributes.radius / SPRITESCALE;
-        let cosTarget = Math.cos(angle) * target.visualAttributes.radius / SPRITESCALE;
+        let sinTarget = Math.sin(angle) * target.visualAttributes.radius / (SPRITESCALE / 2);
+        let cosTarget = Math.cos(angle) * target.visualAttributes.radius / (SPRITESCALE / 2);
 
         let sourceX = (source.x + cosSource) * transformK;
         let sourceY = (source.y + sinSource) * transformK;
@@ -572,11 +542,11 @@ function animator(timestamp: DOMHighResTimeStamp) {
             let angle = Math.atan2(target.nodesprite.y - source.nodesprite.y,
                                    target.nodesprite.x - source.nodesprite.x);
 
-            let sinSource = Math.sin(angle) * source.visualAttributes.radius / 16;
-            let cosSource = Math.cos(angle) * source.visualAttributes.radius / 16;
+            let sinSource = Math.sin(angle) * source.visualAttributes.radius / (SPRITESCALE / 2);
+            let cosSource = Math.cos(angle) * source.visualAttributes.radius / (SPRITESCALE / 2);
 
-            let sinTarget = Math.sin(angle) * target.visualAttributes.radius  / 16;
-            let cosTarget = Math.cos(angle) * target.visualAttributes.radius  / 16;
+            let sinTarget = Math.sin(angle) * target.visualAttributes.radius  / (SPRITESCALE / 2);
+            let cosTarget = Math.cos(angle) * target.visualAttributes.radius  / (SPRITESCALE / 2);
 
             let sourceX = (source.nodesprite.x + cosSource);
             let sourceY = (source.nodesprite.y + sinSource);

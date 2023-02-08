@@ -11,7 +11,7 @@ import { VisGraph } from '../types'
 
 import { Renderer } from './renderer.component'
 import { GraphDataContext } from '../components/main.component'
-import { SelectionDataContext } from "./main.component"
+import { SelectionDataContext, GlobalSettingsContext } from "./main.component"
 import { MappingContext } from '../components/main.component'
 import { MappingType } from '../reducers/selectedmappings.reducer';
 
@@ -25,6 +25,7 @@ export default function Layout() {
     const { graphState } = useContext(GraphDataContext)
     const { selectionState, selectionDispatch } = useContext(SelectionDataContext)
     const { mappingsState } = useContext(MappingContext)
+    const { globalSettingsState } = useContext(GlobalSettingsContext)
 
     const containerRef = useRef(null)
 
@@ -32,7 +33,7 @@ export default function Layout() {
      * Updates the container reference with graph visualization.
      */
     React.useEffect(() => {
-        if (graphState === null || mappingsState === null) {
+        if (graphState === null || mappingsState === null || globalSettingsState === null || selectionState === null) {
             return
         }
 
@@ -163,28 +164,27 @@ export default function Layout() {
                         node.visualAttributes.hue = 50
                     }
                 }
-
-                // if (mapJS.mappingName === 'shape') {
-                //     let attributeData = nodeMetadata[mapJS.attributeName]
-
-                //     node.visualAttributes.prevShape = node.visualAttributes.shape
-
-                //     try {
-                //         let index = attributeData.frequencyDict[node.attributes[mapJS.attributeName]]
-
-                //         if (index >= shapes.length) {
-                //             node.visualAttributes.shape = 'circle'
-                //         }
-                //         else {
-                //             node.visualAttributes.shape = shapes[index]
-                //         }
-                //     }
-                //     catch (e) {
-                //         console.log(e)
-                //         node.visualAttributes.shape = 'circle'
-                //     }
-                // }
             })
+
+            // Selection logic
+            if (selectionState.selectedNodes.length !== 0
+                && globalSettingsState.selectionHighlight !== 'none'
+                && !selectionState.selectedNodes.includes(node.attributes['id'].toString())
+                ) {
+                switch (globalSettingsState?.selectionHighlight) {
+                    case 'transparency':
+                        node.visualAttributes.alpha = Math.max(0.05, node.visualAttributes.alpha - 0.4)
+                        break
+                    case 'lightness':
+                        node.visualAttributes.lightness = Math.max(0.05, node.visualAttributes.lightness - 0.4)
+                        break
+                    case 'saturation':
+                        node.visualAttributes.saturation = Math.max(0.05, node.visualAttributes.saturation - 0.4)
+                        break
+                    default:
+                        break
+                }
+            }
 
             return {
                 ...node,
@@ -318,7 +318,8 @@ export default function Layout() {
     }, [graphState,
         selectionDispatch,
         selectionState,
-        mappingsState])
+        mappingsState,
+        globalSettingsState])
 
     return <div ref={containerRef} className="render" />
 }

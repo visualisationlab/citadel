@@ -9,6 +9,7 @@ import { SessionDataReducer, SessionState, SessionReducer } from '../reducers/se
 import { GraphDataReducerAction, GraphDataState, GraphDataReducer } from '../reducers/graphdata.reducer'
 import { SelectionDataReducerAction, SelectionDataState, SelectionDataReducer } from '../reducers/selection.reducer'
 import { MappingsReducer, MappingsReducerAction, MappingsState } from '../reducers/selectedmappings.reducer'
+import { GlobalSettingsReducer, GlobalSettingsState, GlobalSettingsReducerAction } from '../reducers/globalsettings.reducer'
 
 import { websocketService } from '../services/websocket.service'
 
@@ -40,9 +41,12 @@ export const SelectionDataContext = createContext({
     selectionDispatch: null as React.Dispatch<SelectionDataReducerAction> | null
 })
 
+export const GlobalSettingsContext = createContext({
+    globalSettingsState: null as GlobalSettingsState | null,
+    globalSettingsDispatch: null as React.Dispatch<GlobalSettingsReducerAction> | null
+})
+
 export default function Main() {
-
-
     let [mappingsState, mappingsDispatch] = useReducer<Reducer<MappingsState, MappingsReducerAction>>(MappingsReducer,
         {
             schemes: Map(),
@@ -90,6 +94,11 @@ export default function Main() {
         directed: false
     })
 
+    let [globalSettingsState, globalSettingsDispatch] = useReducer<Reducer<GlobalSettingsState, GlobalSettingsReducerAction>>(GlobalSettingsReducer, {
+        selectionHighlight: 'transparency',
+        stateStack: []
+    })
+
     const [qrCode, setqrCode] = useState('')
 
     useEffect(() => {
@@ -115,6 +124,7 @@ export default function Main() {
 
         let schemes = Map<string, number[]>()
 
+        // Load colour schemes from localstorage.
         try {
             schemes = Map(JSON.parse(localStorage.getItem('schemes') || ''))
 
@@ -130,6 +140,21 @@ export default function Main() {
             console.log('failed to load schemes from localstorage')
             console.log(e)
         }
+
+        // Load config from localstorage.
+        try {
+            let config = JSON.parse(localStorage.getItem('config') || '')
+
+            console.log("loaded config from localstorage")
+
+            globalSettingsDispatch({
+                type: 'settingsLoaded',
+                payload: { value: config }
+            })
+        } catch (e) {
+            console.log('failed to load config from localstorage')
+            console.log(e)
+        }
     }, [])
 
     // If we have a QR code, display it.
@@ -141,6 +166,7 @@ export default function Main() {
 
     return (
         <>
+            <GlobalSettingsContext.Provider value={{ globalSettingsState: globalSettingsState, globalSettingsDispatch: globalSettingsDispatch}}>
             <SelectionDataContext.Provider value={{ selectionState: selectionData, selectionDispatch: selectionDataDispatch}}>
             <MappingContext.Provider value={{ mappingsState: mappingsState, mappingsDispatch: mappingsDispatch}}>
             <GraphDataContext.Provider value={{ graphState: graphData, graphDispatch: graphDataDispatch }}>
@@ -153,6 +179,7 @@ export default function Main() {
             </GraphDataContext.Provider>
             </MappingContext.Provider>
             </SelectionDataContext.Provider>
+            </GlobalSettingsContext.Provider>
         </>
     )
 }
