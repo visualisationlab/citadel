@@ -23,6 +23,8 @@ PIXI.BitmapFont.from('font', {
 interface RenderedNode extends VisGraph.HashedGraphNode {
     nodesprite: PIXI.Sprite,
     textsprite: PIXI.BitmapText,
+    currentX: number,
+    currentY: number,
 }
 
 interface RendererProps {
@@ -95,6 +97,9 @@ class SpriteCache {
         sprite.removeAllListeners()
 
         this.cache[shape.toString()].unshift(sprite)
+
+        // sprite.x = 0
+        // sprite.y = 0
 
         // Disable the sprite
         sprite.visible = false
@@ -230,6 +235,17 @@ function setupRendering() {
     // for (let i = 0; i < nodeStartingCount; i++) {
 
     // }
+}
+
+function moveRenderedNode(node: RenderedNode, x: number, y: number) {
+    node.currentX = x * transformK + transformX
+    node.currentY = y * transformK + transformY
+
+    node.nodesprite.x = node.currentX
+    node.nodesprite.y = node.currentY
+
+    node.textsprite.x = node.currentX - node.textsprite.textWidth / 2
+    node.textsprite.y = node.currentY - node.textsprite.textHeight / 2
 }
 
 function renderBackground(stage: PIXI.Container,
@@ -387,9 +403,6 @@ function updateNodePositions(nodes: VisGraph.HashedGraphNode[]) {
         renderedNode.x = nodes[index].x
         renderedNode.y = nodes[index].y
 
-        // node.gfx.x = nodes[index].x * transformK + transformX
-        // node.gfx.y = nodes[index].y * transformK + transformY
-
         renderedNode.nodesprite.scale.x = ((renderedNode.visualAttributes.radius) / 16  * transformK ) / SPRITESCALE
         renderedNode.nodesprite.scale.y = ((renderedNode.visualAttributes.radius) / 16  * transformK ) / SPRITESCALE
 
@@ -413,18 +426,13 @@ function updateNodePositions(nodes: VisGraph.HashedGraphNode[]) {
     })
 
     if (!animatorTriggered) {
-
         requestAnimationFrame(animator)
     }
 }
 
 function updateTransform() {
     renderedNodes.forEach((renderedNode) => {
-        renderedNode.nodesprite.x = renderedNode.x * transformK + transformX
-        renderedNode.nodesprite.y = renderedNode.y * transformK + transformY
-
-        renderedNode.textsprite.x = ((renderedNode.x) * transformK + transformX) - renderedNode.textsprite.textWidth / 2
-        renderedNode.textsprite.y = (renderedNode.y * transformK + transformY) - renderedNode.textsprite.textHeight / 2
+        moveRenderedNode(renderedNode, renderedNode.x, renderedNode.y)
 
         renderedNode.nodesprite.scale.x = ((renderedNode.visualAttributes.radius) / 16 * transformK) / SPRITESCALE
         renderedNode.nodesprite.scale.y = ((renderedNode.visualAttributes.radius) / 16 * transformK) / SPRITESCALE
@@ -480,10 +488,12 @@ function animator(timestamp: DOMHighResTimeStamp) {
         start = timestamp
     }
 
-    const elapsed = timestamp - start;
+
+    const elapsed = timestamp - start
     let done = true
 
     if (previousTimestep !== timestamp) {
+        console.log('here')
         let gfxDict: {[key: string]: RenderedNode} = {}
 
         renderedNodes.forEach((renderedNode) => {
@@ -495,8 +505,6 @@ function animator(timestamp: DOMHighResTimeStamp) {
             let targetY = renderedNode.y * transformK + transformY
 
             if (renderedNode.visualAttributes.prevShape !== renderedNode.visualAttributes.shape) {
-                console.log('Spriteflip')
-
                 gfx.x = targetX
                 gfx.y = targetY
 
@@ -510,15 +518,18 @@ function animator(timestamp: DOMHighResTimeStamp) {
                 return
             }
 
-            if (Math.sqrt((gfx.x - targetX) ** 2 + (gfx.y - targetY) ** 2) > 1) {
+            if (Math.sqrt((renderedNode.currentX - targetX) ** 2 + (renderedNode.currentY - targetY) ** 2) > 1) {
                 let dx = (targetX - gfx.x) *  Math.min(animationSpeed * elapsed, animationSpeed)
                 let dy = (targetY - gfx.y) *  Math.min(animationSpeed * elapsed, animationSpeed)
 
-                gfx.x += dx
-                gfx.y += dy
+                renderedNode.currentX += dx
+                renderedNode.currentY += dy
 
-                renderedNode.textsprite.x += dx
-                renderedNode.textsprite.y += dy
+                gfx.x = renderedNode.currentX
+                gfx.y = renderedNode.currentY
+
+                renderedNode.textsprite.x = renderedNode.currentX - renderedNode.textsprite.textWidth / 2
+                renderedNode.textsprite.y = renderedNode.currentY - renderedNode.textsprite.textHeight / 2
 
                 done = false
 
@@ -642,13 +653,10 @@ export function Renderer({
     /* Update node gfx. */
     var multiSelectTimer: ReturnType<typeof setTimeout> | null = null
 
-    renderedNodes = nodes.map((node) => {
+    renderedNodes = nodes.map((node, index) => {
         const nodeSprite = getSprite(node.visualAttributes.shape)
 
         const text = new PIXI.BitmapText('ABCD', {fontName: 'font'})
-
-        // nodeSprite.x = node.x * transformK + transformX
-        // nodeSprite.y = node.y * transformK + transformY
 
         nodeSprite.tint = PIXI.utils.rgb2hex(hsltorgb(node.visualAttributes.hue,
             node.visualAttributes.saturation,
@@ -700,8 +708,6 @@ export function Renderer({
                 multiSelectTimer = null
             }
 
-
-
             selectionDispatch({
                 'attribute': 'node',
                 'type': 'shortClick',
@@ -722,10 +728,23 @@ export function Renderer({
 
         nodeDict[node.id] = node
 
+        let currentX = node.x * transformK + transformX
+        let currentY = node.y * transformK + transformY
+
+        if (renderedNodes.length > index && renderedNodes[index].id === node.id) {
+            currentX = renderedNodes[index].currentX
+            currentY = renderedNodes[index].currentY
+        }
+
+        nodeSprite.x = currentX
+        nodeSprite.y = currentY
+
         return {
             id: node.id,
             x: node.x,
             y: node.y,
+            currentX: currentX,
+            currentY: currentY,
             attributes: {...node.attributes},
             hash: node.hash,
             visualAttributes: {...node.visualAttributes},

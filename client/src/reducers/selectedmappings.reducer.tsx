@@ -6,8 +6,10 @@
  */
 import { Set, Map } from 'immutable'
 
+export const shapeTypes = ['circle', 'square']
+
 // All available mapping channels.
-export type MappingChannel = 'hue' | 'saturation' | 'lightness' | 'radius'
+export type MappingChannel = 'hue' | 'saturation' | 'lightness' | 'radius' | 'shape'
                                    | 'alpha' | 'text' | 'width' | 'opacity'
                                    | 'none' | 'region' | 'x-position' | 'y-position'
 
@@ -30,7 +32,7 @@ export type MappingConfigState = Map<string, MappingSettings>
 export type MappingSettings = {
     regionNum: number,
     colourScheme: string | null,
-    settings: Map<string, number>
+    settings: Map<string, number>,
 }
 
 export type SchemeState = Map<string, number[]>
@@ -87,6 +89,7 @@ mappingProperties = mappingProperties.set('none', {objectType: 'all', channelTyp
 mappingProperties = mappingProperties.set('region', {objectType: 'node', channelType: 'categorical'})
 mappingProperties = mappingProperties.set('x-position', {objectType: 'node', channelType: 'ordered'})
 mappingProperties = mappingProperties.set('y-position', {objectType: 'node', channelType: 'ordered'})
+mappingProperties = mappingProperties.set('shape', {objectType: 'node', channelType: 'categorical'})
 
 // TODO: Update schemes when scheme is changed
 

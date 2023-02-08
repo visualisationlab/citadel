@@ -5,7 +5,8 @@
  * stored separately.
  */
 import { Set, Map } from 'immutable';
-export type MappingChannel = 'hue' | 'saturation' | 'lightness' | 'radius' | 'alpha' | 'text' | 'width' | 'opacity' | 'none' | 'region' | 'x-position' | 'y-position';
+export declare const shapeTypes: string[];
+export type MappingChannel = 'hue' | 'saturation' | 'lightness' | 'radius' | 'shape' | 'alpha' | 'text' | 'width' | 'opacity' | 'none' | 'region' | 'x-position' | 'y-position';
 export declare const mappingChannels: string[];
 export type MappingType = {
     mappingName: MappingChannel;

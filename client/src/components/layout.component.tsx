@@ -164,6 +164,32 @@ export default function Layout() {
                         node.visualAttributes.hue = 50
                     }
                 }
+
+                if (mapJS.mappingName === 'shape') {
+                    let mappingConfig = mappingsState.config.get(JSON.stringify(mapping))
+
+                    if (mappingConfig === undefined || mappingConfig === null)
+                        return
+
+                    // 0 circle, 1: square
+                    let shape = mappingConfig.settings.get(node.attributes[mapJS.attributeName])
+
+                    if (shape === undefined) {
+                        node.visualAttributes.shape = 'circle'
+                    }
+
+                    switch (shape) {
+                        case 1:
+                            node.visualAttributes.shape = 'circle'
+                            break
+                        case 0:
+                            node.visualAttributes.shape = 'square'
+                            break
+                        default:
+                            node.visualAttributes.shape = 'circle'
+                            break
+                    }
+                }
             })
 
             // Selection logic

@@ -504,7 +504,7 @@ function CategoryMapping(   mappingsState: MappingsState,
                 <Table striped bordered hover>
                         <thead>
                             <tr>
-                                <th>#</th>
+                                {/* <th>#</th> */}
                                 <th>Name</th>
                                 <th>Frequency</th>
                                 <th>Mapping</th>
@@ -515,7 +515,7 @@ function CategoryMapping(   mappingsState: MappingsState,
                             frequencies.map(([category, freq], index) => {
                                 return (
                                     <tr>
-                                        <td>{index}</td>
+                                        {/* <td>{index}</td> */}
                                         <td>{category}</td>
                                         <td>{freq}</td>
 
@@ -536,6 +536,12 @@ function CategoryMapping(   mappingsState: MappingsState,
                                                 {settingsType.mappingName === 'text' &&
                                                     <>
                                                         {mappingsState.config.get(JSON.stringify(settingsType))?.settings.get(category) === 0 ? 'hidden' : 'visible'}
+                                                    </>
+                                                }
+
+                                                {settingsType.mappingName === 'shape' &&
+                                                    <>
+                                                        {mappingsState.config.get(JSON.stringify(settingsType))?.settings.get(category) === 0 ? 'Square' : 'Circle'}
                                                     </>
                                                 }
 
@@ -571,6 +577,13 @@ function CategoryMapping(   mappingsState: MappingsState,
                                                     <>
                                                         <Dropdown.Item key={0} eventKey={0}>hidden</Dropdown.Item>
                                                         <Dropdown.Item key={1} eventKey={1}>visible</Dropdown.Item>
+                                                    </>
+                                                    }
+
+                                                    {settingsType.mappingName === 'shape' &&
+                                                    <>
+                                                        <Dropdown.Item key={1} eventKey={1}>Circle</Dropdown.Item>
+                                                        <Dropdown.Item key={0} eventKey={0}>Square</Dropdown.Item>
                                                     </>
                                                     }
                                                 </Dropdown.Menu>
