@@ -612,9 +612,6 @@ export class Session {
     private async storeCurrentGraphState() {
         const data = this.cy.json()
 
-        console.log("Storing graph state at index " + this.graphIndex + ".")
-
-        console.log(data)
 
         return new Promise((resolve) => {gzip(JSON.stringify(data), (err, buffer) => {
             if (err) {
@@ -661,7 +658,6 @@ export class Session {
                 return
             }
 
-            console.log(buffer.toString())
             const data = JSON.parse(buffer.toString())
 
             // Reset graph state.
@@ -669,8 +665,6 @@ export class Session {
 
             this.currentLayout = this.graphHistory[index][1]
 
-            console.log('Loading graph state at index ' + index + '.')
-            console.log(data)
             this.changeGraphState(this.parseJson(data.elements.nodes, data.elements.edges))
 
             this.graphIndex = index
