@@ -5,7 +5,4 @@
  * It allows the user to search through nodes and edges and select them.
  */
 import './home.component.css';
-interface ObjectListTabProps {
-}
-export default function ObjectListTab(props: ObjectListTabProps): JSX.Element;
-export {};
+export default function ObjectListTab(): JSX.Element;

@@ -5,7 +5,7 @@
  * It allows the user to search through nodes and edges and select them.
  */
 
-import React, { useState, useEffect, useContext } from 'react'
+import React, { useState, useEffect, useContext, useMemo } from 'react'
 import { Row, Container, InputGroup, Form, Accordion, Table } from 'react-bootstrap'
 
 import './home.component.css'
@@ -15,6 +15,7 @@ import Fuse from 'fuse.js'
 import { GraphDataContext } from './main.component'
 import { SelectionDataContext } from './main.component'
 import { SelectionDataReducerAction } from '../reducers/selection.reducer';
+import { selection } from 'd3'
 
 interface ObjectListTabProps {
     // selectedEdgeID: string,
@@ -82,7 +83,12 @@ function renderListContent(source: string, edges: InspectEdge[],
 }
 
 function renderMainList(nodes: {[id: string]: InspectEdge[]},
-    selectedEdges: string[], selectedNodes: string[], selectionDispatch: React.Dispatch<SelectionDataReducerAction>): JSX.Element {
+    selectedEdges: string[], selectedNodes: string[], selectionDispatch: React.Dispatch<SelectionDataReducerAction> | null): JSX.Element {
+
+    if (selectionDispatch === null) {
+        return (<></>)
+    }
+
     return (
         <Container  style={{
             overflowY: 'scroll',
@@ -105,22 +111,24 @@ function renderMainList(nodes: {[id: string]: InspectEdge[]},
 
 // TRY MINISEARCH
 // PAGINATION
-export default function ObjectListTab(props: ObjectListTabProps) {
+export default function ObjectListTab() {
     let [nodes, setNodes] = useState<{[id: string]: InspectEdge[]}>({})
     let [query, setQuery] = useState('')
 
     const { graphState } = useContext(GraphDataContext)
     const { selectionState, selectionDispatch } = useContext(SelectionDataContext)
 
+
+    const list = useMemo(() => renderMainList(nodes, [], [], selectionDispatch), [nodes, selectionDispatch])
+
     useEffect(() => {
         if (graphState === null) {
             return
         }
 
-        let tmpNodes: {[id: string]: InspectEdge[]} = {}
+        let tmpNodes: { [id: string]: InspectEdge[] } = {}
 
         if (query !== '') {
-            console.log('searching')
             const options = {
                 keys: ['id'],
                 shouldSort: false,
@@ -152,11 +160,11 @@ export default function ObjectListTab(props: ObjectListTabProps) {
                         return
                     }
 
-                    tmpNodes[edge.target].push({ id: id, nodeID: edge.source})
+                    tmpNodes[edge.target].push({ id: id, nodeID: edge.source })
+
                     return
                 }
             }
-
 
             tmpNodes[edge.source].push({ id: id, nodeID: edge.target})
 
@@ -178,6 +186,7 @@ export default function ObjectListTab(props: ObjectListTabProps) {
         return <>
         </>
     }
+
     return (
         <Container style={{
             paddingLeft: '0px'
@@ -196,7 +205,7 @@ export default function ObjectListTab(props: ObjectListTabProps) {
                 </InputGroup>
             </Row>
             <Row >
-                {renderMainList(nodes, selectionState.selectedEdges, selectionState.selectedNodes, selectionDispatch)}
+                {list}
             </Row>
         </Container>
     )

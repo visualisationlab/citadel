@@ -39,9 +39,9 @@ const Navigator = memo(function Navigator(
                 <Tab eventKey='Simulate' title='Simulate'>
                     <SimulatorTab />
                 </Tab>
-                {/* <Tab eventKey='Search' title='Search'>
+                <Tab eventKey='Search' title='Search'>
                     <ObjectListTab />
-                </Tab> */}
+                </Tab>
                 <Tab eventKey='Session' title={props.disconnected ? <GrCircleAlert></GrCircleAlert> : 'Session'} >
                     <SessionTab />
                 </Tab>

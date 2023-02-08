@@ -162,6 +162,7 @@ function setTransformCallback(transformUpdate: () => void) {
             return
         }
 
+        console.log("Transforming")
         transformX = event.transform.x
         transformY = event.transform.y
         transformK = event.transform.k
@@ -434,9 +435,9 @@ function updateTransform() {
             return
         }
 
-        const source = {...edge.sourceNode}
+        const source = edge.sourceNode
 
-        const target = {...edge.targetNode}
+        const target = edge.targetNode
 
             // Calculate the angles to get the circle border location.
         let angle = Math.atan2(target.y - source.y, target.x - source.x);
@@ -525,7 +526,7 @@ function animator(timestamp: DOMHighResTimeStamp) {
                 gfx.scale.y = ((renderedNode.visualAttributes.radius / 16) * transformK) / SPRITESCALE
             }
         })
-
+        console.log("Calling animator on edges")
         renderedEdges.forEach((edge) => {
             let source = gfxDict[edge.source]
 
@@ -542,17 +543,17 @@ function animator(timestamp: DOMHighResTimeStamp) {
             let angle = Math.atan2(target.nodesprite.y - source.nodesprite.y,
                                    target.nodesprite.x - source.nodesprite.x);
 
-            let sinSource = Math.sin(angle) * source.visualAttributes.radius / (SPRITESCALE / 2);
-            let cosSource = Math.cos(angle) * source.visualAttributes.radius / (SPRITESCALE / 2);
+            let sinSource = Math.sin(angle) * (source.visualAttributes.radius * transformK) / (SPRITESCALE / 2);
+            let cosSource = Math.cos(angle) * (source.visualAttributes.radius * transformK) / (SPRITESCALE / 2);
 
-            let sinTarget = Math.sin(angle) * target.visualAttributes.radius  / (SPRITESCALE / 2);
-            let cosTarget = Math.cos(angle) * target.visualAttributes.radius  / (SPRITESCALE / 2);
+            let sinTarget = Math.sin(angle) * (target.visualAttributes.radius * transformK)  / (SPRITESCALE / 2);
+            let cosTarget = Math.cos(angle) * (target.visualAttributes.radius * transformK)  / (SPRITESCALE / 2);
 
-            let sourceX = (source.nodesprite.x + cosSource);
-            let sourceY = (source.nodesprite.y + sinSource);
+            let sourceX = (source.nodesprite.x + cosSource)
+            let sourceY = (source.nodesprite.y + sinSource)
 
-            let targetX = (target.nodesprite.x - cosTarget);
-            let targetY = (target.nodesprite.y - sinTarget);
+            let targetX = (target.nodesprite.x - cosTarget)
+            let targetY = (target.nodesprite.y - sinTarget)
 
             let dx = targetX - sourceX;
             let dy = targetY - sourceY;
@@ -567,9 +568,11 @@ function animator(timestamp: DOMHighResTimeStamp) {
             gfx.tint = PIXI.utils.rgb2hex(hsltorgb(edge.visualAttributes.hue,
                 edge.visualAttributes.saturation,
                 edge.visualAttributes.lightness))
+
             gfx.width = lineLength
 
             gfx.height = edge.visualAttributes.width
+
             gfx.x = (source.nodesprite.x + cosSource)
             gfx.y = (source.nodesprite.y + sinSource)
             gfx.rotation = angle
