@@ -116,7 +116,7 @@ class SpriteCache {
                 return new PIXI.Sprite(PIXI.Texture.WHITE)
             }
 
-            return new PIXI.Sprite(PIXI.Texture.from(`https://dev.visgraph:3001/${shape}.png`))
+            return new PIXI.Sprite(PIXI.Texture.from(`https://chimay.science.uva.nl:8061/${shape}.png`))
         }
 
         return this.cache[shapeString].pop()!
