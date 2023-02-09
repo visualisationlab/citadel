@@ -235,7 +235,9 @@ export default function Layout() {
                 }
             }
 
-            edge.visualAttributes.hue = 234
+            const defaultEdgeHue = 234
+
+            edge.visualAttributes.hue = defaultEdgeHue
             edge.visualAttributes.lightness = 0.5
             edge.visualAttributes.saturation = 1
             edge.visualAttributes.text = ''
@@ -304,13 +306,13 @@ export default function Layout() {
                         let index = mappingsState.config.get(JSON.stringify(mapping))!.settings.get(edge.attributes[mapJS.attributeName])
 
                         if (index === undefined) {
-                            edge.visualAttributes.hue = 60
+                            edge.visualAttributes.hue = defaultEdgeHue
                         }
                         else {
                             try {
 
                                 if (index >= hues.length) {
-                                    edge.visualAttributes.hue = 60
+                                    edge.visualAttributes.hue = defaultEdgeHue
                                 }
                                 else {
                                     edge.visualAttributes.hue = hues[index]
@@ -318,7 +320,7 @@ export default function Layout() {
                             }
                             catch (e) {
                                 console.log(e)
-                                edge.visualAttributes.hue = 60
+                                edge.visualAttributes.hue = defaultEdgeHue
                             }
                         }
                     }
