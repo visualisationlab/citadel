@@ -60,13 +60,35 @@ function renderSettings(
                             placeholder={userName}
                             onChange={
                                 (e) => {
+                                    e.target.value = e.target.value.replace(/[^a-zA-Z0-9]/g, '')
+
+                                    if (e.target.value.length > 10) {
+                                        e.target.value = e.target.value.substring(0, 10)
+                                    }
+
+                                    if (e.target.value.length === 0) {
+                                        return
+                                    }
+
                                     setNewUserName(e.target.value)
                                 }
                             }/>
                         <Button
                             variant="outline-primary"
                             id="button-update"
-                            onClick={() => {API.updateUsername(newUserName)}}>
+                            onClick={() => {
+                                let tmpName = newUserName.replace(/[^a-zA-Z0-9]/g, '')
+
+                                if (tmpName.length > 10) {
+                                    tmpName = tmpName.substring(0, 10)
+                                }
+
+                                if (tmpName.length === 0) {
+                                    return
+                                }
+
+                                API.updateUsername(tmpName)
+                            }}>
                             Update
                         </Button>
                     </InputGroup>

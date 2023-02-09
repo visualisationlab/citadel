@@ -181,7 +181,9 @@ export module API {
             console.log(name)
             return
         }
-        console.log('here')
+
+        // Store in localStorage
+        localStorage.setItem('username', name)
 
         websocketService.sendSetMessage({
             messageType: 'set',

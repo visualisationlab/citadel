@@ -111,6 +111,7 @@ WSserver.on('connection', (socket: WebSocket, req: IncomingMessage) => {
         const apiKey = url.searchParams.get('key')
         const headsetKey = url.searchParams.get('headsetKey')
         const headsetUserID = url.searchParams.get('userID')
+        const username = url.searchParams.get('username')
 
         let userID: string | null = null
 
@@ -139,7 +140,7 @@ WSserver.on('connection', (socket: WebSocket, req: IncomingMessage) => {
             session.registerHeadset(headsetKey, headsetUserID, socket)
         }
         else {
-            userID = session.addUser(socket)
+            userID = session.addUser(socket, username)
         }
 
         socket.on('close', (code, reason) => {

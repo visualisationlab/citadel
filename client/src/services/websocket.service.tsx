@@ -154,7 +154,6 @@ class WebsocketService {
         }
 
         // Store session ID in localstorage.
-
         let prevSessionsString = localStorage.getItem('prevSessions')
         let prevSessions: [string, Date][] = []
 
@@ -168,19 +167,22 @@ class WebsocketService {
 
         localStorage.setItem('prevSessions', JSON.stringify(prevSessions.slice(0, 5)))
 
-        this.connect(splitString[2])
+        // Get username from localstorage.
+        const username = localStorage.getItem('username')
+
+        this.connect(splitString[2], username)
     }
 
     parseServerMessage(message: MessageTypes.OutMessage) {
         Router.route(message)
     }
 
-    connect(sid: string) {
+    connect(sid: string, username: string | null) {
         if (this.ws !== null) {
             this.ws.close()
         }
 
-        this.ws = new WebSocket(`${WSURL}?sid=${sid}`)
+        this.ws = new WebSocket(`${WSURL}?sid=${sid}${username ? '&username=' + username : ''}`)
 
         // Handles incoming messages from server.
         this.ws.onmessage = (msg) => {

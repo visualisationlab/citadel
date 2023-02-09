@@ -842,6 +842,17 @@ export class Session {
             case 'username':
                 this.users = this.users.map((user) => {
                     if (user.userID === message.userID) {
+                        // Sanitize username
+                        message.params.username = message.params.username.replace(/[^a-zA-Z0-9]/g, '')
+
+                        if (message.params.username.length > 10) {
+                            message.params.username = message.params.username.substring(0, 10)
+                        }
+
+                        if (message.params.username.length === 0) {
+                            return user
+                        }
+
                         user.username = message.params.username
                     }
 
@@ -1360,14 +1371,28 @@ export class Session {
     }
 
     // Adds a user to the session, giving it a random user ID and username.
-    addUser(socket: WebSocket): string {
+    addUser(socket: WebSocket, username: string | null): string {
         const userID = uid.sync(4)
-        const username = `user${Math.floor(Math.random() * 10)}`
+
+        let tmp_username = `user${Math.floor(Math.random() * 10)}`
+
+        if (username !== null && username.replace(/[^a-zA-Z0-9]/g, '') !== '') {
+            // Sanitize username
+            username = username.replace(/[^a-zA-Z0-9]/g, '')
+
+            const userNameMaxLength = 10
+            // Check username max length
+            if (username.length > userNameMaxLength) {
+                username = username.substring(0, userNameMaxLength)
+            }
+
+            tmp_username = username
+        }
 
         this.users.push({
             userID: userID,
             socket: socket,
-            username: username,
+            username: tmp_username,
             apikeys: [],
             headsets: [],
             width: 0,
