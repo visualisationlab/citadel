@@ -119,7 +119,7 @@ declare class WebsocketService {
     ws: WebSocket | null;
     checkConnection(): void;
     parseServerMessage(message: MessageTypes.OutMessage): void;
-    connect(sid: string): void;
+    connect(sid: string, username: string | null): void;
     sendSetMessage(message: MessageTypes.SetMessage): void;
     sendGetMessage(message: MessageTypes.GetMessage): void;
 }

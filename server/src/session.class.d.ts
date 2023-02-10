@@ -256,7 +256,7 @@ export declare class Session {
     registerSimulator(apiKey: string, socket: WebSocket): void;
     registerHeadset(headsetKey: string, userID: string, socket: WebSocket): void;
     deRegisterSimulator(apiKey: string): void;
-    addUser(socket: WebSocket): string;
+    addUser(socket: WebSocket, username: string | null): string;
     removeUser(userID: string): void;
     private parseJson;
     extendExpirationDate(): void;
