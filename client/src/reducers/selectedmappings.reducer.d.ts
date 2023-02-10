@@ -39,56 +39,64 @@ export type MappingsState = {
     config: MappingConfigState;
 };
 export type MappingsReducerAction = {
-    type: 'selection';
-    action: 'add';
+    type: 'mappings/added';
 } | {
-    type: 'selection';
-    action: 'remove';
-    mapping: MappingType;
+    type: 'mappings/removed';
+    payload: {
+        mapping: MappingType;
+    };
 } | {
-    type: 'selection';
-    action: 'edit';
-    prevMapping: MappingType;
-    newMapping: MappingType;
+    type: 'mappings/edited';
+    payload: {
+        prevMapping: MappingType;
+        newMapping: MappingType;
+    };
 } | {
-    type: 'selection';
-    action: 'load';
-    state: MappingsState;
+    type: 'mappings/loaded';
+    payload: {
+        text: string;
+    };
 } | {
-    type: 'selection';
-    action: 'clear';
+    type: 'mappings/cleared';
 } | {
-    type: 'settings';
-    action: 'add';
-    mapping: MappingType;
-    settings: MappingSettings;
+    type: 'settings/added';
+    payload: {
+        mapping: MappingType;
+        settings: MappingSettings;
+    };
 } | {
-    type: 'settings';
-    action: 'edit';
-    mapping: MappingType;
-    settings: MappingSettings;
+    type: 'settings/edited';
+    payload: {
+        mapping: MappingType;
+        settings: MappingSettings;
+    };
 } | {
-    type: 'scheme';
-    action: 'add';
-    key: string;
+    type: 'schemes/added';
+    payload: {
+        key: string;
+    };
 } | {
-    type: 'scheme';
-    action: 'remove';
-    key: string;
+    type: 'schemes/removed';
+    payload: {
+        key: string;
+    };
 } | {
-    type: 'scheme';
-    action: 'update';
-    key: string;
-    values: number[];
+    type: 'schemes/updated';
+    payload: {
+        key: string;
+        values: number[];
+    };
 } | {
-    type: 'scheme';
-    action: 'load';
-    state: SchemeState;
+    type: 'schemes/loaded';
+    payload: {
+        text: string;
+    };
 } | {
-    type: 'scheme';
-    action: 'rename';
-    oldName: string;
-    newName: string;
+    type: 'schemes/renamed';
+    payload: {
+        oldName: string;
+        newName: string;
+    };
 };
 type BasicMappingType = {
     objectType: 'node' | 'edge' | 'all';

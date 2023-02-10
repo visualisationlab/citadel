@@ -276,11 +276,31 @@ function PaletteSettings(props: {mappingsState: MappingsState,
                     </Col>
                     <Col md={{span: 4}}>
                         <Form.Control type='text' value={selectedPalette} onChange={(e) => {
+                            if (e.target.value === '') {
+                                return
+                            }
+
+                            if (e.target.value.length > 20) {
+                                return
+                            }
+
+                            if (selectedPalette === null) {
+                                return
+                            }
+
+                            if (props.mappingsState.schemes.has(e.target.value)) {
+                                return
+                            }
+
+                            // Sanitize input
+                            e.target.value = e.target.value.replace(/[^a-zA-Z0-9]/g, '')
+
                             props.mappingsDispatch({
-                                type: 'scheme',
-                                action: 'rename',
-                                oldName: selectedPalette!,
-                                newName: e.target.value
+                                type: 'schemes/renamed',
+                                payload: {
+                                    oldName: selectedPalette,
+                                    newName: e.target.value
+                                }
                             })
 
                             setSelectedPalette(e.target.value)
@@ -308,7 +328,11 @@ function PaletteSettings(props: {mappingsState: MappingsState,
                                             <Form.Control type='number' value={colour} onChange={(e) => {
                                                 let newValue = parseInt(e.target.value)
 
-                                                if (newValue < 0 || newValue > 360) {
+                                                if (newValue < 0 || newValue > 360 || isNaN(newValue)) {
+                                                    return
+                                                }
+
+                                                if (selectedPalette === null) {
                                                     return
                                                 }
 
@@ -317,25 +341,31 @@ function PaletteSettings(props: {mappingsState: MappingsState,
                                                 newColours[index] = parseInt(e.target.value)
 
                                                 props.mappingsDispatch({
-                                                    type: 'scheme',
-                                                    action: 'update',
-                                                    key: selectedPalette!,
-                                                    values: newColours
+                                                    type: 'schemes/updated',
+                                                    payload: {
+                                                        key: selectedPalette,
+                                                        values: newColours
+                                                    }
                                                 })
                                             }}></Form.Control>
                                         </Col>
                                         <Col md={{span: 4}}>
                                             {/* Slider */}
                                             <Form.Control type='range' min='0' max='360' value={colour} onChange={(e) => {
+                                                if (selectedPalette === null) {
+                                                    return
+                                                }
+
                                                 let newColours = props.mappingsState.schemes.get(selectedPalette!)!
 
                                                 newColours[index] = parseInt(e.target.value)
 
                                                 props.mappingsDispatch({
-                                                    type: 'scheme',
-                                                    action: 'update',
-                                                    key: selectedPalette!,
-                                                    values: newColours
+                                                    type: 'schemes/updated',
+                                                    payload: {
+                                                        key: selectedPalette!,
+                                                        values: newColours
+                                                    }
                                                 })
                                             }} style={{
                                                 // Multi stop gradient from 0 to 360
@@ -356,15 +386,20 @@ function PaletteSettings(props: {mappingsState: MappingsState,
                 <Row>
                     <Col md={{span: 2}}>
                         <Button variant='outline-primary' onClick={() => {
+                            if (selectedPalette === null) {
+                                return
+                            }
+
                             let newColours = props.mappingsState.schemes.get(selectedPalette!)!
 
                             newColours.push(0)
 
                             props.mappingsDispatch({
-                                type: 'scheme',
-                                action: 'update',
-                                key: selectedPalette!,
-                                values: newColours
+                                type: 'schemes/updated',
+                                payload: {
+                                    key: selectedPalette,
+                                    values: newColours
+                                }
                             })
                         }}>Add colour</Button>
                     </Col>
@@ -411,9 +446,10 @@ function PaletteSettings(props: {mappingsState: MappingsState,
                 <Col md={{}}>
                     <Button variant='outline-primary' onClick={() => {
                         props.mappingsDispatch({
-                            type: 'scheme',
-                            action: 'add',
-                            key: 'New scheme'
+                            type: 'schemes/added',
+                            payload: {
+                                key: 'New scheme'
+                            }
                         })
 
                         setSelectedPalette('New scheme')
@@ -467,14 +503,22 @@ function CategoryMapping(   mappingsState: MappingsState,
                                         return
                                     }
 
+                                    let config = mappingsState.config.get(JSON.stringify(settingsType))
+
+                                    if (config === undefined) {
+                                        return
+                                    }
+
                                     mappingsDispatch({
-                                        type: 'settings',
-                                        action: 'edit',
-                                        mapping: settingsType,
-                                        settings: {
-                                            ...mappingsState.config.get(JSON.stringify(settingsType))!,
-                                            colourScheme: select
-                                        }})
+                                        type: 'settings/edited',
+                                        payload: {
+                                            mapping: settingsType,
+                                            settings: {
+                                                ...config,
+                                                colourScheme: select
+                                            }
+                                        }
+                                    })
                                     }}>
                                     <Dropdown.Toggle variant='outline-primary' id='dropdown-basic'>
                                         {mappingsState.config.get(JSON.stringify(settingsType))!.colourScheme ?? 'Select a colour scheme'}
@@ -488,14 +532,41 @@ function CategoryMapping(   mappingsState: MappingsState,
                                     </Dropdown.Menu>
                                 </Dropdown>
                             </Col>
-                            <Col md={{}}>
+                            <Col>
                                 <Button variant='outline-primary' onClick={() => {
-                                    mappingsDispatch({
-                                        type: 'scheme',
-                                        action: 'add',
-                                        key: 'New scheme'
+                                    let config = mappingsState.config.get(JSON.stringify(settingsType))
+
+                                    if (config === undefined) {
+                                        return
+                                    }
+
+                                    let element = document.createElement('a')
+
+                                    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(JSON.stringify(config)))
+                                    element.setAttribute('download', 'mapping.json')
+
+                                    element.style.display = 'none'
+
+                                    document.body.appendChild(element)
+
+                                    element.click()
+
+                                    document.body.removeChild(element)
+
+                                }}>Download mapping</Button>
+                            </Col>
+                            <Col>
+                                <Button variant='outline-primary' onClick={() => {
+                                    // Load mapping from clipboard
+                                    navigator.clipboard.readText().then((text) => {
+                                        let config = mappingsState.config.get(JSON.stringify(settingsType))
+
+                                        if (config === undefined) {
+                                            return
+                                        }
+
                                     })
-                                }}>Add new colour scheme</Button>
+                                }}>Load mapping</Button>
                             </Col>
                         </Row>
 
@@ -524,13 +595,20 @@ function CategoryMapping(   mappingsState: MappingsState,
                                                 if (select === null) {
                                                     return
                                                 }
+                                                let config = mappingsState.config.get(JSON.stringify(settingsType))
+
+                                                if (config === undefined) {
+                                                    return
+                                                }
+
                                                 mappingsDispatch({
-                                                    type: 'settings',
-                                                    action: 'edit',
-                                                    mapping: settingsType,
-                                                    settings: {
-                                                        ...mappingsState.config.get(JSON.stringify(settingsType))!,
-                                                        settings: mappingsState.config.get(JSON.stringify(settingsType))!.settings.set(category, parseInt(select))}
+                                                    type: 'settings/edited',
+                                                    payload: {
+                                                        mapping: settingsType,
+                                                        settings: {
+                                                            ...config,
+                                                            settings: config.settings.set(category, parseInt(select))}
+                                                    }
                                                 })}}>
                                                 <Dropdown.Toggle id={'catdrop' + index}>
                                                 {settingsType.mappingName === 'text' &&
@@ -629,10 +707,11 @@ function generateRow(
             }
 
             mappingsDispatch({
-                type: 'selection',
-                action: 'edit',
-                newMapping: newType,
-                prevMapping: mapping,
+                type: 'mappings/edited',
+                payload: {
+                    newMapping: newType,
+                    prevMapping: mapping,
+                }
             })
         }}>
             <Dropdown.Toggle
@@ -668,10 +747,11 @@ function generateRow(
             // Dropdown for attribute selection.
 
             mappingsDispatch({
-                type: 'selection',
-                action: 'edit',
-                prevMapping: mapping,
-                newMapping: {...mapping, attributeName: selected, attributeType: mapping.objectType === 'node' ? graphState.nodes.metadata[selected].type : graphState.edges.metadata[selected].type, mappingName: 'none'}
+                type: 'mappings/edited',
+                payload: {
+                    prevMapping: mapping,
+                    newMapping: {...mapping, attributeName: selected, attributeType: mapping.objectType === 'node' ? graphState.nodes.metadata[selected].type : graphState.edges.metadata[selected].type, mappingName: 'none'}
+                }
             })
 
             }}>
@@ -737,10 +817,11 @@ function generateRow(
             }
 
             mappingsDispatch({
-                type: 'selection',
-                action: 'edit',
-                prevMapping: mapping,
-                newMapping: newType
+                type: 'mappings/edited',
+                payload: {
+                    prevMapping: mapping,
+                    newMapping: newType
+                }
             })
             }}>
             <Dropdown.Toggle
@@ -811,9 +892,10 @@ function generateRow(
                     <Col md={{order: 'last'}}>
                         <Button variant='outline-danger' onClick={() => {
                             mappingsDispatch({
-                                type: 'selection',
-                                action: 'remove',
-                                mapping: mapping
+                                type: 'mappings/removed',
+                                payload: {
+                                    mapping: mapping
+                                }
                             })
                         }}>X</Button>
                     </Col>
@@ -927,8 +1009,7 @@ export default function MappingTab() {
     let addButton = (
         <Button variant='outline-success' disabled={mappingsState.selectedMappings.has(Map(newItem))} onClick={() => {
             mappingsDispatch({
-                type: 'selection',
-                action: 'add'
+                type: 'mappings/added',
             })
         }}>Add map</Button>
     )

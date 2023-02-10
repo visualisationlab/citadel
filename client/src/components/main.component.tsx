@@ -122,23 +122,18 @@ export default function Main() {
         // Communicate window size to remote.
         API.setWindowSize(window.innerWidth, window.innerHeight)
 
-        let schemes = Map<string, number[]>()
-
         // Load colour schemes from localstorage.
-        try {
-            schemes = Map(JSON.parse(localStorage.getItem('schemes') || ''))
+        let schemeText = localStorage.getItem('schemes')
 
+        if (schemeText !== null) {
             console.log("loaded schemes from localstorage")
 
             mappingsDispatch({
-                type: 'scheme',
-                action: 'load',
-                state: schemes
+                type: 'schemes/loaded',
+                payload: {
+                    text: schemeText
+                }
             })
-
-        } catch (e) {
-            console.log('failed to load schemes from localstorage')
-            console.log(e)
         }
 
         // Load config from localstorage.
