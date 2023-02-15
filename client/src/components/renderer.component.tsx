@@ -493,10 +493,16 @@ function animator(timestamp: DOMHighResTimeStamp) {
     let done = true
 
     if (previousTimestep !== timestamp) {
-        console.log('here')
         let gfxDict: {[key: string]: RenderedNode} = {}
 
-        renderedNodes.forEach((renderedNode) => {
+        console.log('Rendering Nodes')
+
+
+
+
+        for (let i = 0; i < renderedNodes.length; i++) {
+            const renderedNode = renderedNodes[i]
+
             gfxDict[renderedNode.id] = renderedNode
 
             let gfx = renderedNode.nodesprite
@@ -536,9 +542,15 @@ function animator(timestamp: DOMHighResTimeStamp) {
                 gfx.scale.x = ((renderedNode.visualAttributes.radius / 16) * transformK) / SPRITESCALE
                 gfx.scale.y = ((renderedNode.visualAttributes.radius / 16) * transformK) / SPRITESCALE
             }
-        })
+        }
+
         console.log("Calling animator on edges")
-        renderedEdges.forEach((edge) => {
+
+        // Calculate line lengths before rendering
+        let edgeLengths = []
+        for (let i = 0; i < renderedEdges.length; i++) {
+            const edge = renderedEdges[i]
+
             let source = gfxDict[edge.source]
 
             let target = gfxDict[edge.target]
@@ -548,11 +560,9 @@ function animator(timestamp: DOMHighResTimeStamp) {
             if (!gfx)
                 return
 
-            gfx.alpha = edge.visualAttributes.alpha
-
             // Calculate the angles to get the circle border location.
             let angle = Math.atan2(target.nodesprite.y - source.nodesprite.y,
-                                   target.nodesprite.x - source.nodesprite.x);
+                target.nodesprite.x - source.nodesprite.x);
 
             let sinSource = Math.sin(angle) * (source.visualAttributes.radius * transformK) / (SPRITESCALE / 2);
             let cosSource = Math.cos(angle) * (source.visualAttributes.radius * transformK) / (SPRITESCALE / 2);
@@ -571,6 +581,32 @@ function animator(timestamp: DOMHighResTimeStamp) {
 
             let lineLength = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
 
+            edgeLengths.push(lineLength)
+        }
+
+        for (let i = 0; i < renderedEdges.length; i++) {
+            const edge = renderedEdges[i]
+
+            let source = gfxDict[edge.source]
+
+            let target = gfxDict[edge.target]
+
+            let gfx = edge.gfx
+
+            if (!gfx)
+                return
+
+            gfx.alpha = edge.visualAttributes.alpha
+
+            // Calculate the angles to get the circle border location.
+            let angle = Math.atan2(target.nodesprite.y - source.nodesprite.y,
+                                   target.nodesprite.x - source.nodesprite.x);
+
+            let sinSource = Math.sin(angle) * (source.visualAttributes.radius * transformK) / (SPRITESCALE / 2);
+            let cosSource = Math.cos(angle) * (source.visualAttributes.radius * transformK) / (SPRITESCALE / 2);
+
+            let lineLength = edgeLengths[i]
+
             // let nx = dx / lineLength;
             // let ny = dy / lineLength;
 
@@ -587,8 +623,10 @@ function animator(timestamp: DOMHighResTimeStamp) {
             gfx.x = (source.nodesprite.x + cosSource)
             gfx.y = (source.nodesprite.y + sinSource)
             gfx.rotation = angle
-        })
+        }
     }
+
+    console.log("Done animating edges")
 
     if (!done) {
 
@@ -771,7 +809,6 @@ export function Renderer({
             gfx: gfx
         }
     })
-
 
     /* If there are still rendered nodes, only update the positions. */
     if (renderedNodes.length !== 0) {

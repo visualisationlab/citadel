@@ -37,7 +37,6 @@ export interface GraphDataState {
     };
     directed: boolean;
 }
-
 export type GraphDataReducerAction = {
     type: 'set';
     property: 'data';
