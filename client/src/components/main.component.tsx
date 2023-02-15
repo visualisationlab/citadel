@@ -82,7 +82,8 @@ export default function Main() {
         websocketPort: '3000',
         sessionURL: '',
         headsets: [],
-        playmode: false
+        playmode: false,
+        notification: null
     })
 
     let [graphData, graphDataDispatch] = useReducer<Reducer<GraphDataState, GraphDataReducerAction>>(GraphDataReducer, {

@@ -1,3 +1,4 @@
+import { NotificationType } from "../components/notifications.component";
 export type ServerState = 'disconnected' | 'idle' | 'busy';
 export interface SessionState {
     currentLayout: string | null;
@@ -25,6 +26,7 @@ export interface SessionState {
         connected: boolean;
     }[];
     playmode: false;
+    notification: null | NotificationType;
 }
 export type SimulatorParam = {
     attribute: string;
@@ -82,6 +84,11 @@ export type SessionReducer = {
     attribute: 'simulatorSettings';
     key: string;
     params: SimulatorParam[];
+} | {
+    attribute: 'notification';
+    value: NotificationType;
+} | {
+    attribute: 'notification/clear';
 };
 export declare function SessionDataReducer(state: SessionState, action: SessionReducer): SessionState;
 export {};

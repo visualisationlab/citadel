@@ -45,7 +45,7 @@ export module MessageTypes {
     export interface OutMessage {
         sessionID: string,
         sessionState: SessionState,
-        type: 'data' | 'session' | 'uid' | 'headset'
+        type: 'data' | 'session' | 'uid' | 'headset' | 'notification'
     }
 
     export interface InMessage {

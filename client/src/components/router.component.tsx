@@ -19,6 +19,17 @@ interface RouterProps {
 let sessionDataDispatch: Dispatch<SessionReducer> | null = null
 let graphDataDispatch: Dispatch<GraphDataReducerAction> | null = null
 
+// interface NotificationMessage extends OutMessage {
+//     userID: string,
+//     type: 'notification',
+//     data: {
+//         title: string,
+//         message: string,
+//         status: notificationTypes
+//         date: Date
+//     }
+// }
+
 export module Router {
     export function setup(props: RouterProps) {
         sessionDataDispatch = props.sessionDataDispatch
@@ -31,6 +42,16 @@ export module Router {
         }
 
         switch (message.type) {
+            case 'notification':
+                let msg = message as any
+                const messageNotification = {
+                    title: msg.data.title,
+                    message: msg.data.message,
+                    status: msg.data.status,
+                }
+
+                sessionDataDispatch({attribute: 'notification', value: messageNotification})
+                break
             case 'data':
                 const messageData: {
                     nodes: VisGraph.CytoNode[]

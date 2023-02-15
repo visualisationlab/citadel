@@ -41,7 +41,8 @@ export function SessionDataReducer(state, action) {
                     step: action.value.data.simState.step,
                     stepMax: action.value.data.simState.stepMax,
                 },
-                playmode: action.value.data.playmode
+                playmode: action.value.data.playmode,
+                notification: null
             };
         case 'state':
             state.state = action.value;
@@ -57,6 +58,9 @@ export function SessionDataReducer(state, action) {
                 return sim;
             });
             console.log(state.simulators);
+            return Object.assign({}, state);
+        case 'notification':
+            state.notification = action.value;
             return Object.assign({}, state);
         default:
             return state;

@@ -1,3 +1,5 @@
+import { NotificationType } from "../components/notifications.component"
+
 export type ServerState = 'disconnected' | 'idle' | 'busy'
 
 export interface SessionState {
@@ -22,7 +24,8 @@ export interface SessionState {
         headsetID: string,
         connected: boolean
     }[],
-    playmode: false
+    playmode: false,
+    notification: null | NotificationType
 }
 
 type ServerSimulator = {
@@ -98,6 +101,8 @@ export type SessionReducer =
     | { attribute: 'username', value: string}
     | { attribute: 'state', value: ServerState}
     | { attribute: 'simulatorSettings', key: string, params: SimulatorParam[]}
+    | { attribute: 'notification', value: NotificationType}
+    | { attribute: 'notification/clear' }
 
 export function SessionDataReducer(state: SessionState, action: SessionReducer): SessionState {
     switch (action.attribute) {
@@ -151,7 +156,8 @@ export function SessionDataReducer(state: SessionState, action: SessionReducer):
                     step: action.value.data.simState.step,
                     stepMax: action.value.data.simState.stepMax,
                 },
-                playmode: action.value.data.playmode
+                playmode: action.value.data.playmode,
+                notification: null
             }
         case 'state':
             state.state = action.value
@@ -171,6 +177,10 @@ export function SessionDataReducer(state: SessionState, action: SessionReducer):
                 })
 
             console.log(state.simulators)
+
+            return {...state}
+        case 'notification':
+            state.notification = action.value
 
             return {...state}
         default:

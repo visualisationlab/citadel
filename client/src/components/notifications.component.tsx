@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState, Reducer, useReducer } from 'react'
 import { Container, CloseButton, Row, Col, Alert, Collapse, Button, Card } from 'react-bootstrap'
 
-import { MappingContext } from '../components/main.component'
+import { GraphDataContext, MappingContext, UserDataContext } from '../components/main.component'
 
 // import { GraphDataContext } from '../components/main.component'
 // import { GraphDataReducerAction, GraphDataState } from '../reducers/graphdata.reducer'
@@ -120,7 +120,7 @@ function AlertComponent(props: {alert: AlertType,
             </Card.Header>
             <Card.Body>
                 {!show &&
-                    '...'
+                    props.alert.message.substring(0, 40) + '...'
                 }
                 <Collapse in={show}>
                     <Row>
@@ -209,15 +209,20 @@ export default function Notifications(): JSX.Element {
 
     // Get the mappings state from the main component
     let { mappingsState, mappingsDispatch } = useContext(MappingContext)
+    let { state, dispatch } = useContext(UserDataContext)
 
-    if (mappingsState === null || mappingsDispatch === null) {
+    if (mappingsState === null || mappingsDispatch === null
+        || state === null || !dispatch) {
         throw new Error('Mappings state is null')
     }
 
     let tempNot = mappingsState.notification
+    let sessionNotification = state.notification
 
     useEffect(() => {
-        if (tempNot === null || mappingsDispatch === null) {
+        if ((sessionNotification === null && tempNot === null)
+            || mappingsDispatch === null || dispatch === null) {
+
             return
         }
 
@@ -241,14 +246,36 @@ export default function Notifications(): JSX.Element {
             // })
         }, TIMEOUT)
 
-        alertsDispatch({
-            type: 'alerts/add',
-            payload: {
-                notification: tempNot,
-                id: id
-            }
-        })
-    }, [tempNot, mappingsDispatch])
+        if (sessionNotification) {
+            console.log('Session notification')
+            alertsDispatch({
+                type: 'alerts/add',
+                payload: {
+                    notification: sessionNotification,
+                    id: id
+                }
+            })
+
+            dispatch({
+                attribute: 'notification/clear',
+            })
+        }
+        else if (tempNot) {
+            alertsDispatch({
+                type: 'alerts/add',
+                payload: {
+                    notification: tempNot,
+                    id: id
+                }
+            })
+
+            mappingsDispatch({
+                type: 'notification',
+                action: 'clear'
+            })
+        }
+
+    }, [tempNot, sessionNotification, mappingsDispatch, dispatch])
 
 
 

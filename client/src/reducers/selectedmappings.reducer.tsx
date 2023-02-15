@@ -107,7 +107,10 @@ function SchemeReducer(state: MappingsState, action: MappingsReducerAction): Map
             if (state.schemes.get(action.key) !== undefined) {
                 console.log('Adding scheme: Scheme already exists')
 
-                return state
+                return {...state, notification: {
+                    status: 'danger',
+                    title: 'Could not add scheme',
+                    message: `Scheme ${action.key} already exists`}}
             }
 
             state.schemes = state.schemes.set(action.key, [])
@@ -119,7 +122,10 @@ function SchemeReducer(state: MappingsState, action: MappingsReducerAction): Map
             if (state.schemes.get(action.key) === undefined) {
                 console.log('Deleting scheme: Scheme does not exist')
 
-                return state
+                return {...state, notification: {
+                    status: 'danger',
+                    title: 'Could not remove scheme',
+                    message: `Scheme ${action.key} does not exist exists`}}
             }
 
             state.config = state.config.map((value, _) => {
@@ -139,7 +145,10 @@ function SchemeReducer(state: MappingsState, action: MappingsReducerAction): Map
             if (state.schemes.get(action.key) === undefined) {
                 console.log('Updating scheme: Scheme does not exist')
 
-                return state
+                return {...state, notification: {
+                    status: 'danger',
+                    title: 'Could not update scheme',
+                    message: `Scheme ${action.key} does not exists`}}
             }
 
             state.schemes = state.schemes.set(action.key, action.values)
@@ -156,7 +165,10 @@ function SchemeReducer(state: MappingsState, action: MappingsReducerAction): Map
             if (oldName === undefined) {
                 console.log('Renaming scheme: Scheme does not exist')
 
-                return state
+                return {...state, notification: {
+                    status: 'danger',
+                    title: 'Could not rename scheme',
+                    message: `Scheme ${oldName} does not exists`}}
             }
 
             state.schemes = state.schemes.set(action.newName, oldName)
