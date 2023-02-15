@@ -4,12 +4,15 @@ import './home.component.css'
 
 import Navigator from './navigator.component'
 import Layout from './layout.component'
+import InspectionTab from './inspection.component'
+import Notifications from './notifications.component'
 
 import { SessionDataReducer, SessionState, SessionReducer } from '../reducers/sessiondata.reducer'
 import { GraphDataReducerAction, GraphDataState, GraphDataReducer } from '../reducers/graphdata.reducer'
 import { SelectionDataReducerAction, SelectionDataState, SelectionDataReducer } from '../reducers/selection.reducer'
 import { MappingsReducer, MappingsReducerAction, MappingsState } from '../reducers/selectedmappings.reducer'
 import { GlobalSettingsReducer, GlobalSettingsState, GlobalSettingsReducerAction } from '../reducers/globalsettings.reducer'
+
 
 import { websocketService } from '../services/websocket.service'
 
@@ -19,7 +22,6 @@ import { QR } from '../services/qrcode.service'
 
 import { API } from '../services/api.service'
 
-import InspectionTab from './inspection.component'
 
 export const UserDataContext = createContext({
     state: null as SessionState | null,
@@ -51,7 +53,8 @@ export default function Main() {
         {
             schemes: Map(),
             config: Map(),
-            selectedMappings: Set()
+            selectedMappings: Set(),
+            notification: null
         })
 
     let [selectionData, selectionDataDispatch] = useReducer(SelectionDataReducer, {
@@ -173,6 +176,7 @@ export default function Main() {
                 <UserDataContext.Provider value={{ state: sessionData, dispatch: sessionDataDispatch}}>
                         <Navigator disconnected = {sessionData.state === 'disconnected'}/>
                         <InspectionTab/>
+                        <Notifications/>
                 </UserDataContext.Provider>
 
                 <Layout/>

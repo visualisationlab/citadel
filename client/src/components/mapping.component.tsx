@@ -845,7 +845,6 @@ function MappingList(
     return (
         <>
             {
-
                 mappingsState.selectedMappings.toList().map((mapping) => {
                         return generateRow(
                             mappingsState,

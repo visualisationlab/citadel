@@ -5,6 +5,7 @@
  * stored separately.
  */
 import { Set, Map } from 'immutable';
+import { NotificationType } from '../components/notifications.component';
 export declare const shapeTypes: string[];
 export type MappingChannel = 'hue' | 'saturation' | 'lightness' | 'radius' | 'shape' | 'alpha' | 'text' | 'width' | 'opacity' | 'none' | 'region' | 'x-position' | 'y-position';
 export declare const mappingChannels: string[];
@@ -37,6 +38,7 @@ export type MappingsState = {
     selectedMappings: Set<Map<string, any>>;
     schemes: Map<string, number[]>;
     config: MappingConfigState;
+    notification: NotificationType | null;
 };
 export type MappingsReducerAction = {
     type: 'selection';
@@ -89,6 +91,9 @@ export type MappingsReducerAction = {
     action: 'rename';
     oldName: string;
     newName: string;
+} | {
+    type: 'notification';
+    action: 'clear';
 };
 type BasicMappingType = {
     objectType: 'node' | 'edge' | 'all';

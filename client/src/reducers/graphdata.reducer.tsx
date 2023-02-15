@@ -27,11 +27,11 @@ export type MetadataType = {
 export interface GraphDataState {
     nodes: {
         data: VisGraph.GraphNode[]
-        metadata: {[key: string]: MetadataType}
+        metadata: {[attribute: string]: MetadataType}
     },
     edges: {
         data: VisGraph.Edge[],
-        metadata: {[key: string]: MetadataType}
+        metadata: {[attribute: string]: MetadataType}
     }
 
     directed: boolean

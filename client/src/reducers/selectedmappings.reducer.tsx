@@ -6,6 +6,8 @@
  */
 import { Set, Map } from 'immutable'
 
+import { NotificationType } from '../components/notifications.component'
+
 export const shapeTypes = ['circle', 'square']
 
 // All available mapping channels.
@@ -33,6 +35,7 @@ export type MappingSettings = {
     regionNum: number,
     colourScheme: string | null,
     settings: Map<string, number>,
+
 }
 
 export type SchemeState = Map<string, number[]>
@@ -50,7 +53,8 @@ export type SchemeReducerAction =
 export type MappingsState = {
     selectedMappings: Set<Map<string, any>>
     schemes: Map<string, number[]>
-    config: MappingConfigState
+    config: MappingConfigState,
+    notification: NotificationType | null
 }
 
 // The action type for the selected mappings reducer.
@@ -67,6 +71,7 @@ export type MappingsReducerAction =
     | { type: 'scheme', action: 'update', key: string, values: number[]}
     | { type: 'scheme', action: 'load', state: SchemeState }
     | { type: 'scheme', action: 'rename', oldName: string, newName: string}
+    | { type: 'notification', action: 'clear' }
 
 
 // The mapping properties are used to determine which channels can be used for which object types and attribute types.
@@ -154,7 +159,6 @@ function SchemeReducer(state: MappingsState, action: MappingsReducerAction): Map
                 return state
             }
 
-
             state.schemes = state.schemes.set(action.newName, oldName)
             state.schemes = state.schemes.delete(action.oldName)
 
@@ -210,8 +214,11 @@ export function MappingsReducer(state: MappingsState, action: MappingsReducerAct
                     })
 
                     if (state.selectedMappings.has(emptyRow)) {
-                        console.log('Adding mapping: Empty row already exists')
-                        return state
+                        return {...state, notification: {
+                            message: 'Cannot have more than one empty mapping',
+                            status: 'danger',
+                            title: 'Mapping not added',
+                        }}
                     }
 
                     state.selectedMappings = state.selectedMappings.add(emptyRow)
@@ -223,9 +230,23 @@ export function MappingsReducer(state: MappingsState, action: MappingsReducerAct
                     return {...state}
                 case 'edit':
                     if (!state.selectedMappings.has(Map(action.prevMapping))) {
-                        console.log('Editing mapping: Previous mapping does not exist')
+                        return {...state,
+                            notification: {
+                                message: 'Previous mapping does not exist',
+                                status: 'danger',
+                                title: 'Mapping not edited THIS IS A LONG TITLE',
+                            }
+                        }
+                    }
 
-                        return {...state}
+                    if (state.selectedMappings.has(Map(action.newMapping))) {
+                        return {...state,
+                            notification: {
+                                message: 'New mapping already exists',
+                                status: 'danger',
+                                title: 'Mapping not edited THIS IS A LONG TITLE',
+                            }
+                        }
                     }
 
                     state.selectedMappings = state.selectedMappings.delete(Map(action.prevMapping))
@@ -254,6 +275,8 @@ export function MappingsReducer(state: MappingsState, action: MappingsReducerAct
             return {...ConfigReducer(state, action)}
         case 'scheme':
             return {...SchemeReducer(state, action)}
+        case 'notification':
+            return {...state, notification: null}
         default:
             return {...state}
 
