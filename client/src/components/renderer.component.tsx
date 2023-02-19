@@ -167,7 +167,7 @@ function setTransformCallback(transformUpdate: () => void) {
             return
         }
 
-        console.log("Transforming")
+
         transformX = event.transform.x
         transformY = event.transform.y
         transformK = event.transform.k
@@ -381,10 +381,14 @@ function cleanMemory() {
         edge.gfx?.destroy()
     })
 
+    renderedEdges = []
+
     renderedNodes.forEach((renderedNode) => {
         renderedNode.nodesprite?.destroy()
         renderedNode.textsprite?.destroy()
     })
+
+    renderedNodes = []
 
     app.stage.children.forEach((child) => {
         child.destroy()
@@ -392,8 +396,12 @@ function cleanMemory() {
 
     app.stage.removeChildren()
 
-    app.stage.destroy()
+    // app.stage.destroy({
+    //     children: true,
+    // })
     console.log('Cleaned Memory')
+
+    window.onpopstate = null
 }
 
 function updateNodePositions(nodes: VisGraph.HashedGraphNode[]) {
@@ -431,6 +439,10 @@ function updateNodePositions(nodes: VisGraph.HashedGraphNode[]) {
 }
 
 function updateTransform() {
+    if (renderedNodes.length === 0) {
+        return
+    }
+
     renderedNodes.forEach((renderedNode) => {
         moveRenderedNode(renderedNode, renderedNode.x, renderedNode.y)
 
@@ -818,6 +830,8 @@ export function Renderer({
 
         window.addEventListener('beforeunload', cleanMemory);
 
+        window.onpopstate = cleanMemory;
+
         return {
             destroy: () => {
                 window.removeEventListener('beforeunload', cleanMemory);
@@ -828,17 +842,13 @@ export function Renderer({
     setTransformCallback(updateTransform)
 
     window.addEventListener('beforeunload', cleanMemory);
+    window.onpopstate = cleanMemory;
 
     app.stage.sortChildren()
 
     return {
         destroy: () => {
-            // TODO REPLACE
-            // renderedNodes.forEach(([node) => {
-            //     nodeCache.push(node.gfx)
-            // })
-
-            window.removeEventListener('beforeunload', cleanMemory);
+            // window.removeEventListener('beforeunload', cleanMemory);
         }
     }
 }
