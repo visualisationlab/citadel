@@ -186,12 +186,15 @@ function setTransformCallback(transformUpdate: () => void) {
         .on('start', () => {
             if (prevTransform) {
                 console.log('Resetting view')
+
+                panEnabled = true
                 d3.select('.render').call((d3.zoom() as any).transform, prevTransform)
             }
 
             prevTransform = null
         })
         .on('zoom', (event: any) => {
+
             transformHandler(event)
         }).on("end", () => {
         })

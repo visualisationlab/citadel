@@ -79,6 +79,10 @@ export function SelectionDataReducer(state: SelectionDataState, action: Selectio
         return resetState(state)
     }
 
+    if (state.selectedNodes.length < 2 && state.selectedEdges.length < 2) {
+        state.selectionMode = 'single'
+    }
+
     switch (action.type) {
         case 'selection/added':
             if (action.payload.attribute === 'node') {
