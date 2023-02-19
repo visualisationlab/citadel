@@ -6,27 +6,37 @@ export interface SelectionDataState {
 }
 type AttributeType = 'node' | 'edge';
 export type SelectionDataReducerAction = {
-    type: 'set';
-    attribute: AttributeType;
-    value: string[];
+    type: 'selection/set';
+    payload: {
+        attribute: AttributeType;
+        value: string[];
+    };
 } | {
-    type: 'add';
-    attribute: AttributeType;
-    value: string;
+    type: 'selection/added';
+    payload: {
+        attribute: AttributeType;
+        value: string;
+    };
 } | {
-    type: 'remove';
-    attribute: AttributeType;
-    value: string;
+    type: 'selection/removed';
+    payload: {
+        attribute: AttributeType;
+        value: string;
+    };
 } | {
-    type: 'reset';
+    type: 'selection/reset';
 } | {
-    type: 'shortClick';
-    attribute: AttributeType;
-    id: string;
+    type: 'selection/shortClick';
+    payload: {
+        attribute: AttributeType;
+        id: string;
+    };
 } | {
-    type: 'longClick';
-    attribute: AttributeType;
-    id: string;
+    type: 'selection/longClick';
+    payload: {
+        attribute: AttributeType;
+        id: string;
+    };
 };
 export declare function SelectionDataReducer(state: SelectionDataState, action: SelectionDataReducerAction): SelectionDataState;
 export {};

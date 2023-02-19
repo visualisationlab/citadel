@@ -100,7 +100,13 @@ function ClusterTab(
             <Row>
                 <Line data={data}></Line>
             </Row>
-            <Button onClick={() => {console.log('here'); selectionDispatch({type: 'set', attribute: 'node', value: []})}}>Deselect All</Button>
+            <Button onClick={() => {
+                console.log('here');
+                selectionDispatch({
+                    type: 'selection/set',
+                    payload: {
+                        attribute: 'node', value: []
+                }})}}>Deselect All</Button>
         </Tab>
     )
 }
@@ -125,12 +131,12 @@ function NodeTab(
                 <p>Attributes</p>
                 {Object.keys(attributes).map((key) => {
                     return (
-                        <Row>
+                        <Row key={key}>
                             <Col>
                                 {key}
                             </Col>
                             <Col>
-                                <Form.Control
+                                <Form.Control id={key}
                                     onChange={
                                         (e) => {
                                             let newState = {...attributes}
@@ -142,7 +148,7 @@ function NodeTab(
                                     }
                                     type="text"
                                     value={attributes[key]}
-                                    defaultValue={attributes[key]}
+
                                     placeholder={attributes[key]}></Form.Control>
                             </Col>
                         </Row>

@@ -6,6 +6,7 @@ import { VisGraph } from '../types'
 import { SelectionDataReducerAction, SelectionDataState } from "../reducers/selection.reducer"
 
 import { API } from '../services/api.service'
+import { BaseType } from "d3"
 
 
 // Create and load bitmap font.
@@ -178,23 +179,23 @@ function setTransformCallback(transformUpdate: () => void) {
         API.setPan(transformX, transformY, transformK)
     }
 
-    d3.select('.render')
-        // @ts-ignore
-        .call(d3.zoom()
+    const render = d3.select('.render')
+
+    render.call((d3.zoom() as any)
         .scaleExtent([0.01, 3])
         .on('start', () => {
             if (prevTransform) {
                 console.log('Resetting view')
-                // @ts-ignore
-                d3.select('.render').call(d3.zoom().transform, prevTransform)
+                d3.select('.render').call((d3.zoom() as any).transform, prevTransform)
             }
 
             prevTransform = null
         })
-        .on('zoom', (event) => {
+        .on('zoom', (event: any) => {
             transformHandler(event)
         }).on("end", () => {
-    }))
+        })
+    )
 }
 
 function getSprite(shape: VisGraph.Shape) {
@@ -224,6 +225,23 @@ function getSprite(shape: VisGraph.Shape) {
 function setupRendering() {
     app.stage.sortableChildren = true
 
+    const render = d3.select('.render')
+
+    render.call((d3.zoom() as any)
+        .scaleExtent([0.01, 3])
+        .on('start', () => {
+            if (prevTransform) {
+                console.log('Resetting view')
+                d3.select('.render').call((d3.zoom() as any).transform, prevTransform)
+            }
+
+            prevTransform = null
+        })
+        .on('zoom', (event: any) => {
+            transformHandler(event)
+        }).on("end", () => {
+        })
+    )
     // Generate a set of edges.
     // for (let i = 0; i < edgeStartingCount; i++) {
     //     let lineSprite = getSprite('line')
@@ -301,9 +319,11 @@ function renderBackground(stage: PIXI.Container,
                     && node.y * transformK + transformY < selectionBox.y0 + selectionBox.y1) {
 
                     selectionDispatch({
-                        type: 'add',
-                        attribute: 'node',
-                        value: node.id
+                        type: 'selection/added',
+                        payload: {
+                            attribute: 'node',
+                            value: node.id
+                        }
                     })
                 }
             })
@@ -315,7 +335,7 @@ function renderBackground(stage: PIXI.Container,
 
             if (dispatch) {
                 dispatch({
-                    'type': 'reset'
+                    'type': 'selection/reset'
                 })
             }
 
@@ -339,9 +359,11 @@ function renderBackground(stage: PIXI.Container,
                     && node.y * transformK + transformY > selectionBox.y0
                     && node.y * transformK + transformY < selectionBox.y0 + selectionBox.y1) {
                     selectionDispatch({
-                        type: 'add',
-                        attribute: 'node',
-                        value: node.id
+                        type: 'selection/added',
+                        payload: {
+                            attribute: 'node',
+                            value: node.id
+                        }
                     })
                 }
             })
@@ -507,11 +529,6 @@ function animator(timestamp: DOMHighResTimeStamp) {
     if (previousTimestep !== timestamp) {
         let gfxDict: {[key: string]: RenderedNode} = {}
 
-        console.log('Rendering Nodes')
-
-
-
-
         for (let i = 0; i < renderedNodes.length; i++) {
             const renderedNode = renderedNodes[i]
 
@@ -555,8 +572,6 @@ function animator(timestamp: DOMHighResTimeStamp) {
                 gfx.scale.y = ((renderedNode.visualAttributes.radius / 16) * transformK) / SPRITESCALE
             }
         }
-
-        console.log("Calling animator on edges")
 
         // Calculate line lengths before rendering
         let edgeLengths = []
@@ -637,8 +652,6 @@ function animator(timestamp: DOMHighResTimeStamp) {
             gfx.rotation = angle
         }
     }
-
-    console.log("Done animating edges")
 
     if (!done) {
 
@@ -740,9 +753,11 @@ export function Renderer({
             }
 
             multiSelectTimer = setTimeout(() => {selectionDispatch({
-                'attribute': 'node',
-                'type': 'longClick',
-                'id': id
+                'type': 'selection/longClick',
+                payload: {
+                    'attribute': 'node',
+                    'id': id
+                }
             })}, 250)
         })
 
@@ -759,9 +774,11 @@ export function Renderer({
             }
 
             selectionDispatch({
-                'attribute': 'node',
-                'type': 'shortClick',
-                'id': id
+                'type': 'selection/shortClick',
+                payload: {
+                    'attribute': 'node',
+                    'id': id
+                }
             })
         })
 
@@ -774,6 +791,25 @@ export function Renderer({
                 clearTimeout(multiSelectTimer)
                 multiSelectTimer = null
             }
+        })
+
+        nodeSprite.on(('pointerupoutside'), () => {
+            if (selectionDispatch === null) {
+                return
+            }
+
+            if (multiSelectTimer !== null) {
+                clearTimeout(multiSelectTimer)
+                multiSelectTimer = null
+            }
+
+            selectionDispatch({
+                'type': 'selection/shortClick',
+                payload: {
+                    'attribute': 'node',
+                    'id': id
+                }
+            })
         })
 
         nodeDict[node.id] = node

@@ -13,12 +13,12 @@ type AttributeType =
     | 'edge'
 
 export type SelectionDataReducerAction =
-    | { type: 'set', attribute: AttributeType, value: string[] }
-    | { type: 'add', attribute: AttributeType, value: string }
-    | { type: 'remove', attribute: AttributeType, value: string }
-    | { type: 'reset' }
-    | { type: 'shortClick', attribute: AttributeType, id: string }
-    | { type: 'longClick', attribute: AttributeType, id: string }
+    | { type: 'selection/set', payload: { attribute: AttributeType, value: string[] }}
+    | { type: 'selection/added', payload: { attribute: AttributeType, value: string }}
+    | { type: 'selection/removed', payload: { attribute: AttributeType, value: string }}
+    | { type: 'selection/reset' }
+    | { type: 'selection/shortClick', payload: { attribute: AttributeType, id: string }}
+    | { type: 'selection/longClick', payload: { attribute: AttributeType, id: string }}
 
 function resetState(state: SelectionDataState): SelectionDataState {
     if (state.selectedEdges.length === 0 && state.selectedNodes.length === 0) {
@@ -74,50 +74,50 @@ function setState(type: AttributeType, value: string[], mode: SelectionMode): Se
 }
 
 export function SelectionDataReducer(state: SelectionDataState, action: SelectionDataReducerAction): SelectionDataState {
-    if (action.type === 'reset') {
+    if (action.type === 'selection/reset') {
         console.log('resetting selection')
         return resetState(state)
     }
 
     switch (action.type) {
-        case 'add':
-            if (action.attribute === 'node') {
-                return setState(action.attribute, addValue(state.selectedNodes, action.value), 'multi')
+        case 'selection/added':
+            if (action.payload.attribute === 'node') {
+                return setState(action.payload.attribute, addValue(state.selectedNodes, action.payload.value), 'multi')
             } else {
-                return setState(action.attribute, addValue(state.selectedEdges, action.value), 'multi')
+                return setState(action.payload.attribute, addValue(state.selectedEdges, action.payload.value), 'multi')
             }
-        case 'remove':
-            if (action.attribute === 'node') {
-                let newSelectedNodes = removeValue(state.selectedNodes, action.value)
+        case 'selection/removed':
+            if (action.payload.attribute === 'node') {
+                let newSelectedNodes = removeValue(state.selectedNodes, action.payload.value)
 
-                return setState(action.attribute, newSelectedNodes, newSelectedNodes.length > 0 ? 'multi' : 'single')
+                return setState(action.payload.attribute, newSelectedNodes, newSelectedNodes.length > 0 ? 'multi' : 'single')
             } else {
-                let newSelectedEdges = removeValue(state.selectedEdges, action.value)
+                let newSelectedEdges = removeValue(state.selectedEdges, action.payload.value)
 
-                return setState(action.attribute, newSelectedEdges, newSelectedEdges.length > 0 ? 'multi' : 'single')
+                return setState(action.payload.attribute, newSelectedEdges, newSelectedEdges.length > 0 ? 'multi' : 'single')
             }
-        case 'set':
-            if (state.selectedNodes.length === 0 && state.selectedEdges.length === 0 && action.value.length === 0) {
+        case 'selection/set':
+            if (state.selectedNodes.length === 0 && state.selectedEdges.length === 0 && action.payload.value.length === 0) {
                 return state
             }
 
-            return setState(action.attribute, action.value, action.value.length > 1 ? 'multi' : 'single')
-        case 'shortClick':
+            return setState(action.payload.attribute, action.payload.value, action.payload.value.length > 1 ? 'multi' : 'single')
+        case 'selection/shortClick':
             if (state.selectionMode === 'multi') {
-                if (action.attribute === 'node') {
-                    return setState(action.attribute, addValue(state.selectedNodes, action.id), 'multi')
+                if (action.payload.attribute === 'node') {
+                    return setState(action.payload.attribute, addValue(state.selectedNodes, action.payload.id), 'multi')
                 }
 
-                return setState(action.attribute, addValue(state.selectedEdges, action.id), 'multi')
+                return setState(action.payload.attribute, addValue(state.selectedEdges, action.payload.id), 'multi')
             }
 
-            return setState(action.attribute, [action.id], 'single')
-        case 'longClick':
-            if (action.attribute === 'node') {
-                return setState(action.attribute, addValue(state.selectedNodes, action.id), 'multi')
+            return setState(action.payload.attribute, [action.payload.id], 'single')
+        case 'selection/longClick':
+            if (action.payload.attribute === 'node') {
+                return setState(action.payload.attribute, addValue(state.selectedNodes, action.payload.id), 'multi')
             }
 
-            return setState(action.attribute, addValue(state.selectedEdges, action.id), 'multi')
+            return setState(action.payload.attribute, addValue(state.selectedEdges, action.payload.id), 'multi')
         default:
             return state
     }
