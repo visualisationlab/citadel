@@ -1,4 +1,4 @@
-export type ServerState = 'disconnected' | 'idle' | 'busy';
+export declare type ServerState = 'disconnected' | 'idle' | 'busy';
 export interface SessionState {
     currentLayout: string | null;
     userName: string;
@@ -26,7 +26,7 @@ export interface SessionState {
     }[];
     playmode: false;
 }
-export type SimulatorParam = {
+export declare type SimulatorParam = {
     attribute: string;
     type: 'boolean';
     defaultValue: boolean;
@@ -51,8 +51,8 @@ export interface Simulator {
     valid: 'valid' | 'invalid' | 'unknown';
     validator: boolean;
 }
-type AvailableLayout = 'null' | 'random' | 'cose' | 'grid' | 'circle' | 'breadthfirst' | 'cose';
-type LayoutSetting = {
+declare type AvailableLayout = 'null' | 'random' | 'cose' | 'grid' | 'circle' | 'breadthfirst' | 'cose';
+declare type LayoutSetting = {
     name: string;
     type: 'number';
     description: string;
@@ -69,7 +69,7 @@ export interface LayoutInfo {
     link: string;
     settings: LayoutSetting[];
 }
-export type SessionReducer = {
+export declare type SessionReducer = {
     attribute: 'all';
     value: any;
 } | {

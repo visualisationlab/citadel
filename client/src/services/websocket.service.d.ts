@@ -1,4 +1,4 @@
-export type LayoutSetting = {
+export declare type LayoutSetting = {
     name: string;
     description: string;
     type: 'number';
@@ -15,7 +15,7 @@ export interface LayoutInfo {
     link: string;
     settings: LayoutSetting[];
 }
-type Simulator = {
+declare type Simulator = {
     readonly apikey: string | null;
     readonly userID: string;
     socket: WebSocket;

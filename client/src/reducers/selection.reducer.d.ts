@@ -1,11 +1,11 @@
-type SelectionMode = 'single' | 'multi';
+declare type SelectionMode = 'single' | 'multi';
 export interface SelectionDataState {
     selectedNodes: string[];
     selectedEdges: string[];
     selectionMode: SelectionMode;
 }
-type AttributeType = 'node' | 'edge';
-export type SelectionDataReducerAction = {
+declare type AttributeType = 'node' | 'edge';
+export declare type SelectionDataReducerAction = {
     type: 'selection/set';
     payload: {
         attribute: AttributeType;

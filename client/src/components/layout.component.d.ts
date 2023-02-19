@@ -4,6 +4,7 @@
  * This file contains the layout component, which is a worker app in the main
  * component. It generates data for the renderer component.
  */
+/// <reference types="react" />
 /**
  * Returns a container, which is updated by reference to contain the graph.
  * @param param0 props

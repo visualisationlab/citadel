@@ -1,6 +1,6 @@
 import { LayoutInfo } from "./sessiondata.reducer";
-export type AvailableLayout = 'null' | 'random' | 'cose' | 'grid' | 'circle' | 'breadthfirst' | 'cose';
-type LayoutSetting = {
+export declare type AvailableLayout = 'null' | 'random' | 'cose' | 'grid' | 'circle' | 'breadthfirst' | 'cose';
+declare type LayoutSetting = {
     name: string;
     description: string;
     type: 'number';
@@ -13,18 +13,18 @@ type LayoutSetting = {
     defaultValue: boolean;
     value: boolean;
 };
-export type LayoutState = {
+export declare type LayoutState = {
     name: AvailableLayout;
     description: string;
     link: string;
     settings: LayoutSetting[];
     randomize: boolean;
 };
-export type LayoutSettingsState = {
+export declare type LayoutSettingsState = {
     selectedLayout: AvailableLayout | null;
     layouts: LayoutState[];
 } | null;
-export type LayoutSettingsReducerAction = {
+export declare type LayoutSettingsReducerAction = {
     attribute: 'layouts';
     value: LayoutInfo[];
     currentLayout: AvailableLayout | null;
