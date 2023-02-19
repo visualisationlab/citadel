@@ -50,27 +50,33 @@ function renderListContent(source: string, edges: InspectEdge[],
                             <tr key={edge.id} className={selectedEdges.includes(edge.id) ? 'table-primary':''}>
                                 <td onClick={(e) => {
                                         selectionDispatch({
-                                            'attribute': 'edge',
-                                            'type': 'set',
-                                            'value': [edge.id]
+                                            'type': 'selection/set',
+                                            payload: {
+                                                'attribute': 'edge',
+                                                'value': [edge.id]
+                                            }
                                         })
                                     }}>{edge.id}</td>
                                 <td
                                     className={selectedNodes.includes(source) ? 'table-primary':''}
                                     onClick={(e) => {
                                         selectionDispatch({
-                                            'attribute': 'node',
-                                            'type': 'set',
-                                            'value': [source]
+                                            'type': 'selection/set',
+                                            payload: {
+                                                'attribute': 'node',
+                                                'value': [source]
+                                            }
                                         })
                                     }}
                                     >{source}</td>
                                 <td className={selectedNodes.includes(edge.nodeID) ? 'table-primary':''}
                                     onClick={(e) => {
                                         selectionDispatch({
-                                            'attribute': 'node',
-                                            'type': 'set',
-                                            'value': [edge.nodeID]
+                                            'type': 'selection/set',
+                                            payload: {
+                                                'attribute': 'node',
+                                                'value': [edge.nodeID]
+                                            }
                                         })
                                     }}>{edge.nodeID}</td>
                             </tr>
