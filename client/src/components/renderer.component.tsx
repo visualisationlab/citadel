@@ -6,6 +6,7 @@ import { VisGraph } from '../types'
 import { SelectionDataReducerAction, SelectionDataState } from "../reducers/selection.reducer"
 
 import { API } from '../services/api.service'
+import { BaseType } from "d3"
 
 
 // Create and load bitmap font.
@@ -167,7 +168,7 @@ function setTransformCallback(transformUpdate: () => void) {
             return
         }
 
-        console.log("Transforming")
+
         transformX = event.transform.x
         transformY = event.transform.y
         transformK = event.transform.k
@@ -178,23 +179,26 @@ function setTransformCallback(transformUpdate: () => void) {
         API.setPan(transformX, transformY, transformK)
     }
 
-    d3.select('.render')
-        // @ts-ignore
-        .call(d3.zoom()
+    const render = d3.select('.render')
+
+    render.call((d3.zoom() as any)
         .scaleExtent([0.01, 3])
         .on('start', () => {
             if (prevTransform) {
                 console.log('Resetting view')
-                // @ts-ignore
-                d3.select('.render').call(d3.zoom().transform, prevTransform)
+
+                panEnabled = true
+                d3.select('.render').call((d3.zoom() as any).transform, prevTransform)
             }
 
             prevTransform = null
         })
-        .on('zoom', (event) => {
+        .on('zoom', (event: any) => {
+
             transformHandler(event)
         }).on("end", () => {
-    }))
+        })
+    )
 }
 
 function getSprite(shape: VisGraph.Shape) {
@@ -224,6 +228,23 @@ function getSprite(shape: VisGraph.Shape) {
 function setupRendering() {
     app.stage.sortableChildren = true
 
+    const render = d3.select('.render')
+
+    render.call((d3.zoom() as any)
+        .scaleExtent([0.01, 3])
+        .on('start', () => {
+            if (prevTransform) {
+                console.log('Resetting view')
+                d3.select('.render').call((d3.zoom() as any).transform, prevTransform)
+            }
+
+            prevTransform = null
+        })
+        .on('zoom', (event: any) => {
+            transformHandler(event)
+        }).on("end", () => {
+        })
+    )
     // Generate a set of edges.
     // for (let i = 0; i < edgeStartingCount; i++) {
     //     let lineSprite = getSprite('line')
@@ -301,9 +322,11 @@ function renderBackground(stage: PIXI.Container,
                     && node.y * transformK + transformY < selectionBox.y0 + selectionBox.y1) {
 
                     selectionDispatch({
-                        type: 'add',
-                        attribute: 'node',
-                        value: node.id
+                        type: 'selection/added',
+                        payload: {
+                            attribute: 'node',
+                            value: node.id
+                        }
                     })
                 }
             })
@@ -315,7 +338,7 @@ function renderBackground(stage: PIXI.Container,
 
             if (dispatch) {
                 dispatch({
-                    'type': 'reset'
+                    'type': 'selection/reset'
                 })
             }
 
@@ -339,9 +362,11 @@ function renderBackground(stage: PIXI.Container,
                     && node.y * transformK + transformY > selectionBox.y0
                     && node.y * transformK + transformY < selectionBox.y0 + selectionBox.y1) {
                     selectionDispatch({
-                        type: 'add',
-                        attribute: 'node',
-                        value: node.id
+                        type: 'selection/added',
+                        payload: {
+                            attribute: 'node',
+                            value: node.id
+                        }
                     })
                 }
             })
@@ -381,10 +406,14 @@ function cleanMemory() {
         edge.gfx?.destroy()
     })
 
+    renderedEdges = []
+
     renderedNodes.forEach((renderedNode) => {
         renderedNode.nodesprite?.destroy()
         renderedNode.textsprite?.destroy()
     })
+
+    renderedNodes = []
 
     app.stage.children.forEach((child) => {
         child.destroy()
@@ -392,8 +421,12 @@ function cleanMemory() {
 
     app.stage.removeChildren()
 
-    app.stage.destroy()
+    // app.stage.destroy({
+    //     children: true,
+    // })
     console.log('Cleaned Memory')
+
+    window.onpopstate = null
 }
 
 function updateNodePositions(nodes: VisGraph.HashedGraphNode[]) {
@@ -431,6 +464,10 @@ function updateNodePositions(nodes: VisGraph.HashedGraphNode[]) {
 }
 
 function updateTransform() {
+    if (renderedNodes.length === 0) {
+        return
+    }
+
     renderedNodes.forEach((renderedNode) => {
         moveRenderedNode(renderedNode, renderedNode.x, renderedNode.y)
 
@@ -493,10 +530,11 @@ function animator(timestamp: DOMHighResTimeStamp) {
     let done = true
 
     if (previousTimestep !== timestamp) {
-        console.log('here')
         let gfxDict: {[key: string]: RenderedNode} = {}
 
-        renderedNodes.forEach((renderedNode) => {
+        for (let i = 0; i < renderedNodes.length; i++) {
+            const renderedNode = renderedNodes[i]
+
             gfxDict[renderedNode.id] = renderedNode
 
             let gfx = renderedNode.nodesprite
@@ -536,9 +574,13 @@ function animator(timestamp: DOMHighResTimeStamp) {
                 gfx.scale.x = ((renderedNode.visualAttributes.radius / 16) * transformK) / SPRITESCALE
                 gfx.scale.y = ((renderedNode.visualAttributes.radius / 16) * transformK) / SPRITESCALE
             }
-        })
-        console.log("Calling animator on edges")
-        renderedEdges.forEach((edge) => {
+        }
+
+        // Calculate line lengths before rendering
+        let edgeLengths = []
+        for (let i = 0; i < renderedEdges.length; i++) {
+            const edge = renderedEdges[i]
+
             let source = gfxDict[edge.source]
 
             let target = gfxDict[edge.target]
@@ -548,11 +590,9 @@ function animator(timestamp: DOMHighResTimeStamp) {
             if (!gfx)
                 return
 
-            gfx.alpha = edge.visualAttributes.alpha
-
             // Calculate the angles to get the circle border location.
             let angle = Math.atan2(target.nodesprite.y - source.nodesprite.y,
-                                   target.nodesprite.x - source.nodesprite.x);
+                target.nodesprite.x - source.nodesprite.x);
 
             let sinSource = Math.sin(angle) * (source.visualAttributes.radius * transformK) / (SPRITESCALE / 2);
             let cosSource = Math.cos(angle) * (source.visualAttributes.radius * transformK) / (SPRITESCALE / 2);
@@ -571,6 +611,32 @@ function animator(timestamp: DOMHighResTimeStamp) {
 
             let lineLength = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
 
+            edgeLengths.push(lineLength)
+        }
+
+        for (let i = 0; i < renderedEdges.length; i++) {
+            const edge = renderedEdges[i]
+
+            let source = gfxDict[edge.source]
+
+            let target = gfxDict[edge.target]
+
+            let gfx = edge.gfx
+
+            if (!gfx)
+                return
+
+            gfx.alpha = edge.visualAttributes.alpha
+
+            // Calculate the angles to get the circle border location.
+            let angle = Math.atan2(target.nodesprite.y - source.nodesprite.y,
+                                   target.nodesprite.x - source.nodesprite.x);
+
+            let sinSource = Math.sin(angle) * (source.visualAttributes.radius * transformK) / (SPRITESCALE / 2);
+            let cosSource = Math.cos(angle) * (source.visualAttributes.radius * transformK) / (SPRITESCALE / 2);
+
+            let lineLength = edgeLengths[i]
+
             // let nx = dx / lineLength;
             // let ny = dy / lineLength;
 
@@ -587,7 +653,7 @@ function animator(timestamp: DOMHighResTimeStamp) {
             gfx.x = (source.nodesprite.x + cosSource)
             gfx.y = (source.nodesprite.y + sinSource)
             gfx.rotation = angle
-        })
+        }
     }
 
     if (!done) {
@@ -690,9 +756,11 @@ export function Renderer({
             }
 
             multiSelectTimer = setTimeout(() => {selectionDispatch({
-                'attribute': 'node',
-                'type': 'longClick',
-                'id': id
+                'type': 'selection/longClick',
+                payload: {
+                    'attribute': 'node',
+                    'id': id
+                }
             })}, 250)
         })
 
@@ -709,9 +777,11 @@ export function Renderer({
             }
 
             selectionDispatch({
-                'attribute': 'node',
-                'type': 'shortClick',
-                'id': id
+                'type': 'selection/shortClick',
+                payload: {
+                    'attribute': 'node',
+                    'id': id
+                }
             })
         })
 
@@ -724,6 +794,25 @@ export function Renderer({
                 clearTimeout(multiSelectTimer)
                 multiSelectTimer = null
             }
+        })
+
+        nodeSprite.on(('pointerupoutside'), () => {
+            if (selectionDispatch === null) {
+                return
+            }
+
+            if (multiSelectTimer !== null) {
+                clearTimeout(multiSelectTimer)
+                multiSelectTimer = null
+            }
+
+            selectionDispatch({
+                'type': 'selection/shortClick',
+                payload: {
+                    'attribute': 'node',
+                    'id': id
+                }
+            })
         })
 
         nodeDict[node.id] = node
@@ -772,7 +861,6 @@ export function Renderer({
         }
     })
 
-
     /* If there are still rendered nodes, only update the positions. */
     if (renderedNodes.length !== 0) {
         updateNodePositions(nodes)
@@ -780,6 +868,8 @@ export function Renderer({
         setTransformCallback(updateTransform)
 
         window.addEventListener('beforeunload', cleanMemory);
+
+        window.onpopstate = cleanMemory;
 
         return {
             destroy: () => {
@@ -791,17 +881,13 @@ export function Renderer({
     setTransformCallback(updateTransform)
 
     window.addEventListener('beforeunload', cleanMemory);
+    window.onpopstate = cleanMemory;
 
     app.stage.sortChildren()
 
     return {
         destroy: () => {
-            // TODO REPLACE
-            // renderedNodes.forEach(([node) => {
-            //     nodeCache.push(node.gfx)
-            // })
-
-            window.removeEventListener('beforeunload', cleanMemory);
+            // window.removeEventListener('beforeunload', cleanMemory);
         }
     }
 }

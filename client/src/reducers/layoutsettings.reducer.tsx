@@ -45,20 +45,16 @@ export type LayoutSettingsReducerAction =
     | { attribute: 'selectedLayout', value: string }
 
 export function LayoutSettingsReducer(state: LayoutSettingsState, action: LayoutSettingsReducerAction): LayoutSettingsState {
-    console.log('here')
     switch (action.attribute) {
         case 'selectedLayout':
             if (state === null) {
                 return null
             }
 
-            console.log('Changing layout to', action.value)
-
             state.selectedLayout = action.value as AvailableLayout
 
             return {...state}
         case 'layouts':
-            console.log(action.currentLayout)
             if (state === null || state.layouts.length !== action.value.length) {
                 return {
                     selectedLayout: action.currentLayout,

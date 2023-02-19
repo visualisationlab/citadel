@@ -1,15 +1,12 @@
 export function LayoutSettingsReducer(state, action) {
-    console.log('here');
     switch (action.attribute) {
         case 'selectedLayout':
             if (state === null) {
                 return null;
             }
-            console.log('Changing layout to', action.value);
             state.selectedLayout = action.value;
             return Object.assign({}, state);
         case 'layouts':
-            console.log(action.currentLayout);
             if (state === null || state.layouts.length !== action.value.length) {
                 return {
                     selectedLayout: action.currentLayout,
