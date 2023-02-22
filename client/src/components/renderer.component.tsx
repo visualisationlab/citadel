@@ -117,7 +117,7 @@ class SpriteCache {
                 return new PIXI.Sprite(PIXI.Texture.WHITE)
             }
 
-            return new PIXI.Sprite(PIXI.Texture.from(`https://chimay.science.uva.nl:8061/${shape}.png`))
+            return new PIXI.Sprite(PIXI.Texture.from(`${process.env.REACT_APP_SPRITE_ORIGIN}/${shape}.png`))
         }
 
         return this.cache[shapeString].pop()!

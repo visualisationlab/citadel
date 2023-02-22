@@ -45,6 +45,12 @@ if (process.env.WSCLIENTPORT === undefined) {
     throw new Error('WSCLIENTPORT not set in ENV')
 }
 
+let defaultGraphURL: string | null = null
+
+if (process.env.DEFAULT_GRAPH_URL !== undefined && process.env.DEFAULT_GRAPH_URL !== '') {
+    defaultGraphURL = process.env.DEFAULT_GRAPH_URL
+}
+
 let localAddress = process.env.HOST
 
 const logger = createLogger({
@@ -238,6 +244,7 @@ let getGraphs : RequestHandler = (_, res, next) => {
         //     return path.parse(filename).ext.includes(".json")
         // })
 
+        res.locals.root = "https://" + localAddress + ":" + process.env.SERVERPORT + "/graphs/"
         res.locals.graphs = graphs
 
         next()
@@ -245,7 +252,7 @@ let getGraphs : RequestHandler = (_, res, next) => {
 }
 
 app.get('/graphs', getGraphs, (req: Request, res: Response) => {
-    res.json(res.locals.graphs)
+    res.json({graphs: res.locals.graphs, root: res.locals.root})
 })
 
 app.get('/status/:session', (req: Request, res: Response) => {
@@ -421,6 +428,7 @@ logger.log({
     serverport: process.env.SERVERPORT,
     websocket: process.env.WSCLIENTPORT,
     checkInterval: checkInterval,
+    defaultGraphURL: defaultGraphURL
 })
 
 httpsServer.listen(process.env.SERVERPORT);

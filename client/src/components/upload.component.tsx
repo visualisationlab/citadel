@@ -9,7 +9,7 @@
 
 import { useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
-import { Form, Button, Container, Row, Col, Table, Spinner } from 'react-bootstrap'
+import { Form, Button, Container, Row, Col, Table, Spinner, DropdownButton, InputGroup, Dropdown } from 'react-bootstrap'
 import { userService } from '../services/user.service'
 import { round } from 'mathjs'
 
@@ -20,11 +20,12 @@ export default function Home() {
     const [errors, setErrors] = useState<[string, string][]>([])
     const [loading, setLoading] = useState<boolean>(false)
     const [sessionStatusList, setSessionStatusList] = useState<boolean[]>([false, false, false, false, false])
+    const [graphList, setGraphList] = useState<string[]>([])
+    const [graphRoot, setGraphRoot] = useState<string>('')
 
     let history = useHistory()
 
     const [sid, setSid] = useState('')
-
 
     let [parsedPrevSessions, setParsedPrevSessions] = useState<[string, Date][] | null>([])
 
@@ -37,6 +38,16 @@ export default function Home() {
             return
         }
     }, [setParsedPrevSessions])
+
+    // Load graphlist from server
+    useEffect(() => {
+        userService.getGraphs().then(
+            response => {
+                setGraphList(response.data.graphs)
+                setGraphRoot(response.data.root)
+            }
+        )
+    }, [])
 
     useEffect(() => {
         let res: boolean[] = []
@@ -194,20 +205,37 @@ export default function Home() {
                 <Row>
                     <Col md={{span: 8}} >
                         <Row>
-                            <Form.Group>
-                                <Form.Label htmlFor="url">Graph URL</Form.Label>
-                                <Form.Control
-                                type="text"
-                                id="url"
-                                aria-describedby="urlBlock"
-                                onChange={(e) => {
-                                    setURL(e.target.value)
-                                }}
-                                />
-                                <Form.Text id="urlBlock" muted>
-                                Enter a URL pointing to a graph in JSON format.
-                                </Form.Text>
-                            </Form.Group>
+                            {/* URL with dropdown next to it to graph list */}
+                            <Col>
+                                <InputGroup>
+                                    <DropdownButton
+                                        variant="outline-primary"
+                                        title="Graphs"
+                                        id="input-group-dropdown-1"
+                                    >
+                                        <div style={{
+                                            maxHeight: '200px',
+                                            overflowY: 'auto'
+                                        }}>
+                                        {
+                                            graphList.map((val, index) => {
+                                                return (
+                                                    <Dropdown.Item key={index} onClick={() => setURL(graphRoot + val)}>{val}</Dropdown.Item>
+                                                )
+                                            })
+                                        }
+                                        </div>
+
+                                    </DropdownButton>
+                                    <Form.Control
+                                        type="text"
+                                        id="url"
+                                        aria-describedby="urlBlock"
+                                        onChange={(e) => setURL(e.target.value)}
+                                        value={url}
+                                    />
+                                </InputGroup>
+                            </Col>
                         </Row>
                         <Row style={{
                                 marginTop: '10px'

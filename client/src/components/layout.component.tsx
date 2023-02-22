@@ -15,6 +15,10 @@ import { SelectionDataContext, GlobalSettingsContext } from "./main.component"
 import { MappingContext } from '../components/main.component'
 import { MappingType } from '../reducers/selectedmappings.reducer';
 
+// Takes number between 0 and 1 and returns a number scaled to the interval [min, max]
+function ScaleToInterval(val: number, min: number, max: number) {
+    return min + (max - min) * val
+}
 
 /**
  * Returns a container, which is updated by reference to contain the graph.
@@ -91,7 +95,7 @@ export default function Layout() {
                     if (attributeData.type === 'ordered') {
                         try {
                             let val = (node.attributes[mapJS.attributeName] - attributeData.min) / (attributeData.max - attributeData.min)
-                            node.visualAttributes.saturation = val
+                            node.visualAttributes.saturation = ScaleToInterval(val, 0.1, 1)
                         }
                         catch (e) {
                             node.visualAttributes.saturation = 1
@@ -105,7 +109,7 @@ export default function Layout() {
                     if (attributeData.type === 'ordered') {
                         try {
                             let val = (node.attributes[mapJS.attributeName] - attributeData.min) / (attributeData.max - attributeData.min)
-                            node.visualAttributes.lightness = val
+                            node.visualAttributes.lightness = ScaleToInterval(val, 0.1, 0.9)
                         }
                         catch (e) {
                             node.visualAttributes.lightness = 0.5

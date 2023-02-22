@@ -237,7 +237,16 @@ function layoutMapping(layouts: string[], layoutInfo: LayoutSettingsState,
     )
 }
 
+function SchemeColourBox(scheme: number[] | undefined, index: number | undefined): JSX.Element {
+    if (scheme === undefined || index === undefined) {
+        return <></>
+    }
+
+    return ColourBox(scheme[index])
+}
+
 function ColourBox(colour: number | null): JSX.Element {
+
     if (colour === null) {
         return <>Select a colour</>
     }
@@ -252,7 +261,10 @@ function ColourBox(colour: number | null): JSX.Element {
                 height: '80%',
                 paddingTop: '10px',
                 // Rounded corners
-                margin: '5px',
+                // margin: '5px',
+                outlineColor: 'black',
+                outlineStyle: 'solid',
+                outlineWidth: '1px',
             }}></div>
     )
 }
@@ -296,58 +308,56 @@ function PaletteSettings(props: {mappingsState: MappingsState,
                     <Col>
                         {props.mappingsState.schemes.get(selectedPalette)?.map((colour, index) => {
                             return (
+                                <Row>
+                                    <Col md={{span: 2}}>
+                                        <Form.Label>Colour {index}</Form.Label>
+                                    </Col>
+                                    <Col md={{span: 4}}>
+                                        {ColourBox(colour)}
+                                    </Col>
+                                    <Col md={{span: 2}}>
+                                        <Form.Control type='number' value={colour} onChange={(e) => {
+                                            let newValue = parseInt(e.target.value)
 
-                                    <Row>
-                                        <Col md={{span: 2}}>
-                                            <Form.Label>Colour {index}</Form.Label>
-                                        </Col>
-                                        <Col md={{span: 4}}>
-                                            {ColourBox(colour)}
-                                        </Col>
-                                        <Col md={{span: 2}}>
-                                            <Form.Control type='number' value={colour} onChange={(e) => {
-                                                let newValue = parseInt(e.target.value)
+                                            if (newValue < 0 || newValue > 360) {
+                                                return
+                                            }
 
-                                                if (newValue < 0 || newValue > 360) {
-                                                    return
-                                                }
+                                            let newColours = props.mappingsState.schemes.get(selectedPalette!)!
 
-                                                let newColours = props.mappingsState.schemes.get(selectedPalette!)!
+                                            newColours[index] = parseInt(e.target.value)
 
-                                                newColours[index] = parseInt(e.target.value)
+                                            props.mappingsDispatch({
+                                                type: 'scheme',
+                                                action: 'update',
+                                                key: selectedPalette!,
+                                                values: newColours
+                                            })
+                                        }}></Form.Control>
+                                    </Col>
+                                    <Col md={{span: 4}}>
+                                        {/* Slider */}
+                                        <Form.Control type='range' min='0' max='360' value={colour} onChange={(e) => {
+                                            let newColours = props.mappingsState.schemes.get(selectedPalette!)!
 
-                                                props.mappingsDispatch({
-                                                    type: 'scheme',
-                                                    action: 'update',
-                                                    key: selectedPalette!,
-                                                    values: newColours
-                                                })
-                                            }}></Form.Control>
-                                        </Col>
-                                        <Col md={{span: 4}}>
-                                            {/* Slider */}
-                                            <Form.Control type='range' min='0' max='360' value={colour} onChange={(e) => {
-                                                let newColours = props.mappingsState.schemes.get(selectedPalette!)!
+                                            newColours[index] = parseInt(e.target.value)
 
-                                                newColours[index] = parseInt(e.target.value)
+                                            props.mappingsDispatch({
+                                                type: 'scheme',
+                                                action: 'update',
+                                                key: selectedPalette!,
+                                                values: newColours
+                                            })
+                                        }} style={{
+                                            // Multi stop gradient from 0 to 360
+                                            background: 'linear-gradient(to right, hsl(0, 50%, 50%), hsl(60, 50%, 50%), hsl(120, 50%, 50%), hsl(180, 50%, 50%), hsl(240, 50%, 50%), hsl(300, 50%, 50%), hsl(360, 50%, 50%))',
+                                            // Change slider colour
 
-                                                props.mappingsDispatch({
-                                                    type: 'scheme',
-                                                    action: 'update',
-                                                    key: selectedPalette!,
-                                                    values: newColours
-                                                })
-                                            }} style={{
-                                                // Multi stop gradient from 0 to 360
-                                                background: 'linear-gradient(to right, hsl(0, 50%, 50%), hsl(60, 50%, 50%), hsl(120, 50%, 50%), hsl(180, 50%, 50%), hsl(240, 50%, 50%), hsl(300, 50%, 50%), hsl(360, 50%, 50%))',
-                                                // Change slider colour
+                                            padding: '0px',
 
-                                                padding: '0px',
-
-                                            }}></Form.Control>
-                                        </Col>
-                                    </Row>
-
+                                        }}></Form.Control>
+                                    </Col>
+                                </Row>
                             )
                         })
                         }
@@ -435,7 +445,6 @@ function CategoryMapping(   mappingsState: MappingsState,
 
     let frequencies: [string, number][] = []
 
-
     if (settingsType.objectType === 'node') {
         frequencies = graphState.nodes.metadata[settingsType.attributeName].frequencies
     }
@@ -443,7 +452,13 @@ function CategoryMapping(   mappingsState: MappingsState,
         frequencies = graphState.edges.metadata[settingsType.attributeName].frequencies
     }
 
-    const colourScheme = mappingsState.config.get(JSON.stringify(settingsType))!.colourScheme
+    const config = mappingsState.config.get(JSON.stringify(settingsType))
+
+    if (config === undefined) {
+        return <></>
+    }
+
+    const colourScheme = config.colourScheme
 
     return (
         <>
@@ -453,149 +468,208 @@ function CategoryMapping(   mappingsState: MappingsState,
                         onClick={() => setSettingsType(null)}></CloseButton>
                 </Col>
             </Row>
-            <Row>
-                <div style={{
-                    overflowY: 'scroll',
-                    height: '400px',
-                }}>
+            <Row style={{
+                marginBottom: '10px'
+            }}>
+                <Col>
+                    {settingsType.mappingName === 'hue' &&
+                    <Row>
+                        <Col style={{
+                            marginLeft: '10px'
+                        }}
+                        md={{
+                            span: 2
+                        }}>
+                            Scheme:
+                        </Col>
+                        <Col>
+                            <Dropdown onSelect={(select) => {
+                                if (select === null) {
+                                    return
+                                }
 
-                {settingsType.mappingName === 'hue' &&
-                        <Row>
-                            <Col>
-                                <Dropdown onSelect={(select) => {
-                                    if (select === null) {
-                                        return
-                                    }
-
-                                    mappingsDispatch({
-                                        type: 'settings',
-                                        action: 'edit',
-                                        mapping: settingsType,
-                                        settings: {
-                                            ...mappingsState.config.get(JSON.stringify(settingsType))!,
-                                            colourScheme: select
-                                        }})
-                                    }}>
-                                    <Dropdown.Toggle variant='outline-primary' id='dropdown-basic'>
-                                        {mappingsState.config.get(JSON.stringify(settingsType))!.colourScheme ?? 'Select a colour scheme'}
-                                    </Dropdown.Toggle>
-                                    <Dropdown.Menu>
-                                        {mappingsState.schemes.toArray().map(([scheme, nums]) => {
+                                mappingsDispatch({
+                                    type: 'settings',
+                                    action: 'edit',
+                                    mapping: settingsType,
+                                    settings: {
+                                        ...mappingsState.config.get(JSON.stringify(settingsType))!,
+                                        colourScheme: select
+                                    }})
+                                }}>
+                                <Dropdown.Toggle variant='outline-primary' id='dropdown-basic'>
+                                    {config.colourScheme ?? 'Select a colour scheme'}
+                                </Dropdown.Toggle>
+                                <Dropdown.Menu>
+                                    {mappingsState.schemes.toArray().map(([scheme, nums]) => {
+                                        return (
+                                            <Dropdown.Item eventKey={scheme}>{scheme}</Dropdown.Item>
+                                        )
+                                    })}
+                                </Dropdown.Menu>
+                            </Dropdown>
+                        </Col>
+                        {/* <Col md={{}}>
+                            <Button variant='outline-primary' onClick={() => {
+                                mappingsDispatch({
+                                    type: 'scheme',
+                                    action: 'add',
+                                    key: 'New scheme'
+                                })
+                            }}>None</Button>
+                        </Col> */}
+                    </Row>
+                    }
+                    <Row style={{
+                        marginTop: '10px'
+                    }}>
+                        <Col>
+                            <div style={{
+                                overflowY: 'scroll',
+                                height: '400px',
+                            }}>
+                                <Table striped bordered hover>
+                                    <thead>
+                                        <tr>
+                                            {/* <th>#</th> */}
+                                            <th>Name</th>
+                                            <th>Frequency</th>
+                                            <th>Mapping</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    {
+                                        frequencies.map(([category, freq], index) => {
                                             return (
-                                                <Dropdown.Item eventKey={scheme}>{scheme}</Dropdown.Item>
+                                                <tr>
+                                                    {/* <td>{index}</td> */}
+                                                    <td>{category}</td>
+                                                    <td>{freq}</td>
+
+                                                    <td style={{
+                                                        width: '250px'
+                                                    }}>
+                                                        <Row style={{
+                                                            margin: '0px',
+                                                        }}>
+                                                            <Col md={{span: 6}}
+
+                                                            style={{
+                                                                padding: '0px',
+                                                            }}>
+                                                                <Dropdown onSelect={(select) => {
+                                                                    if (select === null) {
+                                                                        return
+                                                                    }
+                                                                    mappingsDispatch({
+                                                                        type: 'settings',
+                                                                        action: 'edit',
+                                                                        mapping: settingsType,
+                                                                        settings: {
+                                                                            ...config,
+                                                                            settings: config.settings.set(category, parseInt(select))}
+                                                                    })}}
+
+                                                                    >
+                                                                    <Dropdown.Toggle id={'catdrop' + index}
+                                                                    style={{
+                                                                        width: '100px',
+                                                                        // height: '80px'
+                                                                    }}
+                                                                    >
+                                                                    {settingsType.mappingName === 'text' &&
+                                                                        <>
+                                                                            {config.settings.get(category) === 0 ? 'hidden' : 'visible'}
+                                                                        </>
+                                                                    }
+
+                                                                    {settingsType.mappingName === 'shape' &&
+                                                                        <>
+                                                                            {config.settings.get(category) === 0 ? 'Square' : 'Circle'}
+                                                                        </>
+                                                                    }
+
+                                                                    {(settingsType.mappingName === 'hue' && colourScheme !== null) &&
+                                                                        <>
+                                                                            {
+                                                                                SchemeColourBox(
+                                                                                    mappingsState.schemes.get(colourScheme),
+                                                                                    config.settings.get(category)
+                                                                                )
+                                                                            }
+                                                                        </>
+                                                                    }
+                                                                    </Dropdown.Toggle>
+
+                                                                    <Dropdown.Menu>
+                                                                        {settingsType.mappingName === 'hue' &&
+                                                                        <>
+                                                                            {mappingsState.schemes.get(mappingsState.config.get(JSON.stringify(settingsType))!.colourScheme!)?.map((num, index) => {
+                                                                                return (
+                                                                                    <Dropdown.Item key={index} eventKey={index}>
+                                                                                        <div className="input-color">
+                                                                                            <div className="color-box" style={{
+                                                                                                backgroundColor: 'hsl(' + num + ', 50%, 50%)',
+                                                                                                // width: '10px',
+                                                                                                height: '10px'
+                                                                                            }}></div>
+                                                                                        </div>
+                                                                                    </Dropdown.Item>
+                                                                                )
+
+                                                                            }
+                                                                            )}
+                                                                        </>
+                                                                        }
+
+                                                                        {settingsType.mappingName === 'text' &&
+                                                                        <>
+                                                                            <Dropdown.Item key={0} eventKey={0}>hidden</Dropdown.Item>
+                                                                            <Dropdown.Item key={1} eventKey={1}>visible</Dropdown.Item>
+                                                                        </>
+                                                                        }
+
+                                                                        {settingsType.mappingName === 'shape' &&
+                                                                        <>
+                                                                            <Dropdown.Item key={1} eventKey={1}>Circle</Dropdown.Item>
+                                                                            <Dropdown.Item key={0} eventKey={0}>Square</Dropdown.Item>
+                                                                        </>
+                                                                        }
+                                                                    </Dropdown.Menu>
+                                                                </Dropdown>
+                                                            </Col>
+                                                            <Col>
+                                                                {/* Reset if mapping is set */}
+                                                                {mappingsState.config.get(JSON.stringify(settingsType))?.settings.get(category) !== undefined &&
+                                                                    <Button variant='outline-primary' onClick={() => {
+                                                                        let setting = mappingsState.config.get(JSON.stringify(settingsType))
+
+                                                                        if (setting === undefined) {
+                                                                            return
+                                                                        }
+
+                                                                        mappingsDispatch({
+                                                                            type: 'settings',
+                                                                            action: 'edit',
+                                                                            mapping: settingsType,
+                                                                            settings: {
+                                                                                ...setting,
+                                                                                settings: setting.settings.delete(category)}
+                                                                        })}}>Reset</Button>
+                                                                }
+                                                            </Col>
+                                                        </Row>
+                                                    </td>
+                                                </tr>
                                             )
-                                        })}
-                                    </Dropdown.Menu>
-                                </Dropdown>
-                            </Col>
-                            <Col md={{}}>
-                                <Button variant='outline-primary' onClick={() => {
-                                    mappingsDispatch({
-                                        type: 'scheme',
-                                        action: 'add',
-                                        key: 'New scheme'
-                                    })
-                                }}>Add new colour scheme</Button>
-                            </Col>
-                        </Row>
-
-                }
-
-                <Table striped bordered hover>
-                        <thead>
-                            <tr>
-                                {/* <th>#</th> */}
-                                <th>Name</th>
-                                <th>Frequency</th>
-                                <th>Mapping</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        {
-                            frequencies.map(([category, freq], index) => {
-                                return (
-                                    <tr>
-                                        {/* <td>{index}</td> */}
-                                        <td>{category}</td>
-                                        <td>{freq}</td>
-
-                                        <td>
-                                            <Dropdown onSelect={(select) => {
-                                                if (select === null) {
-                                                    return
-                                                }
-                                                mappingsDispatch({
-                                                    type: 'settings',
-                                                    action: 'edit',
-                                                    mapping: settingsType,
-                                                    settings: {
-                                                        ...mappingsState.config.get(JSON.stringify(settingsType))!,
-                                                        settings: mappingsState.config.get(JSON.stringify(settingsType))!.settings.set(category, parseInt(select))}
-                                                })}}>
-                                                <Dropdown.Toggle id={'catdrop' + index}>
-                                                {settingsType.mappingName === 'text' &&
-                                                    <>
-                                                        {mappingsState.config.get(JSON.stringify(settingsType))?.settings.get(category) === 0 ? 'hidden' : 'visible'}
-                                                    </>
-                                                }
-
-                                                {settingsType.mappingName === 'shape' &&
-                                                    <>
-                                                        {mappingsState.config.get(JSON.stringify(settingsType))?.settings.get(category) === 0 ? 'Square' : 'Circle'}
-                                                    </>
-                                                }
-
-                                                {(settingsType.mappingName === 'hue' && colourScheme !== null) &&
-                                                    <>
-                                                        {ColourBox(mappingsState.schemes.get(colourScheme)![mappingsState.config.get(JSON.stringify(settingsType))?.settings.get(category)!])}
-                                                    </>
-                                                }
-                                                </Dropdown.Toggle>
-
-                                                <Dropdown.Menu>
-                                                    {settingsType.mappingName === 'hue' &&
-                                                    <>
-                                                        {mappingsState.schemes.get(mappingsState.config.get(JSON.stringify(settingsType))!.colourScheme!)?.map((num, index) => {
-                                                            return (
-                                                                <Dropdown.Item key={index} eventKey={index}>
-                                                                    <div className="input-color">
-                                                                        <div className="color-box" style={{
-                                                                            backgroundColor: 'hsl(' + num + ', 50%, 50%)',
-                                                                            // width: '10px',
-                                                                            height: '10px'
-                                                                        }}></div>
-                                                                    </div>
-                                                                </Dropdown.Item>
-                                                            )
-
-                                                        }
-                                                        )}
-                                                    </>
-                                                    }
-
-                                                    {settingsType.mappingName === 'text' &&
-                                                    <>
-                                                        <Dropdown.Item key={0} eventKey={0}>hidden</Dropdown.Item>
-                                                        <Dropdown.Item key={1} eventKey={1}>visible</Dropdown.Item>
-                                                    </>
-                                                    }
-
-                                                    {settingsType.mappingName === 'shape' &&
-                                                    <>
-                                                        <Dropdown.Item key={1} eventKey={1}>Circle</Dropdown.Item>
-                                                        <Dropdown.Item key={0} eventKey={0}>Square</Dropdown.Item>
-                                                    </>
-                                                    }
-                                                </Dropdown.Menu>
-                                            </Dropdown>
-                                        </td>
-                                    </tr>
-                                )
-                            })
-                        }
-                        </tbody>
-                    </Table>
-                </div>
+                                        })
+                                    }
+                                    </tbody>
+                                </Table>
+                            </div>
+                        </Col>
+                    </Row>
+                </Col>
             </Row>
         </>
     )
@@ -675,10 +749,7 @@ function generateRow(
             })
 
             }}>
-            <Dropdown.Toggle
-                id="dropdown-basic"
-
-                >
+            <Dropdown.Toggle id="dropdown-basic">
                 <span style={{whiteSpace: 'nowrap', overflow: 'hidden', float: 'left', display: 'inline-block', width: '100px', textOverflow:'ellipsis'}}>{mapping.attributeName === '' ? 'none' : mapping.attributeName}</span>
             </Dropdown.Toggle>
             <Dropdown.Menu style={{overflowY: 'scroll', maxHeight: 200}}>
@@ -845,7 +916,6 @@ function MappingList(
     return (
         <>
             {
-
                 mappingsState.selectedMappings.toList().map((mapping) => {
                         return generateRow(
                             mappingsState,
@@ -884,6 +954,30 @@ export default function MappingTab() {
 
     }, [layouts, currentLayout])
 
+    useEffect(() => {
+        if (mappingsState === null || mappingsDispatch === null) {
+            return
+        }
+
+        let state = mappingsState.config.get(JSON.stringify(settingsType))
+        if (settingsType === null || state === undefined || settingsType === 'palette') {
+            return
+        }
+
+        let colourScheme = state.colourScheme
+
+        if (colourScheme === null && mappingsState.schemes.size > 0) {
+            mappingsDispatch({
+                type: 'settings',
+                action: 'edit',
+                mapping: settingsType,
+                settings: {
+                    ...mappingsState.config.get(JSON.stringify(settingsType))!,
+                    colourScheme: mappingsState.schemes.toArray()[0][0]
+                }})
+        }
+    }, [mappingsState, mappingsDispatch, settingsType])
+
     if (state === null || graphState == null || graphDispatch == null) {
         console.log('Something is null!')
         return <></>
@@ -906,6 +1000,8 @@ export default function MappingTab() {
         objectType: 'none',
         attributeName: ''
     }
+
+
 
     if (settingsType !== null) {
         if (settingsType === 'palette') {
