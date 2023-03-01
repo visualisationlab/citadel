@@ -700,6 +700,8 @@ export function Renderer({
     container.appendChild(app.view)
     app.stage.addChild(selectionRect)
 
+    console.log('Rendering...')
+
     renderedNodes.forEach((renderedNode) => {
         SpriteCache.pushSprite(renderedNode.nodesprite, renderedNode.visualAttributes.shape)
 
@@ -871,6 +873,12 @@ export function Renderer({
 
         window.onpopstate = cleanMemory;
 
+        app.stage.sortChildren()
+
+        app.render()
+
+        console.log('done rendering')
+
         return {
             destroy: () => {
                 window.removeEventListener('beforeunload', cleanMemory);
@@ -884,6 +892,9 @@ export function Renderer({
     window.onpopstate = cleanMemory;
 
     app.stage.sortChildren()
+
+    app.render()
+
 
     return {
         destroy: () => {
