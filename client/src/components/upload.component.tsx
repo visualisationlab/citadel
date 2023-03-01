@@ -109,8 +109,7 @@ export default function Home() {
     }
 
     let errorText = errors.length === 0 ? [] : (
-        <Row>
-            <Col>
+        <>
             <style type="text/css">
                 {`
                 .table-responsive {
@@ -121,32 +120,31 @@ export default function Home() {
                 }
                 `}
             </style>
-                <Table variant="responsive" responsive striped bordered hover>
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Property</th>
-                            <th>Error</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {errors.map((val, index) => {
-                            return (
-                                <tr key='val'>
-                                    <td>{index}</td>
-                                    <td>{val[0]}</td>
-                                    <td>{val[1]}</td>
-                                </tr>
-                            )
-                        })}
-                    </tbody>
-                </Table>
-            </Col>
-        </Row>
+            <Table variant="responsive" responsive striped bordered hover>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Property</th>
+                        <th>Error</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {errors.map((val, index) => {
+                        return (
+                            <tr key='val'>
+                                <td>{index}</td>
+                                <td>{val[0]}</td>
+                                <td>{val[1]}</td>
+                            </tr>
+                        )
+                    })}
+                </tbody>
+            </Table>
+        </>
     )
 
 
-    let but = !loading ? (
+    let startSessionButton = !loading ? (
         <Button variant='primary'
                 type='submit'
                 onClick={() => startSession(url)}
@@ -158,34 +156,31 @@ export default function Home() {
     )
 
     let prevSessionComponent = parsedPrevSessions === null ? [] : (
-        <Col>
-            <h4>Previous sessions</h4>
-            <Table striped bordered hover>
-                <thead>
-                    <tr>
-                        <th>Session ID</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {parsedPrevSessions.map(([sid, date], index) => {
-                        let elapsedMins = round(((new Date()).getTime() - new Date(date).getTime()) / 1000 / 60, 0)
+        <Table striped bordered hover>
+            <thead>
+                <tr>
+                    <th>Session ID</th>
+                </tr>
+            </thead>
+            <tbody>
+                {parsedPrevSessions.map(([sid, date], index) => {
+                    let elapsedMins = round(((new Date()).getTime() - new Date(date).getTime()) / 1000 / 60, 0)
 
-                        return (
-                            <tr key={sid}>
-                                <td>{sid + ((elapsedMins > 120) ? '' : ' (' + elapsedMins + ' minute(s) ago)')} </td>
-                                <td><Button
-                                    disabled={!sessionStatusList[index]}
-                                    onClick={() => {
-                                    console.log("Connecting to session " + sid)
+                    return (
+                        <tr key={sid}>
+                            <td>{sid + ((elapsedMins > 120) ? '' : ' (' + elapsedMins + ' minute(s) ago)')} </td>
+                            <td><Button
+                                disabled={!sessionStatusList[index]}
+                                onClick={() => {
+                                console.log("Connecting to session " + sid)
 
-                                    joinSession(sid)
-                                }}>Connect</Button></td>
-                            </tr>
-                        )
-                    })}
-                </tbody>
-            </Table>
-        </Col>
+                                joinSession(sid)
+                            }}>Connect</Button></td>
+                        </tr>
+                    )
+                })}
+            </tbody>
+        </Table>
     )
 
     return (
@@ -203,14 +198,21 @@ export default function Home() {
             </Container>
             <Container className="shadow p-3 bg-white rounded" style={{ width: '50%', marginTop: '20px' }}>
                 <Row>
-                    <Col md={{span: 8}} >
-                        <Row>
-                            {/* URL with dropdown next to it to graph list */}
-                            <Col>
+                    <Col>
+                        <Form>
+                            <Form.Group className="mb-3">
+                                <Form.Label>New Session</Form.Label>
                                 <InputGroup>
+                                    <Form.Control
+                                        type="text"
+                                        id="url"
+                                        aria-describedby="urlBlock"
+                                        onChange={(e) => setURL(e.target.value)}
+                                        value={url}
+                                    />
                                     <DropdownButton
                                         variant="outline-primary"
-                                        title="Graphs"
+                                        title="Graph URLs"
                                         id="input-group-dropdown-1"
                                     >
                                         <div style={{
@@ -220,80 +222,66 @@ export default function Home() {
                                         {
                                             graphList.map((val, index) => {
                                                 return (
-                                                    <Dropdown.Item key={index} onClick={() => setURL(graphRoot + val)}>{val}</Dropdown.Item>
+                                                    <Dropdown.Item key={index} onClick={
+                                                        () => setURL(graphRoot + val)}>{val}</Dropdown.Item>
                                                 )
                                             })
                                         }
                                         </div>
-
                                     </DropdownButton>
-                                    <Form.Control
-                                        type="text"
-                                        id="url"
-                                        aria-describedby="urlBlock"
-                                        onChange={(e) => setURL(e.target.value)}
-                                        value={url}
-                                    />
                                 </InputGroup>
-                            </Col>
-                        </Row>
-                        <Row style={{
-                                marginTop: '10px'
-                            }}>
-                            <Col md={{span: 4}}>
-
-                                {but}
-                            </Col>
-                        </Row>
-                        {errorText}
-                    </Col>
-                    <Col md={{span: 4, offset: 0}}>
-                        <Row >
-                            <Col>
-                                <Form.Group>
-                                    <Form.Label htmlFor="sid">Session ID</Form.Label>
-                                    <Form.Control
-                                    type="text"
-                                    id="sid"
-                                    aria-describedby="sidBlock"
-                                    onChange={(e) => setSid(e.target.value)}
-                                    />
-                                    <Form.Text id="sid">
-                                    Enter an existing session ID.
-                                    </Form.Text>
-                                </Form.Group>
-                            </Col>
-                            <Row>
-                            {/* {sidError !== '' &&
-                                        <p className='text-danger'>
-                                        {sidError}
-                                    </p>
-                                } */}
-                            </Row>
-                        </Row>
-                        <Row style={{
-                                marginTop: '20px'
-                            }}>
-                            <Col >
-                                <Button variant='primary' type='submit' disabled={sid === ''} onClick={() => joinSession(null)}>
-                                    Join Session
-                                </Button>
-                            </Col>
-                        </Row>
-
+                                <Form.Text id="url">
+                                Enter a URL to a graph file.
+                                </Form.Text>
+                            </Form.Group>
+                            {startSessionButton}
+                        </Form>
                     </Col>
                 </Row>
-                <Row>
-                    {prevSessionComponent}
-                </Row>
-            </Container>
-            {/* <Container className="shadow p-3 bg-white rounded" style={{ width: '50%', marginTop: '30px' }}>
                 <Row>
                     <Col>
-                        <h2>About Citadel</h2>
+                        {errorText}
                     </Col>
                 </Row>
-            </Container> */}
+            </Container>
+            <Container className="shadow p-3 bg-white rounded" style={{ width: '50%', marginTop: '30px' }}>
+                <Row>
+                    <Col>
+                        <Form>
+                            <Form.Group className='mb-3'>
+                                <Form.Label htmlFor="sid">Existing Session</Form.Label>
+                                <Form.Control
+                                type="text"
+                                id="sid"
+                                aria-describedby="sidBlock"
+                                onChange={(e) => setSid(e.target.value)}
+                                />
+                                <Form.Text id="sid">
+                                Enter an existing session ID.
+                                </Form.Text>
+                            </Form.Group>
+                            <Button variant='primary' type='submit' disabled={sid === ''} onClick={() => joinSession(null)}>
+                                Join Session
+                            </Button>
+                        </Form>
+                    </Col>
+                    <Row>
+                    {/* {sidError !== '' &&
+                                <p className='text-danger'>
+                                {sidError}
+                            </p>
+                        } */}
+                    </Row>
+                </Row>
+                <Row style={{
+                    marginTop: '20px'
+                }}>
+                    <Col>
+                        {prevSessionComponent}
+                    </Col>
+                </Row>
+
+            </Container>
         </>
     )
 }
