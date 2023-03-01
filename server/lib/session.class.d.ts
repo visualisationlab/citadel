@@ -181,12 +181,13 @@ export declare module MessageTypes {
     }
     export {};
 }
-type AvailableLayout = 'null' | 'random' | 'cose' | 'grid' | 'circle' | 'breadthfirst' | 'cose' | 'fcose' | 'cola' | 'cise' | 'spread' | 'd3-force';
+type AvailableLayout = 'null' | 'random' | 'cose' | 'grid' | 'circle' | 'breadthfirst' | 'cose' | 'fcose' | 'cise' | 'spread' | 'd3-force';
 export type LayoutSetting = {
     name: string;
     description: string;
     type: 'number';
     defaultValue: number;
+    auto: boolean;
 } | {
     name: string;
     description: string;

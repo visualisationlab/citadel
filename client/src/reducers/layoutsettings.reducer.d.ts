@@ -6,6 +6,8 @@ type LayoutSetting = {
     type: 'number';
     defaultValue: number;
     value: number;
+    autoEnabled: boolean;
+    auto: boolean;
 } | {
     name: string;
     description: string;
@@ -35,6 +37,10 @@ export type LayoutSettingsReducerAction = {
 } | {
     attribute: 'selectedLayout';
     value: string;
+} | {
+    attribute: 'setAuto';
+    value: boolean;
+    key: string;
 };
 export declare function LayoutSettingsReducer(state: LayoutSettingsState, action: LayoutSettingsReducerAction): LayoutSettingsState;
 export {};

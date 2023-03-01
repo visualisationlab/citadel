@@ -236,17 +236,26 @@ export module API {
             messageType: 'set',
             dataType: 'layout',
             params: {
-                layout: layout
+                layout: {...layout,
+                    settings: layout.settings.filter((setting) => {
+                        return (setting.type === 'boolean') || !setting.auto
+                    })
+                }
             },
             sessionID: sid,
             userID: userID,
             messageSource: 'user'
         })
+
         websocketService.sendSetMessage({
             messageType: 'set',
             dataType: 'layout',
             params: {
-                layout: layout
+                layout: {...layout,
+                    settings: layout.settings.filter((setting) => {
+                        return (setting.type === 'boolean') || !setting.auto
+                    })
+                }
             },
             sessionID: sid,
             userID: userID,

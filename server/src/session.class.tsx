@@ -252,7 +252,6 @@ type AvailableLayout =
         | 'breadthfirst'
         | 'cose'
         | 'fcose'
-        | 'cola'
         | 'cise'
         | 'spread'
         | 'd3-force'
@@ -262,7 +261,8 @@ export type LayoutSetting =
             name: string,
             description: string,
             type: 'number',
-            defaultValue: number
+            defaultValue: number,
+            auto: boolean,
         }
     |   {
             name: string,
@@ -308,19 +308,22 @@ function getAvailableLayouts(): LayoutInfo[] {
                     name: 'spacingFactor',
                     description: 'Applies a multiplicative factor (>0) to expand or compress the overall area that the nodes take up.',
                     type: 'number',
-                    defaultValue: 0
+                    defaultValue: 0,
+                    auto: true
                 },
                 {
                     name: 'rows',
                     description: 'Force number of rows in the grid.',
                     type: 'number',
-                    defaultValue: 1,
+                    defaultValue: 0,
+                    auto: true
                 },
                 {
                     name: 'cols',
                     description: 'Force number of columns in the grid.',
                     type: 'number',
-                    defaultValue: 1,
+                    defaultValue: 0,
+                    auto: true
                 }
             ]
         },
@@ -333,13 +336,15 @@ function getAvailableLayouts(): LayoutInfo[] {
                     name: 'radius',
                     description: 'The radius of the circle.',
                     type: 'number',
-                    defaultValue: 0
+                    defaultValue: 0,
+                    auto: true
                 },
                 {
                     name: 'spacingFactor',
                     description: 'Applies a multiplicative factor (>0) to expand or compress the overall area that the nodes take up.',
                     type: 'number',
-                    defaultValue: 0
+                    defaultValue: 0,
+                    auto: true
                 },
                 {
                     name: 'clockwise',
@@ -364,25 +369,29 @@ function getAvailableLayouts(): LayoutInfo[] {
                     name: 'gravity',
                     description: 'Gravity force (constant).',
                     type: 'number',
-                    defaultValue: 1
+                    defaultValue: 1,
+                    auto: false
                 },
                 {
                     name: 'nodeOverlap',
                     description: 'Node repulsion (overlapping) multiplier.',
                     type: 'number',
-                    defaultValue: 4
+                    defaultValue: 4,
+                    auto: false
                 },
                 {
                     name: 'nestingFactor',
                     description: 'Nesting factor (multiplier) to compute ideal edge length for nested edges.',
                     type: 'number',
-                    defaultValue: 1.2
+                    defaultValue: 1.2,
+                    auto: false
                 },
                 {
                     name: 'coolingFactor',
                     description: 'Cooling factor (how the temperature is reduced between consecutive iterations.',
                     type: 'number',
-                    defaultValue: 0.99
+                    defaultValue: 0.99,
+                    auto: false
                 }
             ]
         },
@@ -395,66 +404,73 @@ function getAvailableLayouts(): LayoutInfo[] {
                     name: 'gravity',
                     description: 'Gravity force (constant).',
                     type: 'number',
-                    defaultValue: 0.25
+                    defaultValue: 0.25,
+                    auto: false
                 },
                 {
                     name: 'gravityRange',
                     description: 'Gravity range (constant).',
                     type: 'number',
-                    defaultValue: 3.8
+                    defaultValue: 3.8,
+                    auto: false
                 },
                 {
                     name: 'idealEdgeLength',
                     description: 'Ideal (intra-graph) edge length.',
                     type: 'number',
                     defaultValue: 50,
+                    auto: false
                 },
                 {
                     name: 'edgeElasticity',
                     description: 'Divisor to compute edge forces.',
                     type: 'number',
                     defaultValue: 0.45,
+                    auto: false
                 },
                 {
                     name: 'nestingFactor',
                     description: 'Nesting factor (multiplier) to compute ideal edge length for nested edges.',
                     type: 'number',
-                    defaultValue: 0.1
+                    defaultValue: 0.1,
+                    auto: false
                 },
                 {
                     name: 'numIter',
                     description: 'Number of iterations.',
                     type: 'number',
-                    defaultValue: 2500
+                    defaultValue: 2500,
+                    auto: false
                 },
                 {
                     name: 'nodeRepulsion',
                     description: 'Node repulsion (overlapping) multiplier.',
                     type: 'number',
-                    defaultValue: 4500
+                    defaultValue: 4500,
+                    auto: false
                 }
             ]
         },
-        {
-            name: 'cola',
-            description: 'The cola layout uses a force-directed physics simulation with several sophisticated constraints.',
-            link: 'https://github.com/cytoscape/cytoscape.js-cola',
-            settings: [
+        // {
+        //     name: 'cola',
+        //     description: 'The cola layout uses a force-directed physics simulation with several sophisticated constraints.',
+        //     link: 'https://github.com/cytoscape/cytoscape.js-cola',
+        //     settings: [
 
-                {
-                    name: 'convergenceThreshold',
-                    description: 'when the alpha value (system energy) falls below this value, the layout stops.',
-                    type: 'number',
-                    defaultValue: 0.01
-                },
-                {
-                    name: 'edgeLength',
-                    description: 'sets edge length directly in simulation.',
-                    type: 'number',
-                    defaultValue: 0
-                },
-            ]
-        },
+        //         {
+        //             name: 'convergenceThreshold',
+        //             description: 'when the alpha value (system energy) falls below this value, the layout stops.',
+        //             type: 'number',
+        //             defaultValue: 0.01
+        //         },
+        //         {
+        //             name: 'edgeLength',
+        //             description: 'sets edge length directly in simulation.',
+        //             type: 'number',
+        //             defaultValue: 0
+        //         },
+        //     ]
+        // },
         {
             name: 'cise',
             description: 'CiSE(Circular Spring Embedder) is an algorithm based on the traditional force-directed layout scheme with extensions to move and rotate nodes in the same cluster as a group.',
@@ -470,7 +486,8 @@ function getAvailableLayouts(): LayoutInfo[] {
                         name: 'minDist',
                         description: 'Minimum distance between nodes.',
                         type: 'number',
-                        defaultValue: 0
+                        defaultValue: 0,
+                        auto: true
                     },
             ]
         }

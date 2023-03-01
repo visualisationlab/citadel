@@ -57,6 +57,7 @@ type LayoutSetting = {
     type: 'number';
     description: string;
     defaultValue: number;
+    auto: boolean;
 } | {
     name: string;
     type: 'boolean';

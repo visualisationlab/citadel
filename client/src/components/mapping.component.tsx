@@ -20,7 +20,8 @@ import {
     CloseButton,
     Spinner,
     Dropdown,
-    Table} from 'react-bootstrap'
+    Table,
+    InputGroup} from 'react-bootstrap'
 
 import tinycolor from 'tinycolor2'
 
@@ -58,12 +59,12 @@ function layoutMapping(layouts: string[], layoutInfo: LayoutSettingsState,
             <ListGroup variant='flush'>
                 <ListGroup.Item>
                         <Row>
-                            <Col md={{span: 4}}>
+                            <Col>
                                 <p>
                                     Layout Algorithm:
                                 </p>
                             </Col>
-                            <Col md={{span: 4}}>
+                            <Col>
                                 <Dropdown onSelect={(item) => {
                                     if (item === null) {
                                         return
@@ -97,12 +98,12 @@ function layoutMapping(layouts: string[], layoutInfo: LayoutSettingsState,
         <ListGroup variant='flush'>
             <ListGroup.Item>
                 <Row>
-                    <Col md={{span: 4}}>
+                    <Col>
                         <p>
                             Layout Algorithm:
                         </p>
                     </Col>
-                    <Col md={{span: 4}}>
+                    <Col>
                         <Dropdown onSelect={(item) => {
                             if (item === null) {
                                 return
@@ -124,18 +125,15 @@ function layoutMapping(layouts: string[], layoutInfo: LayoutSettingsState,
                             </Dropdown.Menu>
                         </Dropdown>
                     </Col>
-                    <Col md={{span: 4}}>
-                        <OverlayTrigger
-                            key={'title'}
-                            placement={'top'}
-                            overlay={
-                                <Tooltip id={`tooltip-title`}>
-                                    {res.description}
-                                </Tooltip>
-                            }
-                        >
-                            <Button variant='outline-secondary'>Info</Button>
-                        </OverlayTrigger>
+                </Row>
+                <Row style={{
+                    marginTop: '10px',
+                    marginBottom: '10px'
+                }}>
+                    <Col>
+                        <i>
+                            {res.description}
+                        </i>
                     </Col>
                 </Row>
                 {res.settings.map((setting) => {
@@ -147,21 +145,40 @@ function layoutMapping(layouts: string[], layoutInfo: LayoutSettingsState,
                             <Col>
                                 {
                                     setting.type === 'number' &&
-                                    <Form.Control
-                                    type='number'
-                                    onChange={
-                                        (e) => {
-                                            layoutSettingsDispatch({
-                                                attribute: 'property',
-                                                key: setting.name,
-                                                value: parseFloat(e.target.value)
-                                            })
-                                        }
-                                    }
-                                    value={setting.value}
-                                    placeholder={setting.defaultValue.toString()}>
+                                    <InputGroup className='mb-3'>
 
-                                    </Form.Control>
+                                    {
+                                        setting.autoEnabled &&
+                                        <>
+                                            <InputGroup.Text>auto</InputGroup.Text>
+                                            <InputGroup.Checkbox label='auto' checked={setting.auto}
+                                                onChange={() => {
+                                                    layoutSettingsDispatch({
+                                                        attribute: 'setAuto',
+                                                        key: setting.name,
+                                                        value: !setting.auto
+                                                    })
+                                                }}
+                                            />
+                                        </>
+                                    }
+                                    <Form.Control
+                                        type={setting.auto ? 'text' : 'number'}
+                                        disabled={setting.auto}
+                                        onChange={
+                                            (e) => {
+                                                layoutSettingsDispatch({
+                                                    attribute: 'property',
+                                                    key: setting.name,
+                                                    value: parseFloat(e.target.value)
+                                                })
+                                            }
+                                        }
+                                        value={setting.auto ? 'server value' : setting.value}
+                                        placeholder={setting.defaultValue.toString()}
+                                    />
+
+                                    </InputGroup>
                                 }
                                 {
                                     setting.type === 'boolean' &&
@@ -205,7 +222,7 @@ function layoutMapping(layouts: string[], layoutInfo: LayoutSettingsState,
                     )
                 })}
                 <Row>
-                    <Col>
+                    {/* <Col>
                         randomize starting positions
                     </Col>
                     <Col>
@@ -222,7 +239,7 @@ function layoutMapping(layouts: string[], layoutInfo: LayoutSettingsState,
                     }
                     checked={res.randomize}>
                     </Form.Check>
-                    </Col>
+                    </Col> */}
                 </Row>
                 <Row>
                     <Col md={{offset: 8, span: 4}}>

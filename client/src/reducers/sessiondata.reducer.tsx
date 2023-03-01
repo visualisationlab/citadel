@@ -77,7 +77,8 @@ type LayoutSetting =
             name: string,
             type: 'number',
             description: string,
-            defaultValue: number
+            defaultValue: number,
+            auto: boolean,
         }
     |   {
             name: string,

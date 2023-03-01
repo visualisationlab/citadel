@@ -18,7 +18,9 @@ export function LayoutSettingsReducer(state, action) {
                                         description: setting.description,
                                         type: 'number',
                                         value: setting.defaultValue,
-                                        defaultValue: setting.defaultValue
+                                        defaultValue: setting.defaultValue,
+                                        autoEnabled: setting.auto,
+                                        auto: setting.auto
                                     };
                                 }
                                 return {
@@ -37,13 +39,14 @@ export function LayoutSettingsReducer(state, action) {
                 // @ts-ignore
                 layouts: action.value.map((layoutInfo, layoutIndex) => {
                     return Object.assign(Object.assign({}, layoutInfo), { randomize: action.currentLayout === null, settings: layoutInfo.settings.map((setting, settingIndex) => {
-                            return {
-                                name: setting.name,
-                                description: setting.description,
-                                type: setting.type,
-                                value: state.layouts[layoutIndex].settings[settingIndex].value,
-                                defaultValue: setting.defaultValue
-                            };
+                            // If type is number, also update auto field
+                            return Object.assign({}, state.layouts[layoutIndex].settings[settingIndex]
+                            // name: setting.name,
+                            // description: setting.description,
+                            // type: setting.type,
+                            // value: state.layouts[layoutIndex].settings[settingIndex].value,
+                            // defaultValue: setting.defaultValue,
+                            );
                         }) });
                 })
             };
@@ -60,6 +63,19 @@ export function LayoutSettingsReducer(state, action) {
                     setting.value = action.value;
                 }
                 return setting;
+            });
+            return Object.assign({}, state);
+        case 'setAuto':
+            if (state === null) {
+                return null;
+            }
+            state.layouts.filter((layout) => { return layout.name === (state === null || state === void 0 ? void 0 : state.selectedLayout); })[0].settings.map((setting, index) => {
+                if (setting.type === 'boolean') {
+                    return setting;
+                }
+                if (setting.name === action.key) {
+                    setting.auto = action.value;
+                }
             });
             return Object.assign({}, state);
         default:
