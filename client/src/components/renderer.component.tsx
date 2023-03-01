@@ -37,9 +37,9 @@ interface RendererProps {
     selectionDispatch: React.Dispatch<SelectionDataReducerAction> | null
 }
 
-PIXI.settings.GC_MAX_IDLE = 100000;
+// PIXI.settings.GC_MAX_IDLE = 100000;
 PIXI.settings.PREFER_ENV = PIXI.ENV.WEBGL2
-PIXI.settings.FILTER_RESOLUTION = PIXI.MSAA_QUALITY.HIGH
+// PIXI.settings.FILTER_RESOLUTION = PIXI.MSAA_QUALITY.HIGH
 
 const app = new PIXI.Application({
     width:window.innerWidth,
