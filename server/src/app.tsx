@@ -22,6 +22,13 @@ const path = require('path')
 const cors = require('cors')
 const fs = require('fs')
 
+type ErrorPhase = 0 | 1 | 2 | 3 | 4 | 5 | 6
+
+type ErrorMessage = {
+    phase: ErrorPhase,
+    errors: string[]
+}
+
 let sessions: {[sid: string]: (Session | null)} = {}
 
 // Check if CHECK_INTERVAL is set in ENV.
@@ -316,6 +323,11 @@ var graphSchema = {
     "required": ["attributes", "nodes", "edges"]
 }
 
+function sendGraphError(res: Response, phase: ErrorPhase, errors: string[]) {
+    logger.log('error', `Error in phase ${phase}: ${errors}`)
+    res.status(400).json({phase: phase, errors: errors})
+}
+
 app.post('/urls', body('url').trim().unescape(),  (req, res) => {
     let url = req.body.url
 
@@ -331,85 +343,99 @@ app.post('/urls', body('url').trim().unescape(),  (req, res) => {
             let file = createWriteStream(dest)
 
             try {
-                https.get(url, (response) => {
-                    let data = ''
-
-                    response.on('data', (chunk) => {
-                        data += chunk
-                        file.write(chunk)
-                    })
-
-                    response.on('end', () => {
-                        logger.log('info', `Downloaded ${url} to ${dest}`)
-
-                        try {
-                            const extension = url.split(/[#?]/)[0].split('.').pop().trim();
-
-                            let json
-
-                            var validator = new Validator()
-
-                            if (extension === 'graphml') {
-                                const graphmlInstance = GraphFormatConverter.fromGraphml(data);
-
-                                json = graphmlInstance.toJson()
-                            }
-                            else {
-                                json = JSON.parse(data)
-                            }
-
-                            var vr = validator.validate(json, graphSchema)
-
-                            if (!vr.valid) {
-                                res.status(400).json({msg: "Error(s) parsing graph", errors: vr.errors})
-
-                                return
-                            }
-
-                            const session = new Session(sid, ((sid) => {
-                                sessions[sid] = null
-                            }), url, json.nodes, json.edges, localAddress,
-                                process.env.WSCLIENTPORT!, logger)
-
-                            sessions[sid] = session
-
-                        } catch (e) {
-                            logger.log('error', `Error parsing graph from URL ${url}: ${e}`)
-
-                            res.status(400).json({msg: "Error(s) loading graph (source was probably not a graph!)", errors: [e]})
-
-                            rm(dest, () => {})
-
-                            sid = ''
-
-                            return
-                        }
-
-                        file.close(() => res.json(sid))
-                    })
-                }).on('error', (err) => {
-                    logger.log('error', `Error downloading graph from URL ${url}: ${err}`)
-
-                    res.status(404).json({msg: "Error downloading graph data", errors: []})
-
-                    unlink(dest, (err) => {
-                        if (err === null) {
-                            return
-                        }
-                    })
-                })
+                new URL(url)
             } catch (e) {
-                logger.log('error', `Error downloading graph from URL ${url}: ${e}`)
+                // logger.log('error', `URL is not valid: ${url}: ${e}`)
 
-                res.status(404).json({msg: "Error downloading graph data", errors: []})
+                sendGraphError(res, 1, ["URL is not valid"])
+                // res.status(400).json({msg: "URL is not valid", errors:[]})
+
+                file.close()
+
+                return
+            }
+
+            https.get(url, (response) => {
+                let data = ''
+
+                response.on('data', (chunk) => {
+                    data += chunk
+                    file.write(chunk)
+                })
+
+                response.on('end', () => {
+                    logger.log('info', `Downloaded ${url} to ${dest}`)
+
+                    try {
+                        const extension = url.split(/[#?]/)[0].split('.').pop().trim();
+
+                        let json
+
+                        var validator = new Validator()
+
+                        if (extension === 'graphml') {
+                            const graphmlInstance = GraphFormatConverter.fromGraphml(data);
+
+                            json = graphmlInstance.toJson()
+                        }
+                        else {
+                            json = JSON.parse(data)
+                        }
+
+                        var vr = validator.validate(json, graphSchema)
+
+                        if (!vr.valid) {
+                            // logger.log('error', `Graph is not valid ${url}: ${vr.errors}`)
+
+                            sendGraphError(res, 5, vr.errors.map((e) => e.message))
+
+                            return
+                        }
+
+                        const session = new Session(sid, ((sid) => {
+                            sessions[sid] = null
+                        }), url, json.nodes, json.edges, localAddress,
+                            process.env.WSCLIENTPORT!, logger)
+
+                        sessions[sid] = session
+
+                    } catch (e: any) {
+                        // logger.log('error', `Error parsing graph from URL ${url}: ${e}`)
+
+                        sendGraphError(res, 4, [e.message])
+
+                        // sendGraphError(res, 4, [e])
+                        // res.status(400).json({msg: "Error(s) loading graph (source was probably not a graph!)", errors: [e]})
+
+                        rm(dest, () => {})
+
+                        sid = ''
+
+                        return
+                    }
+
+                    file.close(() => res.json(sid))
+                })
+
+                response.on('error', (err: any) => {
+                    // logger.log('error', `HTTP response error from ${url}: ${err}`)
+                    // if (err instanceof Error) {
+                    sendGraphError(res, 3, [err.message])
+
+                    // res.status(404).json({msg: `HTTP response error from ${url}`, errors: []})
+                })
+            }).on('error', (err: any) => {
+                // logger.log('error', `Error downloading graph from URL ${url}: ${err}`)
+
+                sendGraphError(res, 2, err)
+                // res.status(404).json({msg: "Error downloading graph data", errors: []})
 
                 unlink(dest, (err) => {
                     if (err === null) {
                         return
                     }
-
                 })
-            }
+            })
         })
     })
 })

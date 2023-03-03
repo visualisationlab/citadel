@@ -15,12 +15,24 @@ import { round } from 'mathjs'
 
 import './home.component.css'
 
+type ErrorPhase = 0 | 1 | 2 | 3 | 4 | 5 | 6
+
+type ErrorMessage = {
+    phase: ErrorPhase,
+    errors: string[]
+}
+
 export default function Home() {
     const [url, setURL] = useState('')
-    const [errors, setErrors] = useState<[string, string][]>([])
+
+    const [error, setError] = useState<ErrorMessage | null>(null)
+
     const [loading, setLoading] = useState<boolean>(false)
+
     const [sessionStatusList, setSessionStatusList] = useState<boolean[]>([false, false, false, false, false])
+
     const [graphList, setGraphList] = useState<string[]>([])
+
     const [graphRoot, setGraphRoot] = useState<string>('')
 
     let history = useHistory()
@@ -29,6 +41,7 @@ export default function Home() {
 
     let [parsedPrevSessions, setParsedPrevSessions] = useState<[string, Date][] | null>([])
 
+    // Load previous sessions from local storage
     useEffect(() => {
         const prevSessions = localStorage.getItem('prevSessions')
 
@@ -49,9 +62,9 @@ export default function Home() {
         )
     }, [])
 
+    // Load session status from server
     useEffect(() => {
         let res: boolean[] = []
-        console.log("useEffect called")
 
         if (parsedPrevSessions === null) {
             return
@@ -80,7 +93,7 @@ export default function Home() {
     }
 
     function startSession(url: string) {
-        setErrors([])
+        setError(null)
 
         setLoading(true)
 
@@ -92,56 +105,105 @@ export default function Home() {
             error => {
                 setLoading(false)
 
-                console.log(error.response)
                 if (error.response.status === 404) {
-                    setErrors([["server", "Couldn't fetch data from remote"]])
+                    setError({
+                        phase: 0,
+                        errors: ['Could not connect to server.']
+                    })
                 }
-                if (error.response.status === 400) {
+                else if (error.response.status === 400) {
                     console.log("setting errors")
 
-                    setErrors(error.response.data.errors.length !== 0 ? error.response.data.errors.map((val: {message: string, property: string}) => {
-                        return [val.property, val.message]
-                    }) : [["server", error.response.data.msg]])
+                    setError({
+                        phase: error.response.data.phase,
+                        errors: error.response.data.errors
+                    })
                 }
-                console.log(error.response.data)
             }
         )
     }
 
-    let errorText = errors.length === 0 ? [] : (
-        <>
-            <style type="text/css">
-                {`
-                .table-responsive {
-                    overflow: auto;
-                    // display: block;
-                    // table-layout: auto;
-                    height: 200px;
-                }
-                `}
-            </style>
-            <Table variant="responsive" responsive striped bordered hover>
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Property</th>
-                        <th>Error</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {errors.map((val, index) => {
-                        return (
-                            <tr key='val'>
-                                <td>{index}</td>
-                                <td>{val[0]}</td>
-                                <td>{val[1]}</td>
-                            </tr>
-                        )
-                    })}
-                </tbody>
-            </Table>
-        </>
-    )
+    let errorText = <></>
+
+    if (error) {
+        console.log(error)
+
+
+
+        let phaseTexts = [
+            'Connect to server',
+            'Check URL',
+            'Get from external URL',
+            'Read data',
+            'Parse data',
+            'Create session'
+        ]
+
+        let renderPhase = phaseTexts.map((phaseText, index) => {
+            let variant = 'secondary'
+
+            if (index === error.phase) {
+                variant = 'danger'
+            }
+            else if (index < error.phase) {
+                variant = 'success'
+            }
+
+            return (
+                <>
+                    <Col>
+                        <Button
+                            variant={variant}
+                            disabled={true}
+                        >
+                            {phaseText}
+
+                        </Button>
+                    </Col>
+                    {index < phaseTexts.length - 1 && (
+                        <Col>
+                            {'->'}
+                        </Col>
+                    )}
+                </>
+            )
+        })
+
+        errorText = (
+            <>
+                <Row style={{
+                    marginTop: '10px',
+                    marginBottom: '10px'
+                }}>
+                    {renderPhase}
+                </Row>
+                <Row>
+                    <Col>
+                        <Table variant="responsive" responsive striped bordered hover>
+                            <thead>
+                                <tr>
+                                    {/* <th>Phase</th> */}
+                                    {/* <th>Property</th> */}
+                                    <th>Error</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {error.errors.map((val, index) => {
+                                    return (
+                                        <tr key='val'>
+                                            {/* <td>{error.phase}</td> */}
+                                            {/* <td>{index}</td> */}
+                                            <td>{val}</td>
+                                        </tr>
+                                    )
+                                })}
+                            </tbody>
+                        </Table>
+                    </Col>
+                </Row>
+            </>
+        )
+    }
 
 
     let startSessionButton = !loading ? (
