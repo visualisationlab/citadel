@@ -136,91 +136,99 @@ function layoutMapping(layouts: string[], layoutInfo: LayoutSettingsState,
                         </i>
                     </Col>
                 </Row>
-                {res.settings.map((setting) => {
-                    return (
-                        <Row key={setting.name}>
-                            <Col>
-                                <p>{setting.name}</p>
-                            </Col>
-                            <Col>
-                                {
-                                    setting.type === 'number' &&
-                                    <InputGroup className='mb-3'>
+                <Row style={{
+                    maxHeight: '300px',
+                    overflowY: 'auto'
+                }}>
+                    <Col>
 
-                                    {
-                                        setting.autoEnabled &&
-                                        <>
-                                            <InputGroup.Text>auto</InputGroup.Text>
-                                            <InputGroup.Checkbox label='auto' checked={setting.auto}
-                                                onChange={() => {
-                                                    layoutSettingsDispatch({
-                                                        attribute: 'setAuto',
-                                                        key: setting.name,
-                                                        value: !setting.auto
-                                                    })
-                                                }}
+                        {res.settings.map((setting) => {
+                            return (
+                                <Row key={setting.name}>
+                                    <Col>
+                                        <p>{setting.name}</p>
+                                    </Col>
+                                    <Col>
+                                        {
+                                            setting.type === 'number' &&
+                                            <InputGroup className='mb-3'>
+
+                                            {
+                                                setting.autoEnabled &&
+                                                <>
+                                                    <InputGroup.Text>auto</InputGroup.Text>
+                                                    <InputGroup.Checkbox label='auto' checked={setting.auto}
+                                                        onChange={() => {
+                                                            layoutSettingsDispatch({
+                                                                attribute: 'setAuto',
+                                                                key: setting.name,
+                                                                value: !setting.auto
+                                                            })
+                                                        }}
+                                                    />
+                                                </>
+                                            }
+                                            <Form.Control
+                                                type={setting.auto ? 'text' : 'number'}
+                                                disabled={setting.auto}
+                                                onChange={
+                                                    (e) => {
+                                                        layoutSettingsDispatch({
+                                                            attribute: 'property',
+                                                            key: setting.name,
+                                                            value: parseFloat(e.target.value)
+                                                        })
+                                                    }
+                                                }
+                                                value={setting.auto ? 'server value' : setting.value}
+                                                placeholder={setting.defaultValue.toString()}
                                             />
-                                        </>
-                                    }
-                                    <Form.Control
-                                        type={setting.auto ? 'text' : 'number'}
-                                        disabled={setting.auto}
-                                        onChange={
-                                            (e) => {
+
+                                            </InputGroup>
+                                        }
+                                        {
+                                            setting.type === 'boolean' &&
+                                            <Form.Check
+                                            type='checkbox'
+                                            onChange={
+                                                (e) => {
+                                                    layoutSettingsDispatch({
+                                                        attribute: 'property',
+                                                        key: setting.name,
+                                                        value: e.target.checked
+                                                    })
+                                                }
+                                            }
+                                            checked={setting.value}
+                                            >
+                                            </Form.Check>
+                                        }
+                                            {/* <Dropdown onSelect={(item) => {
+                                                if (item === null) {
+                                                    return
+                                                }
+
                                                 layoutSettingsDispatch({
                                                     attribute: 'property',
                                                     key: setting.name,
-                                                    value: parseFloat(e.target.value)
+                                                    value: item === 'true'
                                                 })
-                                            }
-                                        }
-                                        value={setting.auto ? 'server value' : setting.value}
-                                        placeholder={setting.defaultValue.toString()}
-                                    />
-
-                                    </InputGroup>
-                                }
-                                {
-                                    setting.type === 'boolean' &&
-                                    <Form.Check
-                                    type='checkbox'
-                                    onChange={
-                                        (e) => {
-                                            layoutSettingsDispatch({
-                                                attribute: 'property',
-                                                key: setting.name,
-                                                value: e.target.checked
-                                            })
-                                        }
-                                    }
-                                    checked={setting.value}
-                                    >
-                                    </Form.Check>
-                                }
-                                    {/* <Dropdown onSelect={(item) => {
-                                        if (item === null) {
-                                            return
-                                        }
-
-                                        layoutSettingsDispatch({
-                                            attribute: 'property',
-                                            key: setting.name,
-                                            value: item === 'true'
-                                        })
-                                        }}>
-                                        <Dropdown.Toggle>
-                                            {setting.value ? 'true' : 'false'}
-                                        </Dropdown.Toggle>
-                                        <Dropdown.Menu>
-                                            <Dropdown.Item key='True' eventKey={'true'}>true</Dropdown.Item>
-                                            <Dropdown.Item key='False' eventKey={'false'}>false</Dropdown.Item>
-                                        </Dropdown.Menu>
-                                    </Dropdown> */}
-                                {/* } */}
-                            </Col>
-                        </Row>
-                    )
-                })}
+                                                }}>
+                                                <Dropdown.Toggle>
+                                                    {setting.value ? 'true' : 'false'}
+                                                </Dropdown.Toggle>
+                                                <Dropdown.Menu>
+                                                    <Dropdown.Item key='True' eventKey={'true'}>true</Dropdown.Item>
+                                                    <Dropdown.Item key='False' eventKey={'false'}>false</Dropdown.Item>
+                                                </Dropdown.Menu>
+                                            </Dropdown> */}
+                                        {/* } */}
+                                    </Col>
+                                </Row>
+                            )
+                        })}
+                    </Col>
+                </Row>
                 <Row>
                     {/* <Col>
                         randomize starting positions
