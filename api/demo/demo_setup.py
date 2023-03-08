@@ -1,3 +1,4 @@
+from time import sleep
 import visgraph
 import sys
 import asyncio
@@ -7,6 +8,7 @@ import random
 
 import networkx as nx
 import json
+import ssl
 
 def simulate(nodes, edges, params):
     # Set infection_rate attribute for each node.
@@ -18,6 +20,8 @@ def simulate(nodes, edges, params):
 
     if params['randomlyInfect']:
         nodes[random.randint(0, len(nodes) - 1)]['data']['infection_rate'] = 1.2
+
+    sleep(2)
 
     return [nodes, edges, params]
 
@@ -55,5 +59,7 @@ if __name__ == "__main__":
             'defaultValue': True,
         }
     ]
+
+    ssl._create_default_https_context = ssl._create_unverified_context
 
     asyncio.run(visgraph.connect(url, port, sid, key, title, startParams, simulate, None))

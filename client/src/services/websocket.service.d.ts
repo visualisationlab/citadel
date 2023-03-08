@@ -62,7 +62,7 @@ export declare module MessageTypes {
         };
     }
     export type GetType = 'graphState' | 'sessionState' | 'layouts' | 'apiKey' | 'QR';
-    export type SetType = 'graphState' | 'simulator' | 'simulatorInstance' | 'playstate' | 'layout' | 'username' | 'graphIndex' | 'headset' | 'windowSize' | 'pan' | 'validate';
+    export type SetType = 'graphState' | 'simulator' | 'simulatorInstance' | 'playstate' | 'stopSimulator' | 'layout' | 'username' | 'graphIndex' | 'headset' | 'windowSize' | 'pan' | 'validate';
     export interface GetMessage extends InMessage {
         messageSource: 'user';
         messageType: 'get';
@@ -112,6 +112,7 @@ export declare module MessageTypes {
     export interface UIDMessage extends OutMessage {
         type: 'uid';
         data: string;
+        keys: (string | null)[];
     }
     export {};
 }
@@ -119,7 +120,7 @@ declare class WebsocketService {
     ws: WebSocket | null;
     checkConnection(): void;
     parseServerMessage(message: MessageTypes.OutMessage): void;
-    connect(sid: string, username: string | null): void;
+    connect(sid: string, username: string | null, keys: number | null): void;
     sendSetMessage(message: MessageTypes.SetMessage): void;
     sendGetMessage(message: MessageTypes.GetMessage): void;
 }

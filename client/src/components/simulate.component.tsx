@@ -289,8 +289,10 @@ export function SimulatorTab() {
         )
     })
 
-    // Flag for if the simulator is generating.
-    const disabled = stepCount <= 0 || selectedSim === '' || state.state !== 'idle'
+    // Flag for if the simulator is unavailable.
+    const disabled = selectedSim === '' || state.state !== 'idle' || state.simulators.filter((sim) => {
+        return sim.key === selectedSim && sim.state !== 'idle'
+    }).length > 0
 
     // Renders the simulator controls.
     const simulatorControl = state.graphIndexCount > 1 ? (
@@ -306,7 +308,16 @@ export function SimulatorTab() {
                 }}>Previous</Button>
             </Col>
             <Col>
-                {state.graphIndex + 1} / {state.graphIndexCount}
+                <Form.Control
+                    type='number'
+                    value={state.graphIndex + 1}
+                    onChange={(e) => {
+                        if (parseInt(e.target.value) > 0 && parseInt(e.target.value) < 1000)
+                            API.setGraphIndex(parseInt(e.target.value) - 1)
+                    }}></Form.Control>
+            </Col>
+            <Col>
+                / {state.graphIndexCount}
             </Col>
             <Col>
             <Button onClick={() => {
@@ -348,6 +359,31 @@ export function SimulatorTab() {
             </Col>
         )
     }
+
+    // If simulating render a stop button, otherwise play button
+    const simButton = state.state === 'simulating' ? (
+        <Col>
+            <Button
+                variant='danger'
+                // disabled={disabled}
+                onClick={() => {
+                    API.stop()
+                }}>
+                Stop
+            </Button>
+        </Col>
+    ) : (
+        <Col>
+            <Button
+                disabled={disabled}
+                onClick={() => {
+                    if (!disabled)
+                        API.step(stepCount, selectedSim, state.simulators.filter((sim) => {return sim.key === selectedSim})[0].options)
+                }}>
+                Step
+            </Button>
+        </Col>
+    )
 
     const res = simOptionsSelection === null ? (
         <Container fluid style={{
@@ -448,16 +484,7 @@ export function SimulatorTab() {
                                 setStepCount(parseInt(e.target.value))
                         }}></Form.Control>
                 </Col>
-                <Col>
-                    <Button
-                        disabled={disabled}
-                        onClick={() => {
-                            if (!disabled)
-                                API.step(stepCount, selectedSim, state.simulators.filter((sim) => {return sim.key === selectedSim})[0].options)
-                        }}>
-                        Step
-                    </Button>
-                </Col>
+                    {simButton}
                 <Col>
                         {state.simState.stepMax > 0 &&
                             <ProgressBar animated now={state.simState.step / state.simState.stepMax * 100}></ProgressBar>

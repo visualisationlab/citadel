@@ -104,6 +104,23 @@ export module API {
         })
     }
 
+    export function stop() {
+        if (sid === null || userID === null) {
+            return
+        }
+
+        websocketService.sendSetMessage({
+            userID: userID,
+            sessionID: sid,
+            messageType: 'set',
+            dataType: 'stopSimulator',
+            messageSource: 'user',
+            params: {
+                state: false,
+            },
+        })
+    }
+
     export function removeNode(nodeID: string, graphState: GraphDataState) {
         if (sid === null || userID === null) {
             return
@@ -339,6 +356,8 @@ export module API {
             messageSource: 'user'
         })
     }
+
+
 
     export function pause() {
         if (sid === null || userID === null) {

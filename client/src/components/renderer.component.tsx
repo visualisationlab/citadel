@@ -158,7 +158,7 @@ function setTransformCallback(transformUpdate: () => void) {
                                     (event.transform.x - prevTransform.x)  ,
                                     (event.transform.y - prevTransform.y)  )
             selectionRect.endFill()
-
+            selectionRect.zIndex = 100
             app.stage.addChild(selectionRect)
 
             return
@@ -743,7 +743,7 @@ export function Renderer({
         app.stage.addChild(text)
 
         const id = node.id
-        nodeSprite.on(('pointerdown'), () => {
+        nodeSprite.on(('mousedown'), () => {
             if (selectionDispatch === null) {
                 return
             }

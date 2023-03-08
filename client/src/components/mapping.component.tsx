@@ -46,7 +46,7 @@ function layoutMapping(layouts: string[], layoutInfo: LayoutSettingsState,
     currentLayout: string | null,
     serverState: ServerState) {
 
-    if (serverState === 'disconnected' || serverState === 'busy') {
+    if (serverState !== 'idle') {
         return <Spinner animation="border"></Spinner>
     }
 
@@ -137,7 +137,7 @@ function layoutMapping(layouts: string[], layoutInfo: LayoutSettingsState,
                     </Col>
                 </Row>
                 <Row style={{
-                    maxHeight: '300px',
+                    height: '8rem',
                     overflowY: 'auto'
                 }}>
                     <Col>
@@ -1080,8 +1080,9 @@ export default function MappingTab() {
                             }}>
                                 <ListGroup>
                                     <div style={{
-                                        height: '300px',
                                         overflowY: 'auto',
+                                        height: '10rem'
+                                        // minHeight: '200px'
                                     }}>
                                         {MappingList(mappingsState, mappingsDispatch, graphState, setSettingsType)}
                                     </div>

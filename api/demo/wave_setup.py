@@ -1,3 +1,4 @@
+from time import sleep
 from visgraph import connect
 import sys
 import asyncio
@@ -18,6 +19,7 @@ def simulate(nodes, edges, params):
         node = nodes[random.randint(0, len(nodes) - 1)]
         node['data']['infection_rate'] = 1.2
         node['data']['infected'] = True
+
 
     return [nodes, edges, params]
 
@@ -45,5 +47,7 @@ if __name__ == "__main__":
             'defaultValue': True,
         }
     ]
+
+
 
     asyncio.run(connect(url, port, sid, key, title, startParams, simulate))

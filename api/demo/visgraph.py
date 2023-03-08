@@ -116,8 +116,11 @@ async def connect(url: str,
         has_schema = True
     except Exception as e:
         has_schema = False
-
-    async with(websockets.connect(uri, max_size=2 ** 25, ssl=True)) as websocket:
+    ssl._create_default_https_context = ssl._create_unverified_context
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+    async with(websockets.connect(uri, max_size=2 ** 25, ssl=ctx)) as websocket:
         print("Connected")
 
         await websocket.send(json.dumps({

@@ -126,6 +126,10 @@ WSserver.on('connection', (socket: WebSocket, req: IncomingMessage) => {
         const headsetUserID = url.searchParams.get('userID')
         const username = url.searchParams.get('username')
 
+        const keyString = url.searchParams.get('keys')
+        const keys = keyString ? parseInt(keyString) : 0
+
+        logger.log('info', `New connection from ${req.socket.remoteAddress} with sid ${sid}, key ${apiKey}, headsetKey ${headsetKey}, headsetUserID ${headsetUserID}, username ${username}, keys ${keys}`)
         let userID: string | null = null
 
         if (sid === null) {
@@ -153,7 +157,9 @@ WSserver.on('connection', (socket: WebSocket, req: IncomingMessage) => {
             session.registerHeadset(headsetKey, headsetUserID, socket)
         }
         else {
-            userID = session.addUser(socket, username)
+            userID = session.addUser(socket, username, keys, req)
+
+            logger.log('info', `User ${userID} joined session ${sid}`)
         }
 
         socket.on('close', (code, reason) => {
@@ -232,6 +238,7 @@ setInterval(() => {
         return session.hasExpired()
     }).forEach((key) => {
         logger.log('info', `Session ${key} timed out`)
+
         sessions[key]!.destroy()
     })
 }, checkInterval)
@@ -266,6 +273,23 @@ app.get('/status/:session', (req: Request, res: Response) => {
     res.send(
         sessions[req.params.session] !== undefined
     )
+})
+
+app.get('/keys/:session', (req: Request, res: Response) => {
+    if (sessions[req.params.session] === undefined) {
+        res.send("0")
+        return
+    }
+
+    const remoteAddress = req.socket.remoteAddress
+
+    if (remoteAddress === undefined) {
+        res.send("0")
+
+        return
+    }
+
+    res.send(sessions[req.params.session]!.getKeys(remoteAddress).toString())
 })
 
 var graphSchema = {
@@ -345,12 +369,10 @@ app.post('/urls', body('url').trim().unescape(),  (req, res) => {
             try {
                 new URL(url)
             } catch (e) {
-                // logger.log('error', `URL is not valid: ${url}: ${e}`)
-
                 sendGraphError(res, 1, ["URL is not valid"])
-                // res.status(400).json({msg: "URL is not valid", errors:[]})
 
                 file.close()
+                rm(dest, () => {})
 
                 return
             }
@@ -359,6 +381,15 @@ app.post('/urls', body('url').trim().unescape(),  (req, res) => {
                 let data = ''
 
                 response.on('data', (chunk) => {
+                    // Check for max size.
+                    if (data.length > 10000000) {
+                        sendGraphError(res, 2, ["File is too large"])
+
+                        file.close()
+                        rm(dest, () => {})
+                        return
+                    }
+
                     data += chunk
                     file.write(chunk)
                 })
@@ -388,7 +419,9 @@ app.post('/urls', body('url').trim().unescape(),  (req, res) => {
                             // logger.log('error', `Graph is not valid ${url}: ${vr.errors}`)
 
                             sendGraphError(res, 5, vr.errors.map((e) => e.message))
+                            file.close()
 
+                            rm(dest, () => {})
                             return
                         }
 
@@ -400,13 +433,10 @@ app.post('/urls', body('url').trim().unescape(),  (req, res) => {
                         sessions[sid] = session
 
                     } catch (e: any) {
-                        // logger.log('error', `Error parsing graph from URL ${url}: ${e}`)
-
                         sendGraphError(res, 4, [e.message])
 
-                        // sendGraphError(res, 4, [e])
-                        // res.status(400).json({msg: "Error(s) loading graph (source was probably not a graph!)", errors: [e]})
-
+                        // Delete cached file.
+                        file.close()
                         rm(dest, () => {})
 
                         sid = ''
@@ -414,7 +444,9 @@ app.post('/urls', body('url').trim().unescape(),  (req, res) => {
                         return
                     }
 
-                    file.close(() => res.json(sid))
+                    file.close(() => {
+                        rm(dest, () => {}); res.json(sid)
+                    })
                 })
 
                 response.on('error', (err: any) => {

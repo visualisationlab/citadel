@@ -20,10 +20,12 @@ const Navigator = memo(function Navigator(
     props: NavigatorProps) {
 
     return (
-        <Container className="shadow bg-white rounded" style={{width: '600px',
-        padding: '0px', top: '50px',
-        left: '50px',
-        position:'absolute'}}>
+        <Container className="shadow bg-white rounded" style={{
+            width: '30%',
+            padding: '0px', top: '50px',
+            left: '50px',
+            position:'absolute'
+        }}>
             <Tabs
                 defaultActiveKey={'Mapping'}
                 id="navigator"

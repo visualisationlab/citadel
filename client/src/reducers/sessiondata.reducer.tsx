@@ -1,4 +1,4 @@
-export type ServerState = 'disconnected' | 'idle' | 'busy'
+export type ServerState = 'disconnected' | 'idle' | 'generating layout' | 'simulating' | 'playing'
 
 export interface SessionState {
     currentLayout: string | null,

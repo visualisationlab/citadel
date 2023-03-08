@@ -70,7 +70,7 @@ export module MessageTypes {
     }
 
     export type GetType = 'graphState' | 'sessionState' | 'layouts' | 'apiKey' | 'QR'
-    export type SetType = 'graphState' | 'simulator' | 'simulatorInstance' | 'playstate'
+    export type SetType = 'graphState' | 'simulator' | 'simulatorInstance' | 'playstate' | 'stopSimulator'
         | 'layout' | 'username' | 'graphIndex' | 'headset' | 'windowSize' | 'pan' | 'validate'
 
     export interface GetMessage extends InMessage {
@@ -129,7 +129,8 @@ export module MessageTypes {
 
     export interface UIDMessage extends OutMessage {
         type: 'uid',
-        data: string
+        data: string,
+        keys: (string | null)[]
     }
 }
 
@@ -145,13 +146,19 @@ class WebsocketService {
 
         const splitString = currentURL.pathname.split('/')
 
-        if (splitString.length !== 3) {
+        if (splitString.length < 3) {
             return
         }
 
         if (splitString[1] !== 'sessions' || (splitString[2].length === 0)) {
             return
         }
+
+        const keyString = currentURL.searchParams.get('keys')
+
+        const keys = keyString ? parseInt(keyString) : null
+
+        console.log(keys)
 
         // Store session ID in localstorage.
         let prevSessionsString = localStorage.getItem('prevSessions')
@@ -170,19 +177,21 @@ class WebsocketService {
         // Get username from localstorage.
         const username = localStorage.getItem('username')
 
-        this.connect(splitString[2], username)
+        this.connect(splitString[2], username, keys)
     }
 
     parseServerMessage(message: MessageTypes.OutMessage) {
         Router.route(message)
     }
 
-    connect(sid: string, username: string | null) {
+    connect(sid: string, username: string | null, keys: number | null) {
         if (this.ws !== null) {
             this.ws.close()
         }
 
-        this.ws = new WebSocket(`${WSURL}?sid=${sid}${username ? '&username=' + username : ''}`)
+        console.log(`${WSURL}?sid=${sid}${(username ? '&username=' + username : '') + '&keys=' + keys}`)
+
+        this.ws = new WebSocket(`${WSURL}?sid=${sid}${(username ? '&username=' + username : '' ) + '&keys=' + keys}`)
 
         // Handles incoming messages from server.
         this.ws.onmessage = (msg) => {

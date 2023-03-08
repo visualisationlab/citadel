@@ -9,6 +9,7 @@ export declare module API {
     function addHeadset(): void;
     function validate(apiKey: string): void;
     function step(stepCount: number, apiKey: string, params: SimulatorParam[]): void;
+    function stop(): void;
     function removeNode(nodeID: string, graphState: GraphDataState): void;
     function removeEdge(edgeID: string, graphState: GraphDataState): void;
     function updateGraph(graphState: GraphDataState): void;
