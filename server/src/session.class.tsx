@@ -792,12 +792,6 @@ export class Session {
 
                     this.cancelSim = false
 
-                    const runID = this.simRunID[this.sessionID]
-
-                    // Save current graph state to fs file with filename simRunID + sessionID.
-                    fs.writeFileSync(`./logs/graphs/${this.sessionID}_${runID}.json`,
-                        JSON.stringify(this.cy.json()))
-
                     resolve(() => {
                         this.sendSessionState()
                         this.sendGraphState()
@@ -809,6 +803,12 @@ export class Session {
 
                 /* Process new data message. */
                 this.storeCurrentGraphState().then(() => {
+                    const runID = this.simRunID[this.sessionID]
+
+                    // Save current graph state to fs file with filename simRunID + sessionID.
+                    fs.writeFileSync(`./logs/graphs/${this.sessionID}_${this.graphHistory.length}_${runID}.json`,
+                        JSON.stringify(this.cy.json()))
+
                     // Append new slice.
                     this.appendGraphState(JSON.stringify(data), this.currentLayout).then(() => {
                         this.graphIndex = this.graphHistory.length - 1
@@ -839,7 +839,7 @@ export class Session {
                             const runID = this.simRunID[this.sessionID]
 
                             // Save current graph state to fs file with filename simRunID + sessionID.
-                            fs.writeFileSync(`./logs/graphs/${this.sessionID}_${runID}.json`,
+                            fs.writeFileSync(`./logs/graphs/${this.sessionID}_${this.graphHistory.length - 1}_${runID}.json`,
                                 JSON.stringify(this.cy.json()))
 
 
@@ -1009,6 +1009,12 @@ export class Session {
                 } else {
                     this.simRunID[this.sessionID]++
                 }
+
+                const runID = this.simRunID[this.sessionID]
+
+                // Save current graph state to fs file with filename simRunID + sessionID.
+                fs.writeFileSync(`./logs/graphs/${this.sessionID}_${this.graphIndex + 1}_${runID}.json`,
+                    JSON.stringify(this.cy.json()))
 
                 // Discard timeline slices after current index pos.
                 this.graphHistory.splice(this.graphIndex + 1, this.graphHistory.length - (this.graphIndex + 1))
