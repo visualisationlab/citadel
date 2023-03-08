@@ -21,7 +21,7 @@ const Navigator = memo(function Navigator(
 
     return (
         <Container className="shadow bg-white rounded" style={{
-            width: '30%',
+            width: '35%',
             padding: '0px', top: '50px',
             left: '50px',
             position:'absolute'

@@ -297,37 +297,49 @@ export function SimulatorTab() {
     // Renders the simulator controls.
     const simulatorControl = state.graphIndexCount > 1 ? (
         <Row>
-            <Col>
-                <Button onClick={() => {
-                    API.setGraphIndex(0)
-                }}>First</Button>
+            <Col md={{span: 4}}>
+                <Row>
+                    <Col>
+                        <Button onClick={() => {
+                            API.setGraphIndex(0)
+                        }}>First</Button>
+                    </Col>
+                    <Col>
+                        <Button onClick={() => {
+                            API.setGraphIndex(state.graphIndex - 1)
+                        }}>Previous</Button>
+                    </Col>
+                </Row>
             </Col>
-            <Col>
-                <Button onClick={() => {
-                    API.setGraphIndex(state.graphIndex - 1)
-                }}>Previous</Button>
+            <Col md={{span: 4}}>
+                <Row>
+                    <Col md={{span: 8}}>
+                        <Form.Control
+                            type='number'
+                            value={state.graphIndex + 1}
+                            onChange={(e) => {
+                                if (parseInt(e.target.value) > 0 && parseInt(e.target.value) < 1000)
+                                    API.setGraphIndex(parseInt(e.target.value) - 1)
+                            }}></Form.Control>
+                    </Col>
+                    <Col md={{span: 4}}>
+                        / {state.graphIndexCount}
+                    </Col>
+                </Row>
             </Col>
-            <Col>
-                <Form.Control
-                    type='number'
-                    value={state.graphIndex + 1}
-                    onChange={(e) => {
-                        if (parseInt(e.target.value) > 0 && parseInt(e.target.value) < 1000)
-                            API.setGraphIndex(parseInt(e.target.value) - 1)
-                    }}></Form.Control>
-            </Col>
-            <Col>
-                / {state.graphIndexCount}
-            </Col>
-            <Col>
-            <Button onClick={() => {
-                API.setGraphIndex(state.graphIndex + 1)
-            }}>Next</Button>
-            </Col>
-            <Col>
-            <Button onClick={() => {
-                API.setGraphIndex(state.graphIndexCount - 1)
-            }}>Last</Button>
+            <Col md={{span: 4}}>
+                <Row>
+                    <Col>
+                        <Button onClick={() => {
+                            API.setGraphIndex(state.graphIndex + 1)
+                        }}>Next</Button>
+                    </Col>
+                    <Col>
+                        <Button onClick={() => {
+                            API.setGraphIndex(state.graphIndexCount - 1)
+                        }}>Last</Button>
+                    </Col>
+                </Row>
             </Col>
         </Row>
     ) : <></>
