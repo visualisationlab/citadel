@@ -5,10 +5,10 @@ import json
 from jsonschema import validate
 from jsonschema import exceptions
 import jsonschema
+import types
 
 LOGTYPES = 'log', 'warning'
 MESSAGE_MAXLENGTH = 100
-
 
 def send_message(websocket: websockets.WebSocketClientProtocol, message: str,
                  level='log'):
@@ -67,6 +67,9 @@ def validate_params_schema(data):
     FIELD_MINLENGTH = 1
     FIELD_MAXLENGTH = 30
     VALUE_MAXLENGTH = 100
+
+    if (len(data) > 10):
+        raise ValueError("Start params length must be max 10")
 
     schema = {
         "type": "array",
@@ -219,13 +222,9 @@ def validate_params_schema(data):
 
     validate(data, schema)
 
-    if (len(data) > 10):
-        raise ValueError("Start params length must be max 10")
 
-
-def process_response(response, simulatefun):
-    print("Processing data...")
-
+def process_response(connection: websockets.WebSocketClientProtocol, response,
+                     simulatefun):
     try:
         jsonObj = json.loads(response)
 
@@ -241,17 +240,33 @@ def process_response(response, simulatefun):
             elif (param['type'] == 'boolean'):
                 params[param['attribute']] = bool(param['value'])
 
-        print("Simulating step...")
+        fun = types.FunctionType(simulatefun.__code__, {})
 
-        res = simulatefun(jsonObj['data']['nodes'],
-                                jsonObj['data']['edges'], params)
+        res = fun(connection, jsonObj['data']['nodes'],
+                  jsonObj['data']['edges'], params)
 
         params = [res[2][param['attribute']]
-                    for param in jsonObj['data']['params']]
+                  for param in jsonObj['data']['params']]
 
         return res
     except Exception as e:
         print(f'Error! {e}')
+
+
+def filter_globals(fun):
+    def check_global(input):
+        (_, v) = input
+
+        if (isinstance(v, types.ModuleType) or hasattr(v, '__call__')):
+            return True
+
+        # Allow classes to be imported
+        if (type(v) == type):
+            return True
+
+        return False
+
+    return dict(filter(check_global, fun.__globals__.items()))
 
 
 async def connect(url: str,
@@ -279,9 +294,14 @@ async def connect(url: str,
     # Check if startParams is valid.
     validate_params_schema(startParams)
 
+    # Filter globals
+    fun = types.FunctionType(simulatefun.__code__, filter_globals(simulatefun),
+                             simulatefun.__name__, simulatefun.__defaults__,
+                             simulatefun.__closure__)
+
     uri = f"wss://{url}:{int(port)}?sid={sid}&key={key}"
 
-    print("Connecting to {}:{}...".format(url, port))
+    print(f"Connecting to wss://{url}:{port}")
 
     validator = jsonschema.Validator
 
@@ -289,7 +309,7 @@ async def connect(url: str,
         validator.check_schema(schema)
 
         has_schema = True
-    except Exception as e:
+    except Exception as _:
         has_schema = False
 
     context = True
@@ -314,7 +334,7 @@ async def connect(url: str,
         while (1):
             response = await websocket.recv()
 
-            result = process_response(response, simulatefun)
+            result = process_response(websocket, response, fun)
 
             await websocket.send(json.dumps({
                 'sessionID': sid,
