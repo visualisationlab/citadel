@@ -1,7 +1,6 @@
 *.graphml
 *.jsx
 *.js
-*.md
 cache
 node_modules
 .vscode
