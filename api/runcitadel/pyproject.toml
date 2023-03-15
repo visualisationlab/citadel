@@ -1,21 +1,21 @@
 [tool.poetry]
-name = "ley"
+name = "runcitadel"
 version = "0.1.0"
-description = "A package for communicating with the Citadel backend."
-authors = ["Miles van der Lely <milesvanderlely@gmail.com>"]
+description = "A package for developing and running citadel simulations."
+authors = ["Miles van der Lely"]
 license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.9"
 websockets = "^10.4"
-jsonschema = "^4.17.0"
+jsonschema = "^4.17.3"
 
 [tool.poetry.dev-dependencies]
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^7.2.0"
-pytest-cov = "^4.0.0"
+pytest = "^7.2.2"
+mock = "^5.0.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

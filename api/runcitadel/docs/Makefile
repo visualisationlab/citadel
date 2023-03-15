@@ -3,7 +3,7 @@
 # You can set these variables from the command line.
 SPHINXOPTS    =
 SPHINXBUILD   = python -msphinx
-SPHINXPROJ    = citadel
+SPHINXPROJ    = runcitadel
 SOURCEDIR     = .
 BUILDDIR      = _build
 

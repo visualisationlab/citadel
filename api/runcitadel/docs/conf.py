@@ -6,8 +6,8 @@
 
 # -- Project information -----------------------------------------------------
 
-project = u"citadel"
-copyright = u"2022, Miles van der Lely"
+project = u"runcitadel"
+copyright = u"2023, Miles van der Lely"
 author = u"Miles van der Lely"
 
 # -- General configuration ---------------------------------------------------
