@@ -4,6 +4,9 @@ on: [push, pull_request]
 
 jobs:
   ci:
+    defaults:
+      run:
+        working-directory: api/runcitadel
     # Set up operating system
     runs-on: ubuntu-latest
 
