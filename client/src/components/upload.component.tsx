@@ -126,10 +126,6 @@ export default function Home() {
     let errorText = <></>
 
     if (error) {
-        console.log(error)
-
-
-
         let phaseTexts = [
             'Connect to server',
             'Check URL',
@@ -205,7 +201,7 @@ export default function Home() {
         )
     }
 
-
+    // Renders the start session button in the second panel.
     let startSessionButton = !loading ? (
         <Button variant='primary'
                 type='submit'
@@ -214,9 +210,10 @@ export default function Home() {
             Start session
         </Button>
     ) : (
-        <Spinner animation='border'></Spinner>
+        <Spinner animation='border'/>
     )
 
+    // Renders the previous session form in the third panel.
     let prevSessionComponent = parsedPrevSessions === null ? [] : (
         <Table striped bordered hover>
             <thead>
@@ -231,13 +228,16 @@ export default function Home() {
                     return (
                         <tr key={sid}>
                             <td>{sid + ((elapsedMins > 120) ? '' : ' (' + elapsedMins + ' minute(s) ago)')} </td>
-                            <td><Button
-                                disabled={!sessionStatusList[index]}
-                                onClick={() => {
-                                console.log("Connecting to session " + sid)
-
-                                joinSession(sid)
-                            }}>Connect</Button></td>
+                            <td>
+                                <Button
+                                    disabled={!sessionStatusList[index]}
+                                    onClick={() => {
+                                        console.log("Connecting to session " + sid)
+                                        joinSession(sid)
+                                    }}>
+                                    Connect
+                                </Button>
+                            </td>
                         </tr>
                     )
                 })}
@@ -245,25 +245,51 @@ export default function Home() {
         </Table>
     )
 
+    // Render the component.
     return (
-        <>
-            <Container className="shadow p-3 bg-white rounded" style={{ width: '50%', marginTop: '30px' }}>
+        <div style={{
+            overflowY: 'auto',
+            maxHeight: '100vh'
+        }}>
+            <Container className="shadow p-3 bg-white rounded"
+                style={{
+                    width: '50%',
+                    marginTop: '30px',
+                    }}>
                 <Row>
                     <Col md={{span: 2}}>
-                        <img width='100%' src="https://chimay.science.uva.nl:8061/VisLablogo-cropped-notitle.svg" className="custom-logo" alt="Visualisation Lab"></img>
+                        <img
+                            width='100%'
+                            src="https://chimay.science.uva.nl:8061/VisLablogo-cropped-notitle.svg"
+                            className="custom-logo"
+                            alt="Visualisation Lab"
+                        />
                     </Col>
                     <Col md={{span: 10}}>
-                        <h1>Citadel</h1>
-                        <p className='text-secondary'> Graph Visualisation Software. Create a new session or join an existing one below.</p>
+                        <h1>
+                            Citadel
+                        </h1>
+                        <p
+                            className='text-secondary'
+                        >
+                            Graph Visualisation Software. Create a new session or join an existing one below.
+                        </p>
                     </Col>
                 </Row>
             </Container>
-            <Container className="shadow p-3 bg-white rounded" style={{ width: '50%', marginTop: '20px' }}>
+            <Container
+                className="shadow p-3 bg-white rounded"
+                style={{
+                    width: '50%',
+                    marginTop: '20px'
+                }}>
                 <Row>
                     <Col>
                         <Form>
                             <Form.Group className="mb-3">
-                                <Form.Label>New Session</Form.Label>
+                                <Form.Label>
+                                    New Session
+                                </Form.Label>
                                 <InputGroup>
                                     <Form.Control
                                         type="text"
@@ -293,20 +319,28 @@ export default function Home() {
                                     </DropdownButton>
                                 </InputGroup>
                                 <Form.Text id="url">
-                                Enter a URL to a graph file.
+                                    Enter a URL to a graph file.
                                 </Form.Text>
                             </Form.Group>
-                            {startSessionButton}
+                            {
+                                startSessionButton
+                            }
                         </Form>
                     </Col>
                 </Row>
                 <Row>
                     <Col>
-                        {errorText}
+                        {
+                            errorText
+                        }
                     </Col>
                 </Row>
             </Container>
-            <Container className="shadow p-3 bg-white rounded" style={{ width: '50%', marginTop: '30px' }}>
+            <Container className="shadow p-3 bg-white rounded"
+                style={{
+                    width: '50%',
+                    marginTop: '30px'
+                }}>
                 <Row>
                     <Col>
                         <Form>
@@ -322,18 +356,15 @@ export default function Home() {
                                 Enter an existing session ID.
                                 </Form.Text>
                             </Form.Group>
-                            <Button variant='primary' type='submit' disabled={sid === ''} onClick={() => joinSession(null)}>
+                            <Button variant='primary'
+                                type='submit'
+                                disabled={sid === ''}
+                                onClick={() => joinSession(null)}
+                            >
                                 Join Session
                             </Button>
                         </Form>
                     </Col>
-                    <Row>
-                    {/* {sidError !== '' &&
-                                <p className='text-danger'>
-                                {sidError}
-                            </p>
-                        } */}
-                    </Row>
                 </Row>
                 <Row style={{
                     marginTop: '20px'
@@ -342,8 +373,7 @@ export default function Home() {
                         {prevSessionComponent}
                     </Col>
                 </Row>
-
             </Container>
-        </>
+        </div>
     )
 }

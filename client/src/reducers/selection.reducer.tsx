@@ -50,7 +50,7 @@ function removeValue(currentValues: string[], value: string): string[] {
         return currentValues
     }
 
-    currentValues.splice(currentValues.indexOf(value))
+    currentValues.splice(currentValues.indexOf(value), 1)
 
     return currentValues
 }
@@ -75,7 +75,6 @@ function setState(type: AttributeType, value: string[], mode: SelectionMode): Se
 
 export function SelectionDataReducer(state: SelectionDataState, action: SelectionDataReducerAction): SelectionDataState {
     if (action.type === 'selection/reset') {
-        console.log('resetting selection')
         return resetState(state)
     }
 

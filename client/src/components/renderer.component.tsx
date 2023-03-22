@@ -42,7 +42,7 @@ PIXI.settings.PREFER_ENV = PIXI.ENV.WEBGL2
 // PIXI.settings.FILTER_RESOLUTION = PIXI.MSAA_QUALITY.HIGH
 
 const app = new PIXI.Application({
-    width:window.innerWidth,
+    width: window.innerWidth,
     height:window.innerHeight,
     resizeTo: window,
     backgroundColor: 0xFFFFFF,

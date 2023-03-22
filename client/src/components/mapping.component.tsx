@@ -13,17 +13,14 @@ import {
     Col,
     Form,
     ListGroup,
-    OverlayTrigger,
     Button,
-    Tooltip,
     Container,
     CloseButton,
     Spinner,
     Dropdown,
     Table,
-    InputGroup} from 'react-bootstrap'
-
-import tinycolor from 'tinycolor2'
+    InputGroup,
+    Stack} from 'react-bootstrap'
 
 import { UserDataContext } from '../components/main.component'
 import { GraphDataContext } from '../components/main.component'
@@ -31,8 +28,8 @@ import { MappingContext } from '../components/main.component'
 import { GraphDataState } from '../reducers/graphdata.reducer'
 import { ServerState } from '../reducers/sessiondata.reducer'
 
-import { LayoutSettingsReducer, LayoutSettingsState, LayoutSettingsReducerAction, AvailableLayout } from '../reducers/layoutsettings.reducer'
-import { MappingsReducerAction, MappingsState, mappingProperties, MappingChannel, mappingChannels, MappingType } from '../reducers/selectedmappings.reducer'
+import { LayoutSettingsReducer, LayoutSettingsState, LayoutSettingsReducerAction, AvailableLayout, LayoutState } from '../reducers/layoutsettings.reducer'
+import { MappingsReducerAction, MappingsState, mappingProperties, MappingChannel, MappingType } from '../reducers/selectedmappings.reducer'
 
 import { BiCog } from 'react-icons/bi'
 
@@ -41,108 +38,35 @@ import { Map } from 'immutable'
 
 import './home.component.css'
 
-function layoutMapping(layouts: string[], layoutInfo: LayoutSettingsState,
+function renderLayoutSettings(
+    layout: LayoutState,
     layoutSettingsDispatch: React.Dispatch<LayoutSettingsReducerAction>,
-    currentLayout: string | null,
-    serverState: ServerState) {
-
+    serverState: ServerState
+    ) {
     if (serverState !== 'idle') {
-        return <Spinner animation="border"></Spinner>
+        return <Spinner animation="border" />
     }
-
-    const selectedLayout = layoutInfo?.layouts.filter((layout) => {
-        return (layout.name === layoutInfo.selectedLayout)
-    })
-
-    if (selectedLayout === undefined || selectedLayout.length === 0) {
-        return (
-            <ListGroup variant='flush'>
-                <ListGroup.Item>
-                        <Row>
-                            <Col>
-                                <p>
-                                    Layout Algorithm:
-                                </p>
-                            </Col>
-                            <Col>
-                                <Dropdown onSelect={(item) => {
-                                    if (item === null) {
-                                        return
-                                    }
-
-                                    layoutSettingsDispatch({
-                                        attribute: 'selectedLayout',
-                                        value: item
-                                    })
-                                }}>
-                                    <Dropdown.Toggle>
-                                        {layoutInfo?.selectedLayout === null ? 'none' : layoutInfo?.selectedLayout}
-                                    </Dropdown.Toggle>
-                                    <Dropdown.Menu>
-                                        <Dropdown.Item key='None' eventKey={''}>none</Dropdown.Item>
-                                        {layouts.map((layout) => {
-                                            return <Dropdown.Item key={layout} eventKey={layout}>{layout + (currentLayout === layout ? ' (selected)' : '')}</Dropdown.Item>
-                                        })}
-                                    </Dropdown.Menu>
-                                </Dropdown>
-                            </Col>
-                        </Row>
-                </ListGroup.Item>
-            </ListGroup>
-        )
-    }
-
-    let res = selectedLayout[0]
 
     return (
-        <ListGroup variant='flush'>
-            <ListGroup.Item>
-                <Row>
-                    <Col>
-                        <p>
-                            Layout Algorithm:
-                        </p>
-                    </Col>
-                    <Col>
-                        <Dropdown onSelect={(item) => {
-                            if (item === null) {
-                                return
-                            }
+        <>
+            <Row style={{
+                marginTop: '10px',
+                marginBottom: '10px'
+            }}>
+                <Col>
+                    <i>
+                        {layout.description}
+                    </i>
+                </Col>
+            </Row>
 
-                            layoutSettingsDispatch({
-                                attribute: 'selectedLayout',
-                                value: item
-                            })
-                        }}>
-                            <Dropdown.Toggle>
-                                {layoutInfo?.selectedLayout === null ? 'none' : layoutInfo?.selectedLayout}
-                            </Dropdown.Toggle>
-                            <Dropdown.Menu>
-                                <Dropdown.Item key='None' eventKey={''}>none</Dropdown.Item>
-                                {layouts.map((layout) => {
-                                    return <Dropdown.Item key={layout} eventKey={layout}>{layout}</Dropdown.Item>
-                                })}
-                            </Dropdown.Menu>
-                        </Dropdown>
-                    </Col>
-                </Row>
-                <Row style={{
-                    marginTop: '10px',
-                    marginBottom: '10px'
-                }}>
-                    <Col>
-                        <i>
-                            {res.description}
-                        </i>
-                    </Col>
-                </Row>
-                <Row style={{
-                    height: '8rem',
-                    overflowY: 'auto'
-                }}>
-                    <Col>
-
-                        {res.settings.map((setting) => {
+            <Row style={{
+                overflowY: 'auto',
+                maxHeight: '50vh'
+            }}>
+                <Col>
+                    {
+                        layout.settings.map((setting) => {
                             return (
                                 <Row key={setting.name}>
                                     <Col>
@@ -152,7 +76,6 @@ function layoutMapping(layouts: string[], layoutInfo: LayoutSettingsState,
                                         {
                                             setting.type === 'number' &&
                                             <InputGroup className='mb-3'>
-
                                             {
                                                 setting.autoEnabled &&
                                                 <>
@@ -226,39 +149,72 @@ function layoutMapping(layouts: string[], layoutInfo: LayoutSettingsState,
                                     </Col>
                                 </Row>
                             )
-                        })}
-                    </Col>
-                </Row>
-                <Row>
-                    {/* <Col>
-                        randomize starting positions
-                    </Col>
-                    <Col>
-                    <Form.Check
-                    type='checkbox'
-                    onChange={
-                        (e) => {
-                            layoutSettingsDispatch({
-                                attribute: 'property',
-                                key: 'randomize',
-                                value: e.target.checked
-                            })
-                        }
+                        })
                     }
-                    checked={res.randomize}>
-                    </Form.Check>
-                    </Col> */}
-                </Row>
-                <Row>
-                    <Col md={{offset: 8, span: 4}}>
-                        <Button variant='outline-primary'
-                            onClick={() => {
-                                API.setLayout(res)
-                            }}>Apply</Button>
-                    </Col>
-                </Row>
-            </ListGroup.Item>
-        </ListGroup>
+                </Col>
+            </Row>
+            <Row>
+                <Col md={{offset: 8, span: 4}}>
+                    <Button variant='outline-primary'
+                        onClick={() => {
+                            API.setLayout(layout)
+                        }}>Apply</Button>
+                </Col>
+            </Row>
+        </>
+    )
+}
+
+function renderLayoutInterface(
+    layouts: string[],
+    layoutInfo: LayoutSettingsState,
+    layoutSettingsDispatch: React.Dispatch<LayoutSettingsReducerAction>,
+    currentLayout: string | null,
+    serverState: ServerState
+    ) {
+
+    const selectedLayout = layoutInfo?.layouts.filter((layout) => {
+        return layout.name === layoutInfo.selectedLayout
+    })
+
+    let layout = (selectedLayout !== undefined && selectedLayout.length > 0) ? selectedLayout[0] : null
+
+    return (
+        <Stack>
+            <Row>
+                <Col>
+                    <p>
+                        Layout Algorithm:
+                    </p>
+                </Col>
+                <Col>
+                    <Dropdown onSelect={(item) => {
+                        if (item === null) {
+                            return
+                        }
+
+                        layoutSettingsDispatch({
+                            attribute: 'selectedLayout',
+                            value: item
+                        })
+                    }}>
+                        <Dropdown.Toggle>
+                            {layoutInfo?.selectedLayout === null ? 'none' : layoutInfo?.selectedLayout}
+                        </Dropdown.Toggle>
+                        <Dropdown.Menu>
+                            <Dropdown.Item key='None' eventKey={''}>none</Dropdown.Item>
+                            {layouts.map((layout) => {
+                                return <Dropdown.Item key={layout} eventKey={layout}>{layout + (currentLayout === layout ? ' (selected)' : '')}</Dropdown.Item>
+                            })}
+                        </Dropdown.Menu>
+                    </Dropdown>
+                </Col>
+            </Row>
+            {
+                layout !== null &&
+                renderLayoutSettings(layout, layoutSettingsDispatch, serverState)
+            }
+        </Stack>
     )
 }
 
@@ -271,13 +227,14 @@ function SchemeColourBox(scheme: number[] | undefined, index: number | undefined
 }
 
 function ColourBox(colour: number | null): JSX.Element {
-
     if (colour === null) {
         return <>Select a colour</>
     }
 
     return (
-            <div className="color-box" style={{
+        <div
+            className="color-box"
+            style={{
                 backgroundColor: 'hsl(' + colour + ', 50%, 50%)',
                 // flexGrow: 1,
                 // flexShrink: 0,
@@ -290,7 +247,7 @@ function ColourBox(colour: number | null): JSX.Element {
                 outlineColor: 'black',
                 outlineStyle: 'solid',
                 outlineWidth: '1px',
-            }}></div>
+        }}/>
     )
 }
 
@@ -733,17 +690,28 @@ function generateRow(
                 newMapping: newType,
                 prevMapping: mapping,
             })
-        }}>
+        }}
+        // Always render dropdown on top of other elements
+        >
             <Dropdown.Toggle
                 id="dropdown-basic"
+                variant={mapping.objectType === 'none' ? 'outline-primary' : 'primary'}
                 >
                 {mapping.objectType}
             </Dropdown.Toggle>
             <Dropdown.Menu>
-                <Dropdown.Item key='node' eventKey='node'>
+                <Dropdown.Item
+                    key='node'
+                    eventKey='node'
+                    active={mapping.objectType === 'node'}
+                >
                     node
                 </Dropdown.Item>
-                <Dropdown.Item key='edge' eventKey='edge'>
+                <Dropdown.Item
+                    key='edge'
+                    eventKey='edge'
+                    active={mapping.objectType === 'edge'}
+                >
                     edge
                 </Dropdown.Item>
             </Dropdown.Menu>
@@ -770,21 +738,36 @@ function generateRow(
                 type: 'selection',
                 action: 'edit',
                 prevMapping: mapping,
-                newMapping: {...mapping, attributeName: selected, attributeType: mapping.objectType === 'node' ? graphState.nodes.metadata[selected].type : graphState.edges.metadata[selected].type, mappingName: 'none'}
+                newMapping: {
+                    ...mapping,
+                    attributeName: selected,
+                    attributeType: mapping.objectType === 'node' ? graphState.nodes.metadata[selected].type : graphState.edges.metadata[selected].type,
+                    mappingName: 'none'
+                }
             })
 
-            }}>
-            <Dropdown.Toggle id="dropdown-basic">
+        }}
+        >
+            <Dropdown.Toggle
+                id="dropdown-basic"
+                variant={mapping.attributeName === '' ? 'outline-primary' : 'primary'}
+            >
                 <span style={{whiteSpace: 'nowrap', overflow: 'hidden', float: 'left', display: 'inline-block', width: '100px', textOverflow:'ellipsis'}}>{mapping.attributeName === '' ? 'none' : mapping.attributeName}</span>
             </Dropdown.Toggle>
-            <Dropdown.Menu style={{overflowY: 'scroll', maxHeight: 200}}>
-                {Object.values(attributeList).map((attribute) => {
-                    return (
-                        <Dropdown.Item key={attribute} eventKey={attribute}>
-                            {attribute}
-                        </Dropdown.Item>
-                    )
-                })}
+            <Dropdown.Menu style={{ overflowY: 'auto', maxHeight: '200px' }}>
+                {
+                    Object.values(attributeList).map((attribute) => {
+                        return (
+                            <Dropdown.Item
+                                key={attribute}
+                                eventKey={attribute}
+                                active={attribute === mapping.attributeName}
+                            >
+                                {attribute}
+                            </Dropdown.Item>
+                        )
+                    })
+                }
             </Dropdown.Menu>
         </Dropdown>
     )
@@ -825,7 +808,9 @@ function generateRow(
     })
 
     let channelDropdown = mapping.attributeName === '' ? <></> : (
-        <Dropdown onSelect={(selected: any) => {
+        <Dropdown
+
+        onSelect={(selected: any) => {
             // Dropdown for channel selection.
             const newType: MappingType = {
                 ...mapping,
@@ -841,6 +826,7 @@ function generateRow(
             }}>
             <Dropdown.Toggle
                 id="dropdown-basic"
+                variant={mapping.mappingName === 'none' ? 'outline-primary' : 'primary'}
                 >
                 <span style={{whiteSpace: 'nowrap', overflow: 'hidden', float: 'left', display: 'inline-block', width: '80px', textOverflow:'ellipsis'}}>{mapping.mappingName}</span>
             </Dropdown.Toggle>
@@ -849,9 +835,15 @@ function generateRow(
                     <>
                         <Dropdown.Header>Ordered</Dropdown.Header>
                         {orderedProperties.map((key) => {
+                            // If mapping is active, set active to true.
+
                             return (
-                                <Dropdown.Item key={key} eventKey={key}>
-                                    {key}
+                                <Dropdown.Item
+                                    key={key}
+                                    eventKey={key}
+                                    active={mapping.mappingName === key}
+                                >
+                                        {key}
                                 </Dropdown.Item>
                             )
                         })}
@@ -864,9 +856,13 @@ function generateRow(
                     return (
                         <>
                             {key === 'none' &&
-                                <Dropdown.Divider></Dropdown.Divider>
+                                <Dropdown.Divider/>
                             }
-                            <Dropdown.Item key={key} eventKey={key}>
+                            <Dropdown.Item
+                                key={key}
+                                eventKey={key}
+                                active={mapping.mappingName === key}
+                            >
                                 {key}
                             </Dropdown.Item>
                         </>
@@ -877,8 +873,8 @@ function generateRow(
     )
 
     return (
-        <ListGroup.Item key={JSON.stringify(mapping)}>
-
+        <ListGroup.Item key={JSON.stringify(mapping)}
+            >
                 <Row>
                     <Col >
                         {objectTypeDropdown}
@@ -890,7 +886,7 @@ function generateRow(
                         {channelDropdown}
                     </Col>
                     {(mapping.mappingName !== 'none' && mappingProperties.get(mapping.mappingName)?.channelType === 'categorical') &&
-                            <Col >
+                            <Col>
                                 <Button variant='outline-primary' onClick={
                                     () => {
                                         setSettingsType(mapping)
@@ -951,6 +947,10 @@ function MappingList(
             }
         </>
     )
+}
+
+function renderAvailableAttributeSelection() {
+
 }
 
 export default function MappingTab() {
@@ -1026,8 +1026,6 @@ export default function MappingTab() {
         attributeName: ''
     }
 
-
-
     if (settingsType !== null) {
         if (settingsType === 'palette') {
             return <PaletteSettings mappingsState={mappingsState} mappingsDispatch={mappingsDispatch} setSettingsType={setSettingsType}></PaletteSettings>
@@ -1046,80 +1044,86 @@ export default function MappingTab() {
     }
 
     let addButton = (
-        <Button variant='outline-success' disabled={mappingsState.selectedMappings.has(Map(newItem))} onClick={() => {
-            mappingsDispatch({
-                type: 'selection',
-                action: 'add'
-            })
-        }}>Add map</Button>
+        <Button
+            variant='outline-success'
+            disabled={mappingsState.selectedMappings.has(Map(newItem))}
+            onClick={() => {
+                mappingsDispatch({
+                    type: 'selection',
+                    action: 'add'
+                })
+                }
+            }
+            style={{
+                width: '100%',
+            }}
+            >
+                Add map
+            </Button>
     )
 
     let editPaletteButton = (
-        <Button variant='outline-primary' disabled={mappingsState.selectedMappings.has(Map(newItem))} onClick={() => {
-            setSettingsType('palette')
-        }}>Edit palettes</Button>
+        <Button
+            variant='outline-primary'
+            disabled={mappingsState.selectedMappings.has(Map(newItem))}
+            onClick={() => {setSettingsType('palette')}}
+            style={{
+                width: '100%',
+            }}
+        >
+            Edit palettes
+        </Button>
     )
 
     return (
-        <Container style={{
-            marginBottom: '10px',
-            marginTop: '10px'
-        }}>
-            <Row>
-                <Col>
-                    <h3>Mapping</h3>
-                </Col>
-            </Row>
-            <Row>
-                <Col>
-                    <Accordion defaultActiveKey='nodemap'>
-                        <Accordion.Item eventKey='nodemap'>
-                            <Accordion.Header>Selected Mappings</Accordion.Header>
-                            <Accordion.Body style={{
-                                padding: '0px',
+        <div>
+            <h3>Mapping</h3>
+            <Accordion defaultActiveKey='nodemap'>
+                <Accordion.Item eventKey='nodemap'>
+                    <Accordion.Header>Selected Mappings</Accordion.Header>
+                    <Accordion.Body style={{
+                        padding: '0px',
+                    }}>
+                        <ListGroup>
+                            <div style={{
+                                overflowY: 'auto',
+                                height: '45vh'
                             }}>
-                                <ListGroup>
-                                    <div style={{
-                                        overflowY: 'auto',
-                                        height: '10rem'
-                                        // minHeight: '200px'
-                                    }}>
-                                        {MappingList(mappingsState, mappingsDispatch, graphState, setSettingsType)}
-                                    </div>
-                                    <ListGroup.Item>
-                                        <Row>
-                                            {/* <Col>
-                                                <Button variant='outline-primary'>Save</Button>
-                                                </Col>
-                                                <Col>
-                                                <Button variant='outline-primary'>Load</Button>
-                                            </Col> */}
-                                            <Col md={{span: 3}}>
-                                                {addButton}
-                                            </Col>
-                                            <Col md={{span: 4}}>
-                                                {editPaletteButton}
-                                            </Col>
-                                        </Row>
-                                    </ListGroup.Item>
-                                </ListGroup>
-                            </Accordion.Body>
-                        </Accordion.Item>
-
-                        <Accordion.Item eventKey='layoutmap'>
-                            <Accordion.Header>Layout Mapping</Accordion.Header>
-                            <Accordion.Body>
-                                {layoutMapping(
-                                    state.layouts.map((layout) => {return layout.name}),
-                                    layoutSettingsState,
-                                    layoutSettingsReducer,
-                                    state.currentLayout,
-                                    state.state)}
-                            </Accordion.Body>
-                        </Accordion.Item>
-                    </Accordion>
-                </Col>
-            </Row>
-        </Container>
+                                {MappingList(mappingsState, mappingsDispatch, graphState, setSettingsType)}
+                            </div>
+                            <ListGroup.Item>
+                                <Row>
+                                    <Col>
+                                        {addButton}
+                                    </Col>
+                                    <Col>
+                                        {editPaletteButton}
+                                    </Col>
+                                </Row>
+                                <Row>
+                                    <Col>
+                                        <Button disabled={true} variant='outline-primary'>Save</Button>
+                                    </Col>
+                                    <Col>
+                                        <Button disabled={true} variant='outline-primary'>Load</Button>
+                                    </Col>
+                                </Row>
+                            </ListGroup.Item>
+                        </ListGroup>
+                    </Accordion.Body>
+                </Accordion.Item>
+                <Accordion.Item eventKey='layoutmap'>
+                    <Accordion.Header>Layout Mapping</Accordion.Header>
+                    <Accordion.Body>
+                        {renderLayoutInterface(
+                            state.layouts.map((layout) => {return layout.name}),
+                            layoutSettingsState,
+                            layoutSettingsReducer,
+                            state.currentLayout,
+                            state.state)}
+                    </Accordion.Body>
+                </Accordion.Item>
+            </Accordion>
+        </div>
     )
 }

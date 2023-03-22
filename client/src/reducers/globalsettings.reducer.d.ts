@@ -3,12 +3,12 @@
  *
  * This file contains the graph data reducer, which is used to store the graph data.
  */
-type highlightType = 'transparency' | 'saturation' | 'lightness' | 'none';
-export type GlobalSettingsState = {
+declare type highlightType = 'transparency' | 'saturation' | 'lightness' | 'none';
+export declare type GlobalSettingsState = {
     selectionHighlight: highlightType;
     stateStack: GlobalSettingsState[];
 };
-export type GlobalSettingsReducerAction = {
+export declare type GlobalSettingsReducerAction = {
     type: 'selectionHighlightChanged';
     payload: {
         value: highlightType;
