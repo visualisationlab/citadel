@@ -1458,8 +1458,21 @@ export class Session {
     }
 
     deRegisterSimulator(apiKey: string) {
+        // If the simulator was running, stop it.
         this.simulators.forEach((sim) => {
             if (sim.apikey === apiKey) {
+                if (sim.state === 'generating') {
+                    this.simState = {
+                        step: 0,
+                        stepMax: 0,
+                        apiKey: null,
+                        params: []
+                    }
+
+                    this.setState('idle')
+
+                }
+
                 sim.socket = null
                 sim.params = []
                 sim.state = 'disconnected'
@@ -1562,6 +1575,17 @@ export class Session {
                 return
 
             if (sim.userID === userID) {
+                if (sim.state === 'generating') {
+                    this.simState = {
+                        step: 0,
+                        stepMax: 0,
+                        apiKey: null,
+                        params: []
+                    }
+
+                    this.setState('idle')
+                }
+
                 sim.socket.close()
             }
         })
