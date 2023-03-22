@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react'
-import { Container, Form, Button, Tabs, Tab, Row, Col, Dropdown, Stack } from 'react-bootstrap'
+import { Container, Form, Button, Tabs, Tab, Row, Col, Dropdown, Stack, Nav } from 'react-bootstrap'
 
 import { SelectionDataContext, UserDataContext } from '../components/main.component'
 import { GraphDataContext } from '../components/main.component'
@@ -18,10 +18,12 @@ import {
     Tooltip,
     Filler,
     Legend,
-    BarElement,
-    } from 'chart.js'
+    BarElement
+} from 'chart.js'
 
-import { Bar } from 'react-chartjs-2'
+import Annotation from 'chartjs-plugin-annotation'
+
+import { Bar, Scatter, Line } from 'react-chartjs-2'
 
 import './home.component.css'
 import './inspection.stylesheet.scss'
@@ -41,7 +43,8 @@ ChartJS.register(
     BarElement,
     Title,
     Tooltip,
-    Legend
+    Legend,
+    Annotation,
 )
 
 function ClusterTab(
@@ -173,30 +176,65 @@ function NodeTab(
                         {
                             Object.keys(attributes).map((key) => {
                                 return (
-                                    <Stack>
-                                        <h6
-                                            style={{
-                                                maxWidth: '100%',
-                                                overflow: 'hidden',
-                                            }}
-                                        >
-                                            {key}
-                                        </h6>
-                                        <Form.Control id={key}
-                                            onChange={
-                                                (e) => {
-                                                    let newState = {...attributes}
+                                    <Tab.Container id='inspect' defaultActiveKey='edit'>
+                                        <Stack gap={2}>
+                                            <Nav variant='pills' className='flex-row'>
+                                                <Nav.Item>
+                                                    <Nav.Link eventKey='none' disabled>
+                                                        {key}
+                                                    </Nav.Link>
+                                                </Nav.Item>
+                                                <Nav.Item>
+                                                    <Nav.Link eventKey='edit'>
+                                                        edit
+                                                    </Nav.Link>
+                                                </Nav.Item>
+                                                <Nav.Item>
+                                                    <Nav.Link eventKey='dynamics'>
+                                                        dynamics
+                                                    </Nav.Link>
+                                                </Nav.Item>
+                                            </Nav>
+                                            <Tab.Content>
+                                                <Tab.Pane eventKey='edit'>
 
-                                                    newState[key] = e.target.value
+                                                    <Form.Control id={key}
+                                                        onChange={
+                                                            (e) => {
+                                                                let newState = {...attributes}
 
-                                                    setAttributes(newState)
-                                                }
-                                            }
-                                            type="text"
-                                            value={attributes[key]}
+                                                                newState[key] = e.target.value
 
-                                            placeholder={attributes[key]}/>
-                                    </Stack>
+                                                                setAttributes(newState)
+                                                            }
+                                                        }
+                                                        type="text"
+                                                        value={attributes[key]}
+
+                                                        placeholder={attributes[key]}
+                                                    />
+                                                </Tab.Pane>
+                                                <Tab.Pane eventKey='dynamics'>
+                                                    {
+                                                        CategoricalDynamicsChart(8,
+                                                            new Set<string>(['yes', 'no', 'maybe']),
+                                                            Array.from({length: 40},
+                                                                () => (Math.random()) > 0.5 ? 'yes' : 'no')
+                                                            )
+                                                    }
+                                                    {/* {
+                                                        OrderedDynamicsChart(
+                                                            8,
+                                                            0,
+                                                            1,
+                                                            Array.from({length: 40},
+                                                                () => (Math.random()))
+                                                            )
+                                                    } */}
+                                                </Tab.Pane>
+                                            </Tab.Content>
+                                        </Stack>
+                                    </Tab.Container>
                                 )
                             })
                         }
@@ -376,6 +414,159 @@ export function ResizeBar(props: {
             />
         </div>
     )
+}
+
+function OrderedDynamicsChart(
+    currentGraphIndex: number,
+    min: number,
+    max: number,
+    states: number[],
+) : JSX.Element {
+    const options = {
+        scales: {
+            x: {
+                type: 'linear',
+                min: 0,
+                max: states.length,
+                title: {
+                    display: true,
+                    text: 'Graph Index'
+                },
+                ticks: {
+                    stepSize: 1,
+                }
+            },
+            y: {
+                type: 'linear',
+                min: min,
+                max: max,
+                title: {
+                    display: true,
+                    text: 'Values'
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            },
+            annotation: {
+                annotations: [{
+                    type: 'line',
+                    mode: 'vertical',
+                    scaleID: 'x',
+                    value: currentGraphIndex,
+                    borderColor: 'red',
+                    borderWidth: 2,
+                    label: {
+                        content: 'Current Graph',
+                        enabled: true,
+                        position: 'top',
+                        backgroundColor: 'red',
+                        color: 'white',
+                        yAdjust: -10,
+                    }
+                }]
+            }
+        }
+    }
+
+    const data = {
+        labels: states.map((_, i) => i),
+        datasets: [{
+            data: states,
+            backgroundColor: states.map((state, index) => {
+                return index === currentGraphIndex ? 'red' : 'blue'
+            }),
+            // Set fill opacity
+            borderColor: 'lightblue'
+
+
+        }],
+
+    }
+
+    return (
+        // @ts-ignore
+        <Line data={data} options={options} />
+    )
+}
+
+
+// Takes an attribute and an array of states and graphs the states on the y axis
+// and the index of the state in the array on the x axis
+function CategoricalDynamicsChart(
+    currentGraphIndex: number,
+    stateSet: Set<string>,
+    states: string[],
+): JSX.Element {
+    const options = {
+        scales: {
+            x: {
+                type: 'linear',
+                min: 0,
+                max: states.length,
+                title: {
+                    display: true,
+                    text: 'Graph Index'
+                },
+                ticks: {
+                    stepSize: 1,
+
+                },
+            },
+            y: {
+                type: 'category',
+                labels: Array.from(stateSet),
+                title: {
+                    display: true,
+                    text: 'Values'
+                }
+            },
+        },
+        plugins: {
+            legend: {
+                display: false
+            },
+            annotation: {
+                annotations: [{
+                    type: 'line',
+                    mode: 'vertical',
+                    scaleID: 'x',
+                    value: currentGraphIndex,
+                    borderColor: 'red',
+                    borderWidth: 2,
+                    label: {
+                        content: 'Current Graph',
+                        enabled: true,
+                        position: 'top',
+                        backgroundColor: 'red',
+                        color: 'white',
+                        yAdjust: -10,
+                    }
+                }]
+            }
+        }
+    }
+
+    return <Scatter
+        data={{
+            datasets: [{
+                data: states.map((state, index) => {
+                    return {
+                        x: index,
+                        y: state
+                    }
+                }),
+                backgroundColor: states.map((state, index) => {
+                    return index === currentGraphIndex ? 'red' : 'blue'
+                }),
+            }]
+        }}
+
+        // @ts-ignore
+        options={options}
+    />
 }
 
 export default function InspectionTab(): JSX.Element {

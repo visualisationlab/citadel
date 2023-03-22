@@ -295,7 +295,7 @@ export default function Layout() {
                     if (attributeData.type === 'ordered') {
                         try {
                             let val = (edge.attributes[mapJS.attributeName] - attributeData.min) / (attributeData.max - attributeData.min)
-                            edge.visualAttributes.lightness = val
+                            edge.visualAttributes.lightness = ScaleToInterval(val, 0, 0.9)
                         }
                         catch (e) {
                             edge.visualAttributes.lightness = 0.5
@@ -326,6 +326,20 @@ export default function Layout() {
                                 console.log(e)
                                 edge.visualAttributes.hue = defaultEdgeHue
                             }
+                        }
+                    }
+                }
+
+                if (mapJS.mappingName === 'width') {
+                    let attributeData = edgeMetadata[mapJS.attributeName]
+
+                    if (attributeData.type === 'ordered') {
+                        try {
+                            let val = (edge.attributes[mapJS.attributeName] - attributeData.min) / (attributeData.max - attributeData.min)
+                            edge.visualAttributes.width = ScaleToInterval(val, 1, 10)
+                        }
+                        catch (e) {
+                            edge.visualAttributes.width = 2
                         }
                     }
                 }
