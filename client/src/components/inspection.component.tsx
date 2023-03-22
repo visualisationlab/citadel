@@ -18,12 +18,12 @@ import {
     Tooltip,
     Filler,
     Legend,
-    BarElement
+    BarElement,
 } from 'chart.js'
 
 import Annotation from 'chartjs-plugin-annotation'
 
-import { Bar, Scatter, Line } from 'react-chartjs-2'
+import { Bar, Scatter, Line, Bubble } from 'react-chartjs-2'
 
 import './home.component.css'
 import './inspection.stylesheet.scss'
@@ -44,7 +44,8 @@ ChartJS.register(
     Title,
     Tooltip,
     Legend,
-    Annotation,
+    Annotation
+
 )
 
 function ClusterTab(
@@ -216,7 +217,7 @@ function NodeTab(
                                                 </Tab.Pane>
                                                 <Tab.Pane eventKey='dynamics'>
                                                     {
-                                                        CategoricalDynamicsChart(8,
+                                                        CategoricalClusterDynamicsChart(8,
                                                             new Set<string>(['yes', 'no', 'maybe']),
                                                             Array.from({length: 40},
                                                                 () => (Math.random()) > 0.5 ? 'yes' : 'no')
@@ -414,6 +415,80 @@ export function ResizeBar(props: {
             />
         </div>
     )
+}
+
+function CategoricalClusterDynamicsChart(
+    currentGraphIndex: number,
+    stateSet: Set<string>,
+    states: {[attribute: string]: number}[],
+): JSX.Element {
+    const options = {
+        scales: {
+            x: {
+                type: 'linear',
+                min: 0,
+                max: states.length,
+                title: {
+                    display: true,
+                    text: 'Graph Index'
+                },
+                ticks: {
+                    stepSize: 1,
+                },
+            },
+            y: {
+                type: 'category',
+                labels: Array.from(stateSet),
+                title: {
+                    display: true,
+                    text: 'Values'
+                }
+            },
+        },
+        plugins: {
+            legend: {
+                display: false
+            },
+            annotation: {
+                annotations: [{
+                    type: 'line',
+                    mode: 'vertical',
+                    scaleID: 'x',
+                    value: currentGraphIndex,
+                    borderColor: 'red',
+                    borderWidth: 2,
+                    label: {
+                        content: 'Current Graph',
+                        enabled: true,
+                        position: 'top',
+                        backgroundColor: 'red',
+                        color: 'white',
+                        yAdjust: -10,
+                    }
+                }]
+            }
+        }
+    }
+
+    return <Bubble
+        data={{
+            datasets: [{
+                data: states.map((state: {[attribute: string]: number}, index) => {
+                    return {
+                        x: index,
+                        y: state,
+                        r: 5
+                    }
+                }),
+                backgroundColor: states.map((state, index) => {
+                    return index === currentGraphIndex ? 'red' : 'blue'
+                }),
+            }]
+        }}
+
+        // @ts-ignore
+        options={options}
+    />
 }
 
 function OrderedDynamicsChart(
