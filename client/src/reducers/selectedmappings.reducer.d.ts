@@ -6,22 +6,22 @@
  */
 import { Set, Map } from 'immutable';
 export declare const shapeTypes: string[];
-export type MappingChannel = 'hue' | 'saturation' | 'lightness' | 'radius' | 'shape' | 'alpha' | 'text' | 'width' | 'opacity' | 'none' | 'region' | 'x-position' | 'y-position';
+export declare type MappingChannel = 'hue' | 'saturation' | 'lightness' | 'radius' | 'shape' | 'alpha' | 'text' | 'width' | 'opacity' | 'none' | 'region' | 'x-position' | 'y-position';
 export declare const mappingChannels: string[];
-export type MappingType = {
+export declare type MappingType = {
     mappingName: MappingChannel;
     attributeType: 'categorical' | 'ordered';
     objectType: 'none' | 'node' | 'edge';
     attributeName: string;
 };
-export type MappingConfigState = Map<string, MappingSettings>;
-export type MappingSettings = {
+export declare type MappingConfigState = Map<string, MappingSettings>;
+export declare type MappingSettings = {
     regionNum: number;
     colourScheme: string | null;
     settings: Map<string, number>;
 };
-export type SchemeState = Map<string, number[]>;
-export type SchemeReducerAction = {
+export declare type SchemeState = Map<string, number[]>;
+export declare type SchemeReducerAction = {
     type: 'add';
     key: string;
     value: number[];
@@ -33,12 +33,12 @@ export type SchemeReducerAction = {
     key: string;
     value: number[];
 };
-export type MappingsState = {
+export declare type MappingsState = {
     selectedMappings: Set<Map<string, any>>;
     schemes: Map<string, number[]>;
     config: MappingConfigState;
 };
-export type MappingsReducerAction = {
+export declare type MappingsReducerAction = {
     type: 'selection';
     action: 'add';
 } | {
@@ -90,11 +90,11 @@ export type MappingsReducerAction = {
     oldName: string;
     newName: string;
 };
-type BasicMappingType = {
+declare type BasicMappingType = {
     objectType: 'node' | 'edge' | 'all';
     channelType: 'categorical' | 'ordered';
 };
-export type MappingProperties = {
+export declare type MappingProperties = {
     [key: string]: BasicMappingType;
 };
 export declare let mappingProperties: Map<MappingChannel, BasicMappingType>;

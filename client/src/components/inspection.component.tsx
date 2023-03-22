@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react'
-import { Container, Form, Button, Tabs, Tab, Row, Col, Dropdown } from 'react-bootstrap'
+import { Container, Form, Button, Tabs, Tab, Row, Col, Dropdown, Stack } from 'react-bootstrap'
 
 import { SelectionDataContext, UserDataContext } from '../components/main.component'
 import { GraphDataContext } from '../components/main.component'
@@ -18,11 +18,13 @@ import {
     Tooltip,
     Filler,
     Legend,
+    BarElement,
     } from 'chart.js'
 
-import { Line } from 'react-chartjs-2'
+import { Bar } from 'react-chartjs-2'
 
 import './home.component.css'
+import './inspection.stylesheet.scss'
 
 ChartJS.register(
     CategoryScale,
@@ -32,6 +34,13 @@ ChartJS.register(
     Title,
     Tooltip,
     Filler,
+    Legend,
+    BarElement,
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
     Legend
 )
 
@@ -43,70 +52,97 @@ function ClusterTab(
         setSelectedAttribute: React.Dispatch<React.SetStateAction<string>>
         ) {
 
-    const attributeList = clusterAttributes.map((attributes) => {
-        return parseInt(attributes[selectedAttribute])
+    const attributeList: string[] = clusterAttributes.map((attributes) => {
+        return attributes[selectedAttribute]
     })
 
     if (attributeList.length === 0) {
         return <></>
     }
 
-    let frequencies: {[key: string]: number} = {}
+    let frequencyDict: {[key: string]: number} = {}
 
-    attributeList.forEach((att) => {
-        frequencies[att] = (frequencies[att] || 0) + 1
+    attributeList.forEach((attribute) => {
+        frequencyDict[attribute] = (frequencyDict[attribute] || 0) + 1
     })
 
     const data = {
-        labels: Object.keys(frequencies),
+        labels: Object.keys(frequencyDict),
         datasets: [
-          {
-            fill: true,
-            label: selectedAttribute,
-            data: Object.values(frequencies),
-            borderColor: 'rgb(255, 99, 132)',
-            backgroundColor: 'rgba(255, 99, 132, 0.5)',
-          },
+            {
+                label: selectedAttribute,
+                data: Object.values(frequencyDict),
+                borderColor: 'rgb(255, 99, 132)',
+                backgroundColor: 'rgba(255, 99, 132, 0.5)',
+            },
         ],
-      };
+      }
+
+      const options = {
+        responsive: true,
+        plugins: {
+            legend: {
+            position: 'top' as const,
+            },
+        },
+    }
+    let clusterStatistics = <></>
+    // If all attributes are numeric, then we can do some statistics
+    if (attributeList.every((attribute) => {
+        return !isNaN(Number(attribute))
+    })) {
+        let vals = attributeList.map((e) => {return parseInt(e)})
+        clusterStatistics = (
+            <Col>
+                <p>Min: {min(vals)}</p>
+                <p>Max: {max(vals)}</p>
+                <p>Mean: {mean(vals)}</p>
+                <p>Median: {median(vals)}</p>
+            </Col>
+        )
+    }
 
     return (
         <Tab eventKey='Cluster' title={`Cluster (Count: ${attributeList.length})`}>
             <Row>
-                <Dropdown onSelect={(item) => {
-                    if (item === null)
-                        return
+                <Col>
+                    <Dropdown onSelect={(item) => {
+                        if (item === null)
+                            return
 
-                    setSelectedAttribute(item)
-                }}>
-                    <Dropdown.Toggle>
-                        {selectedAttribute === '' ? 'None' : selectedAttribute}
-                    </Dropdown.Toggle>
-                    <Dropdown.Menu>
-                    {attributeSelectionList.map((att) => {
-                        return (
-                            <Dropdown.Item key={att} eventKey={att}>{att}</Dropdown.Item>
-                        )
-                    })}
-                    </Dropdown.Menu>
-                </Dropdown>
+                        setSelectedAttribute(item)
+                    }}>
+                        <Dropdown.Toggle>
+                            {selectedAttribute === '' ? 'None' : selectedAttribute}
+                        </Dropdown.Toggle>
+                        <Dropdown.Menu>
+                        {attributeSelectionList.map((att) => {
+                            return (
+                                <Dropdown.Item key={att} eventKey={att}>{att}</Dropdown.Item>
+                            )
+                        })}
+                        </Dropdown.Menu>
+                    </Dropdown>
+                </Col>
             </Row>
             <Row>
-                <p>Min: {min(attributeList)}</p>
-                <p>Max: {max(attributeList)}</p>
-                <p>Mean: {mean(attributeList)}</p>
-                <p>Median: {median(attributeList)}</p>
+                {clusterStatistics}
             </Row>
             <Row>
-                <Line data={data}></Line>
+                <Col>
+                    <Bar options={options} data={data}/>
+                </Col>
             </Row>
-            <Button onClick={() => {
+            <Button variant='outline-danger'
+                onClick={() => {
                 console.log('here');
                 selectionDispatch({
                     type: 'selection/set',
                     payload: {
                         attribute: 'node', value: []
-                }})}}>Deselect All</Button>
+                }})}}>
+                    Deselect All
+            </Button>
         </Tab>
     )
 }
@@ -119,43 +155,63 @@ function NodeTab(
     graphState: GraphDataState) {
 
     return (
-        <>
-            <Row>
-                <p>Node ID: {id}</p>
-            </Row>
-            <Row style={{
-            overflowY: 'scroll',
-            height: '400px',
-            paddingRight: '0px'
-        }}>
-                <p>Attributes</p>
-                {Object.keys(attributes).map((key) => {
-                    return (
-                        <Row key={key}>
-                            <Col>
-                                {key}
-                            </Col>
-                            <Col>
-                                <Form.Control id={key}
-                                    onChange={
-                                        (e) => {
-                                            let newState = {...attributes}
+        <Stack>
+            <h4>
+                Node ID
+            </h4>
+            <p>{id}</p>
 
-                                            newState[key] = e.target.value
+            <h4>Attributes</h4>
+            <Stack gap={3}>
+                <div
+                    style={{
+                        overflowY: 'auto',
+                        maxHeight: '70vh',
+                    }}
+                >
+                    <Stack gap={3}>
+                        {
+                            Object.keys(attributes).map((key) => {
+                                return (
+                                    <Stack>
+                                        <h6
+                                            style={{
+                                                maxWidth: '100%',
+                                                overflow: 'hidden',
+                                            }}
+                                        >
+                                            {key}
+                                        </h6>
+                                        <Form.Control id={key}
+                                            onChange={
+                                                (e) => {
+                                                    let newState = {...attributes}
 
-                                            setAttributes(newState)
-                                        }
-                                    }
-                                    type="text"
-                                    value={attributes[key]}
+                                                    newState[key] = e.target.value
 
-                                    placeholder={attributes[key]}></Form.Control>
-                            </Col>
-                        </Row>
-                    )
-                })}
+                                                    setAttributes(newState)
+                                                }
+                                            }
+                                            type="text"
+                                            value={attributes[key]}
+
+                                            placeholder={attributes[key]}/>
+                                    </Stack>
+                                )
+                            })
+                        }
+                    </Stack>
+                </div>
                 <Row>
-                    <Col md={{offset: 6}}>
+                    <Col>
+                        <Button variant='outline-danger'
+                            onClick={() => {
+                                API.removeNode(id, graphState)
+                            }}>
+                            Remove Node
+                        </Button>
+                    </Col>
+                    <Col>
                         <Button onClick={() => {
                             graphDispatch({
                                 type: 'update',
@@ -169,18 +225,8 @@ function NodeTab(
                         }} type='submit'>Update</Button>
                     </Col>
                 </Row>
-            </Row>
-            <Row>
-                <Col>
-                    <Button variant='outline-danger'
-                        onClick={() => {
-                            API.removeNode(id, graphState)
-                        }}>
-                        Remove Node
-                    </Button>
-                </Col>
-            </Row>
-        </>
+            </Stack>
+        </Stack>
     )
 }
 
@@ -256,21 +302,109 @@ function EdgeTab(
     )
 }
 
+export function ResizeBar(props: {
+    hidden: boolean,
+    setHidden: React.Dispatch<React.SetStateAction<boolean>>,
+    width: number,
+    setWidth: React.Dispatch<React.SetStateAction<number>>,
+    maxWidth: number,
+    barWidth: number,
+    position: 'left' | 'right',
+    minWidth: number,
+}) {
+    const [dragging, setDragging] = useState(false)
+
+    return (
+        <div
+            style={{
+                position: 'absolute',
+                top: 0,
+                right: (props.position === 'right') ? (!props.hidden ? props.width + 'px' : 0) : 'auto',
+                left: (props.position === 'left') ? (!props.hidden ? props.width + 'px' : 0) : 'auto',
+                width: props.barWidth,
+                height: '100%',
+                zIndex: 1000,
+                backgroundColor: 'white',
+                borderLeft: '1px solid #e0e0e0',
+                cursor: dragging ? 'grabbing' : 'grab',
+                // transition: 'right 0.1s ease-in-out',
+            }}
+            onDragStart={(e) => { e.preventDefault() }}
+
+            onMouseDown={() => {
+                setDragging(true)
+                window.onmousemove = ((e) => {
+                    let delta = - props.barWidth / 2
+
+                    let x = props.position === 'right' ? window.innerWidth - e.clientX : e.clientX
+                    // if (dragging) {
+                        if (x + delta > (props.maxWidth)) {
+                            props.setWidth(props.maxWidth + delta)
+
+                            setDragging(false)
+                            window.onmousemove = null
+                        } else if (x + delta < props.minWidth) {
+                            props.setWidth(props.minWidth)
+                            setDragging(false)
+                            window.onmousemove = null
+                        } else {
+                            props.setWidth(x + delta)
+                        }
+                    // }
+                })
+
+            }}
+
+            onMouseUp={() => {
+                window.onmousemove = null
+                setDragging(false)
+            }}
+        >
+            <div
+                onDragStart={(e) => { e.preventDefault() }}
+                style={{
+                    position: 'absolute',
+                    top: 0,
+                    right: (props.position === 'right') ? 0 : -10,
+                    width: 10,
+                    height: '100%',
+                    zIndex: 1000,
+                    backgroundColor: 'white',
+                    borderLeft: '1px solid #e0e0e0',
+                    cursor: dragging ? 'grabbing' : 'grab',
+                }}
+            />
+        </div>
+    )
+}
+
 export default function InspectionTab(): JSX.Element {
     const { state } = useContext(UserDataContext)
+
     const { graphState, graphDispatch } = useContext(GraphDataContext)
+
     const { selectionState, selectionDispatch } = useContext(SelectionDataContext)
+
     const [ attributes, setAttributes ] = useState<{[id: string]: any}>({})
+
     const [ clusterAttributes, setClusterAttributes ] = useState<{[id: string]: any}[]>([])
+
     const [ selectedAttribute, setSelectedAttribute ] = useState('')
+
     const [ attributeSelectionList, setAttributeSelectionList ] = useState<string[]>([])
+
+    const [ hidden, setHidden ] = useState(false)
+
+    const [ width, setWidth ] = useState(300)
 
     useEffect(() => {
         if (selectionState === null || graphState === null) {
             return
         }
 
-        if (selectionState.selectedNodes.length === 0 && selectionState.selectedEdges.length === 0) {
+        if (selectionState.selectedNodes.length === 0
+            && selectionState.selectedEdges.length === 0) {
+
             return
         }
 
@@ -289,7 +423,6 @@ export default function InspectionTab(): JSX.Element {
                 setAttributeSelectionList(Object.keys(filteredResult[0].attributes))
 
                 const result = filteredResult.map((node) => { return node.attributes })
-                console.log(result)
 
                 setClusterAttributes(result)
 
@@ -356,7 +489,31 @@ export default function InspectionTab(): JSX.Element {
     }
 
     if (selectionState.selectedNodes.length === 0 && selectionState.selectedEdges.length === 0) {
-        return <></>
+        return (
+            <div
+                style={{
+                    position: 'absolute',
+                    top: '10px',
+                    right: '10px',
+                }}
+            >
+                <Button disabled={true}>Nothing selected</Button>
+            </div>
+        )
+    }
+
+    if (hidden) {
+        return (
+            <div
+                style={{
+                    position: 'absolute',
+                    top: '10px',
+                    right: '10px',
+                }}
+            >
+                <Button onClick={() => {setHidden(false)}}>Show details</Button>
+            </div>
+        )
     }
 
     if (selectionState.selectedNodes.length > 0) {
@@ -390,20 +547,49 @@ export default function InspectionTab(): JSX.Element {
         const node = result[0]
 
         return (
-            <Container
-                className="shadow bg-white rounded"
-                style={{width: '400px',
-                padding: '0px', top: '50px',
-                right: '50px',
-                position:'absolute'}}>
-                <Tabs>
-                    <Tab eventKey='Node' title='Node'>
-                        {NodeTab(node.id, attributes, setAttributes, graphDispatch, graphState)}
-                    </Tab>
-                    <Tab eventKey='Hide' title='Hide'>
-                    </Tab>
-                </Tabs>
-            </Container>
+            <>
+                <ResizeBar
+                    hidden={hidden}
+                    setHidden={setHidden}
+                    width={width}
+                    setWidth={setWidth}
+                    maxWidth={600}
+                    barWidth={20}
+                    minWidth={300}
+                    position={'right'}
+                />
+                <Container
+                    className="shadow bg-white rounded"
+                    style={{
+                        width: `${width}px`,
+                        height: '100%',
+                        top: '0',
+                        right: '0',
+                        position:'absolute',
+                        paddingTop: '10px',
+                        paddingBottom: '10px',
+                    }}
+                    draggable={false}
+                >
+                    <Row>
+                        <Col>
+                            <h2>
+                                Attributes
+                            </h2>
+                        </Col>
+                        <Col>
+                            <Button onClick={() => {setHidden(true)}}>Hide</Button>
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col>
+                            {
+                                NodeTab(node.id, attributes, setAttributes, graphDispatch, graphState)
+                            }
+                        </Col>
+                    </Row>
+                </Container>
+            </>
         )
     }
 
@@ -420,17 +606,22 @@ export default function InspectionTab(): JSX.Element {
     const edge = result[0]
 
     return (
-        <Container
-            className="shadow bg-white rounded"
-            style={{width: '400px',
-            padding: '0px', top: '50px',
-            right: '50px',
-            position:'absolute'}}>
-            <Tabs >
-                <Tab eventKey='Edge' title='Edge'>
-                    {EdgeTab(edge.id, edge.source, edge.target, attributes, setAttributes, graphDispatch, graphState)}
-                </Tab>
-            </Tabs>
-        </Container>
+        <>
+            <Container
+                className="shadow bg-white rounded"
+                style={{
+                    width: '400px',
+                    padding: '0px',
+                    top: '50px',
+                    right: '50px',
+                    position:'absolute',
+                }}>
+                <Tabs >
+                    <Tab eventKey='Edge' title='Edge'>
+                        {EdgeTab(edge.id, edge.source, edge.target, attributes, setAttributes, graphDispatch, graphState)}
+                    </Tab>
+                </Tabs>
+            </Container>
+        </>
     )
 }

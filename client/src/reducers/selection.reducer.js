@@ -22,7 +22,7 @@ function removeValue(currentValues, value) {
     if (!currentValues.includes(value)) {
         return currentValues;
     }
-    currentValues.splice(currentValues.indexOf(value));
+    currentValues.splice(currentValues.indexOf(value), 1);
     return currentValues;
 }
 function setState(type, value, mode) {
@@ -43,7 +43,6 @@ function setState(type, value, mode) {
 }
 export function SelectionDataReducer(state, action) {
     if (action.type === 'selection/reset') {
-        console.log('resetting selection');
         return resetState(state);
     }
     if (state.selectedNodes.length < 2 && state.selectedEdges.length < 2) {

@@ -1,6 +1,6 @@
 
 import React, { useContext, useState, useRef } from 'react'
-import { Row, Col, Button, Container, ListGroup, InputGroup, Form } from 'react-bootstrap'
+import { Row, Col, Button, Container, ListGroup, InputGroup, Form, Stack } from 'react-bootstrap'
 
 import './home.component.css'
 
@@ -51,112 +51,139 @@ function renderSettings(
     ) {
 
     return (
-        <>
-            <Row>
-                <Col>
-                    <InputGroup>
-                        <InputGroup.Text>Username</InputGroup.Text>
-                        <Form.Control
-                            placeholder={userName}
-                            onChange={
-                                (e) => {
-                                    e.target.value = e.target.value.replace(/[^a-zA-Z0-9]/g, '')
+        <Stack gap={2}>
+            <Stack>
+                <h5>
+                    Username
+                </h5>
+                <InputGroup>
+                    <Form.Control
+                        placeholder={userName}
+                        onChange={
+                            (e) => {
+                                e.target.value = e.target.value.replace(/[^a-zA-Z0-9]/g, '')
 
-                                    if (e.target.value.length > 10) {
-                                        e.target.value = e.target.value.substring(0, 10)
-                                    }
-
-                                    if (e.target.value.length === 0) {
-                                        return
-                                    }
-
-                                    setNewUserName(e.target.value)
-                                }
-                            }/>
-                        <Button
-                            variant="outline-primary"
-                            id="button-update"
-                            onClick={() => {
-                                let tmpName = newUserName.replace(/[^a-zA-Z0-9]/g, '')
-
-                                if (tmpName.length > 10) {
-                                    tmpName = tmpName.substring(0, 10)
+                                if (e.target.value.length > 10) {
+                                    e.target.value = e.target.value.substring(0, 10)
                                 }
 
-                                if (tmpName.length === 0) {
+                                if (e.target.value.length === 0) {
                                     return
                                 }
 
-                                API.updateUsername(tmpName)
+                                setNewUserName(e.target.value)
+                            }
+                        }
+                    />
+                    <Button
+                        variant="outline-primary"
+                        id="button-update"
+                        onClick={() => {
+                            let tmpName = newUserName.replace(/[^a-zA-Z0-9]/g, '')
+
+                            if (tmpName.length > 10) {
+                                tmpName = tmpName.substring(0, 10)
+                            }
+
+                            if (tmpName.length === 0) {
+                                return
+                            }
+
+                            API.updateUsername(tmpName)
+                        }}>
+                        Update
+                    </Button>
+                </InputGroup>
+            </Stack>
+            <Stack>
+                <h5>
+                    Expiration Date
+                </h5>
+                <Form.Control
+                    readOnly
+                    value={expirationDate.toString()}
+                />
+            </Stack>
+            <Stack>
+                <h5>
+                    Session Link
+                </h5>
+                <InputGroup>
+
+                    <Form.Control
+                        readOnly
+                        value={window.location.href}
+                        ref={sessionRef}/>
+                    <Button variant="outline-secondary"
+                            id="button-copy"
+                            onClick={() => {
+                                if (window.isSecureContext && navigator.clipboard) {
+                                    navigator.clipboard.writeText(sid)
+                                } else {
+                                    // @ts-ignore
+                                    sessionRef.current.select()
+
+                                    document.execCommand('copy')
+                                }
                             }}>
-                            Update
-                        </Button>
-                    </InputGroup>
-                </Col>
-            </Row>
-            <Row>
-                <Col>
+                        Copy
+                    </Button>
+                </InputGroup>
+            </Stack>
+            <Stack>
+                <h5>
+                    Graph Source
+                </h5>
+                <InputGroup>
+                    <Form.Control
+                        readOnly
+                        value={graphURL}
+                        ref={graphRef}/>
+                    <Button variant="outline-secondary"
+                            id="button-copy"
+                            onClick={() => {
+                                if (window.isSecureContext && navigator.clipboard) {
+                                    navigator.clipboard.writeText(graphURL)
+                                } else {
+                                    // @ts-ignore
+                                    graphRef.current.select()
 
-                    <InputGroup>
-                        <InputGroup.Text>Session Expiration Date:</InputGroup.Text>
-                        <Form.Control
-                            readOnly
-                            value={expirationDate.toString()}/>
-                    </InputGroup>
-                    <InputGroup>
-                        <InputGroup.Text>Session Link:</InputGroup.Text>
-                        <Form.Control
-                            readOnly
-                            value={window.location.href}
-                            ref={sessionRef}/>
-                        <Button variant="outline-secondary"
-                                id="button-copy"
-                                onClick={() => {
-                                    if (window.isSecureContext && navigator.clipboard) {
-                                        navigator.clipboard.writeText(sid)
-                                    } else {
-                                        // @ts-ignore
-                                        sessionRef.current.select()
-
-                                        document.execCommand('copy')
-                                    }
-                                }}>
-                            Copy
+                                    document.execCommand('copy')
+                                }
+                            }}>
+                        Copy
+                    </Button>
+                </InputGroup>
+            </Stack>
+            <Stack>
+                <h5>
+                    Download Graph
+                </h5>
+                <Row>
+                    <Col>
+                        <Button
+                            disabled={true}
+                            style={{
+                                width: '100%',
+                            }}
+                        >
+                            Whole series
                         </Button>
-                    </InputGroup>
-                    <InputGroup>
-                        <InputGroup.Text>Original Graph URL:</InputGroup.Text>
-                        <Form.Control
-                            readOnly
-                            value={graphURL}
-                            ref={graphRef}/>
-                        <Button variant="outline-secondary"
-                                id="button-copy"
-                                onClick={() => {
-                                    if (window.isSecureContext && navigator.clipboard) {
-                                        navigator.clipboard.writeText(graphURL)
-                                    } else {
-                                        // @ts-ignore
-                                        graphRef.current.select()
-
-                                        document.execCommand('copy')
-                                    }
-                                }}>
-                            Copy
-                        </Button>
-                    </InputGroup>
-                </Col>
-            </Row>
-            <Row>
-                <Col>
-                    <a href={downloadURL} download="graph.json">
-                        <Button>
-                            Download Graph
-                        </Button>
-                    </a>
-                </Col>
-            </Row>
-        </>
+                    </Col>
+                    <Col>
+                        <a href={downloadURL} download="graph.json">
+                            <Button
+                                style={{
+                                    width: '100%',
+                                }}
+                            >
+                                Single frame
+                            </Button>
+                        </a>
+                    </Col>
+                </Row>
+            </Stack>
+        </Stack>
     )
 }
 
@@ -317,107 +344,94 @@ export default function SessionTab() {
     return (
         <Container>
             <Row>
-                <Col md={{span: 3}}>
-                    <h3>Users</h3>
-                </Col>
                 <Col>
-                    {renderUsers(state.userName, state.users)}
-                </Col>
-            </Row>
-            <Row>
-                <Col md={{span: 3}}>
-                    <h3>Settings</h3>
-                </Col>
-                <Col>
-                    {renderSettings(
-                        state.userName,
-                        state.expirationDate,
-                        state.graphURL,
-                        state.sid,
-                        newUserName, setNewUserName,
-                        sessionRef,
-                        graphRef,
-                        downloadURL)}
-                </Col>
-            </Row>
-            <Row>
-                <Col md={{span: 3}}>
-                    <h3>Global Settings</h3>
-                </Col>
-                <Col>
-                    <Button variant='outline-primary' onClick={() => {
-                        setShowGlobalSettings(true)
-                    }}>
-                        Edit
-                    </Button>
-                </Col>
-            </Row>
-            <Row>
-                <Col md={{span: 3}}>
-                    <h3>Headsets</h3>
-                </Col>
-                <Col>
-                    <ListGroup>
-                        <div style={{
-                            overflowY:'auto',
-                            maxHeight: '200px'
+                    <Stack>
+                        <h3>Users</h3>
+                        {
+                            renderUsers(state.userName, state.users)
+                        }
+                        <h3>Settings</h3>
+                        {
+                            renderSettings(
+                                state.userName,
+                                state.expirationDate,
+                                state.graphURL,
+                                state.sid,
+                                newUserName, setNewUserName,
+                                sessionRef,
+                                graphRef,
+                                downloadURL
+                            )
+                        }
+                        <h3>Global Settings</h3>
+                        <Button variant='outline-primary' onClick={() => {
+                            setShowGlobalSettings(true)
                         }}>
+                            Edit
+                        </Button>
+                        <h3>Headsets</h3>
+                        <ListGroup>
+                            <div style={{
+                                overflowY:'auto',
+                                maxHeight: '200px'
+                            }}>
 
-                            {state.headsets.map((headset) => {
-                                if (headset.connected) {
+                                {state.headsets.map((headset) => {
+                                    if (headset.connected) {
+                                        return (
+                                            <ListGroup.Item>
+                                                <InputGroup>
+                                                    <InputGroup.Text>Headset</InputGroup.Text>
+                                                    <Button variant='success'>
+                                                        Connected
+                                                    </Button>
+                                                    <Button variant="outline-warning"
+                                                            onClick={() => {
+                                                                console.log("Disconnect")
+                                                            }}>
+                                                        Disconnect
+                                                    </Button>
+                                                </InputGroup>
+                                            </ListGroup.Item>
+                                        )
+                                    }
+
                                     return (
                                         <ListGroup.Item>
-                                            <InputGroup>
-                                                <InputGroup.Text>Headset</InputGroup.Text>
-                                                <Button variant='success'>
-                                                    Connected
-                                                </Button>
-                                                <Button variant="outline-warning"
-                                                        onClick={() => {
-                                                            console.log("Disconnect")
-                                                        }}>
-                                                    Disconnect
-                                                </Button>
-                                            </InputGroup>
+                                                <InputGroup>
+                                                    <InputGroup.Text>Headset</InputGroup.Text>
+                                                    <Button variant='secondary' disabled>
+                                                        Disconnected
+                                                    </Button>
+                                                    <Button variant="outline-primary"
+                                                            onClick={() => {
+                                                                console.log('here')
+                                                                let uid = API.getUID()
+
+                                                                if (uid) {
+                                                                    console.log('here')
+                                                                    QR.genQR(state.sessionURL, state.websocketPort, state.sid,
+                                                                        headset.headsetID, uid)
+                                                                }
+                                                            }}>
+                                                        Connect
+                                                    </Button>
+                                                </InputGroup>
                                         </ListGroup.Item>
                                     )
-                                }
+                                })}
+                            </div>
+                            <ListGroup.Item>
+                                <Button variant='outline-success'
+                                    onClick={() => {
+                                        API.addHeadset()
+                                    }}>
 
-                                return (
-                                    <ListGroup.Item>
-                                            <InputGroup>
-                                                <InputGroup.Text>Headset</InputGroup.Text>
-                                                <Button variant='secondary' disabled>
-                                                    Disconnected
-                                                </Button>
-                                                <Button variant="outline-primary"
-                                                        onClick={() => {
-                                                            console.log('here')
-                                                            let uid = API.getUID()
-
-                                                            if (uid) {
-                                                                console.log('here')
-                                                                QR.genQR(state.sessionURL, state.websocketPort, state.sid,
-                                                                    headset.headsetID, uid)
-                                                            }
-                                                        }}>
-                                                    Connect
-                                                </Button>
-                                            </InputGroup>
-                                    </ListGroup.Item>
-                                )
-                            })}
-                        </div>
-                        <ListGroup.Item>
-                            <Button variant='outline-success'
-                                onClick={() => {
-                                    API.addHeadset()
-                                }}>
-
-                                Add headset
-                            </Button>
-                        </ListGroup.Item>
-                    </ListGroup>
+                                    Add headset
+                                </Button>
+                            </ListGroup.Item>
+                        </ListGroup>
+                    </Stack>
                 </Col>
             </Row>
         </Container>

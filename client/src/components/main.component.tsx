@@ -172,10 +172,10 @@ export default function Main() {
             <GraphDataContext.Provider value={{ graphState: graphData, graphDispatch: graphDataDispatch }}>
                 <UserDataContext.Provider value={{ state: sessionData, dispatch: sessionDataDispatch}}>
                         <Navigator disconnected = {sessionData.state === 'disconnected'}/>
+                        <Layout/>
                         <InspectionTab/>
                 </UserDataContext.Provider>
 
-                <Layout/>
             </GraphDataContext.Provider>
             </MappingContext.Provider>
             </SelectionDataContext.Provider>
