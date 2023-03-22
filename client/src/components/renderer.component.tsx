@@ -99,9 +99,6 @@ class SpriteCache {
 
         this.cache[shape.toString()].unshift(sprite)
 
-        // sprite.x = 0
-        // sprite.y = 0
-
         // Disable the sprite
         sprite.visible = false
     }
@@ -228,6 +225,26 @@ function getSprite(shape: VisGraph.Shape) {
 function setupRendering() {
     app.stage.sortableChildren = true
 
+    let onKeyDown = (event: KeyboardEvent) => {
+        if (event.key === 'f') {
+            console.log("Resetting view")
+            // Center view
+            const render = d3.select('.render')
+
+            render.call((d3.zoom() as any).transform, d3.zoomIdentity.translate(window.innerWidth / 2, window.innerHeight / 2).scale(1))
+
+            transformX = window.innerWidth / 2
+            transformY = window.innerHeight / 2
+            transformK = 1.0
+
+            API.setPan(transformX, transformY, transformK)
+
+            updateTransform()
+        }
+    }
+
+    document.addEventListener('keydown', onKeyDown);
+
     const render = d3.select('.render')
 
     render.call((d3.zoom() as any)
@@ -245,6 +262,20 @@ function setupRendering() {
         }).on("end", () => {
         })
     )
+
+    let initialX = window.innerWidth / 2
+    let initialY = window.innerHeight / 2
+
+    // Set initial transform.
+    render.call((d3.zoom() as any).transform, d3.zoomIdentity.translate(initialX, initialY).scale(1))
+
+    // Update transformX, transformY, transformK
+    transformX = initialX
+    transformY = initialY
+    transformK = 1
+
+    API.setPan(transformX, transformY, transformK)
+
     // Generate a set of edges.
     // for (let i = 0; i < edgeStartingCount; i++) {
     //     let lineSprite = getSprite('line')
@@ -333,7 +364,6 @@ function renderBackground(stage: PIXI.Container,
         }
 
         if (multiSelectTimer) {
-            console.log('Single select')
             panEnabled = true
 
             if (dispatch) {
@@ -691,14 +721,15 @@ export function Renderer({
     selectionDispatch
     }: RendererProps) {
 
+    container.appendChild(app.view)
+    app.stage.addChild(selectionRect)
     if (!startupFlag) {
         setupRendering()
 
         startupFlag = true
     }
 
-    container.appendChild(app.view)
-    app.stage.addChild(selectionRect)
+
 
     console.log('Rendering...')
 

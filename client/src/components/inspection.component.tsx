@@ -466,8 +466,6 @@ export default function InspectionTab(): JSX.Element {
 
         const id = selectionState.selectedEdges[0]
 
-        console.log(graphState.edges.data)
-
         const result = graphState.edges.data.filter((edge) => {return edge.id === id})
 
         if (result.length === 0 || result.length > 1) {
