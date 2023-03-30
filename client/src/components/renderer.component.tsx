@@ -46,7 +46,8 @@ const app = new PIXI.Application({
     height:window.innerHeight,
     resizeTo: window,
     backgroundColor: 0xFFFFFF,
-    antialias: true
+    antialias: true,
+    sharedTicker: true,
 })
 
 const SPRITESCALE = 2.5
@@ -93,14 +94,18 @@ class SpriteCache {
             this.cache[shape.toString()] = []
         }
 
+        sprite.x = 0
+        sprite.y = 0
+
+        // Disable the sprite
+        sprite.visible = false
+
         app.stage.removeChild(sprite)
 
         sprite.removeAllListeners()
 
         this.cache[shape.toString()].unshift(sprite)
 
-        // Disable the sprite
-        sprite.visible = false
     }
 
     static getSprite(shape: VisGraph.Shape) {
@@ -726,12 +731,14 @@ export function Renderer({
     if (!startupFlag) {
         setupRendering()
 
+        PIXI.Ticker.shared.autoStart = false
+
         startupFlag = true
     }
 
-
-
     console.log('Rendering...')
+
+    PIXI.Ticker.shared.stop()
 
     renderedNodes.forEach((renderedNode) => {
         SpriteCache.pushSprite(renderedNode.nodesprite, renderedNode.visualAttributes.shape)
@@ -744,8 +751,6 @@ export function Renderer({
         if (renderedEdge.gfx)
             SpriteCache.pushSprite(renderedEdge.gfx, 'line')
     })
-
-    app.render()
 
     nodeDict = {}
 
@@ -894,6 +899,8 @@ export function Renderer({
         }
     })
 
+    PIXI.Ticker.shared.start()
+
     /* If there are still rendered nodes, only update the positions. */
     if (renderedNodes.length !== 0) {
         updateNodePositions(nodes)
@@ -905,8 +912,6 @@ export function Renderer({
         window.onpopstate = cleanMemory;
 
         app.stage.sortChildren()
-
-        app.render()
 
         console.log('done rendering')
 
@@ -924,7 +929,7 @@ export function Renderer({
 
     app.stage.sortChildren()
 
-    app.render()
+
 
 
     return {
