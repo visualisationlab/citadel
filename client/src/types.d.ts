@@ -241,7 +241,9 @@ export declare module VisGraph {
             id: string;
             source: string;
             target: string;
-            [key: string]: any;
+            attributes: {
+                [key: string]: any;
+            };
         };
     };
     export type Transform = {

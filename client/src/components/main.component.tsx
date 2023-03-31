@@ -1,4 +1,4 @@
-import React, {useEffect, useReducer, createContext, Reducer, useState } from 'react'
+import React, {useEffect, useReducer, createContext, Reducer, useState, SyntheticEvent } from 'react'
 import { Set, Map } from 'immutable'
 import './home.component.css'
 
@@ -46,6 +46,7 @@ export const GlobalSettingsContext = createContext({
     globalSettingsDispatch: null as React.Dispatch<GlobalSettingsReducerAction> | null
 })
 
+
 export default function Main() {
     let [mappingsState, mappingsDispatch] = useReducer<Reducer<MappingsState, MappingsReducerAction>>(MappingsReducer,
         {
@@ -55,8 +56,8 @@ export default function Main() {
         })
 
     let [selectionData, selectionDataDispatch] = useReducer(SelectionDataReducer, {
-        selectedNodes: [],
-        selectedEdges: [],
+        selectedIDs: [],
+        objectType: 'node',
         selectionMode: 'single'
     })
 
@@ -113,7 +114,8 @@ export default function Main() {
         // Give router access to dispatchers.
         Router.setup({
             sessionDataDispatch: sessionDataDispatch,
-            graphDataDispatch: graphDataDispatch
+            graphDataDispatch: graphDataDispatch,
+            selectionDataDispatch: selectionDataDispatch,
         })
 
         // Set up QR code service.

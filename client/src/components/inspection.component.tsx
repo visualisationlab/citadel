@@ -6,6 +6,7 @@ import { GraphDataContext } from '../components/main.component'
 import { GraphDataReducerAction, GraphDataState } from '../reducers/graphdata.reducer'
 import { SelectionDataReducerAction } from '../reducers/selection.reducer'
 import { API } from '../services/api.service'
+import { VisGraph } from '../types'
 
 import { min, max, mean, median } from 'mathjs'
 import {
@@ -147,17 +148,19 @@ function ClusterTab(
     )
 }
 
-function NodeTab(
+function ObjectTab(
     id: string,
+    objectType: 'node' | 'edge',
     attributes: {[id: string] : any},
     setAttributes: React.Dispatch<React.SetStateAction<{[id: string]: any}>>,
     graphDispatch: React.Dispatch<GraphDataReducerAction>,
-    graphState: GraphDataState) {
+    graphState: GraphDataState) : JSX.Element {
 
+    console.log(attributes)
     return (
         <Stack>
             <h4>
-                Node ID
+                {objectType.charAt(0).toUpperCase() + objectType.slice(1)} ID
             </h4>
             <p>{id}</p>
 
@@ -206,17 +209,26 @@ function NodeTab(
                     <Col>
                         <Button variant='outline-danger'
                             onClick={() => {
-                                API.removeNode(id, graphState)
+                                if (objectType === 'node') {
+                                    API.removeNode(id, graphState)
+                                }
+                                else {
+                                    API.removeEdge(id, graphState)
+                                }
                             }}>
-                            Remove Node
+                            Remove
                         </Button>
                     </Col>
                     <Col>
-                        <Button onClick={() => {
+                        <Button
+                            style={{
+                                float: 'right'
+                            }}
+                            onClick={() => {
                             graphDispatch({
                                 type: 'update',
                                 property: 'data',
-                                object: 'node',
+                                object: objectType,
                                 value: {
                                     id: id,
                                     attributes: attributes
@@ -402,82 +414,49 @@ export default function InspectionTab(): JSX.Element {
             return
         }
 
-        if (selectionState.selectedNodes.length === 0
-            && selectionState.selectedEdges.length === 0) {
+        if (selectionState.selectedIDs.length === 0) {
 
             return
         }
 
-        if (selectionState.selectedNodes.length > 0) {
-            if (selectionState.selectedNodes.length > 1) {
-                const filteredResult = graphState.nodes.data
-                    .filter((node) => { return selectionState.selectedNodes.includes(node.id)})
+        let data: (VisGraph.GraphNode | VisGraph.Edge)[] = []
 
-
-                if (filteredResult.length !== selectionState.selectedNodes.length) {
-                    console.log(`Wrong number of nodes for cluster ${selectionState.selectedNodes.length}: ${filteredResult.length}`)
-
-                    return
-                }
-
-                setAttributeSelectionList(Object.keys(filteredResult[0].attributes))
-
-                const result = filteredResult.map((node) => { return node.attributes })
-
-                setClusterAttributes(result)
-
-                return
-            }
-
-            const id = selectionState.selectedNodes[0]
-
-            const result = graphState.nodes.data.filter((node) => {return node.id === id})
-
-            if (result.length === 0 || result.length > 1) {
-                console.log(`Wrong number of nodes with id ${id}: ${result.length}`)
-
-                return
-            }
-
-            setAttributes(result[0].attributes)
-
-            return
+        if (selectionState.objectType === 'node') {
+            data = graphState.nodes.data
+        } else if (selectionState.objectType === 'edge') {
+            data = graphState.edges.data
         }
 
-        if (selectionState.selectedEdges.length > 1) {
-            const filteredResult = graphState.edges.data
-                .filter((edge) => { return selectionState.selectedEdges.includes(edge.id)})
+        if (selectionState.selectedIDs.length > 1) {
+            const filteredResult = data.filter((object) => { return selectionState.selectedIDs.includes(object.id)})
 
 
-            if (filteredResult.length !== selectionState.selectedEdges.length) {
-                console.log(`Wrong number of edges for cluster ${selectionState.selectedEdges.length}: ${filteredResult.length}`)
+            if (filteredResult.length !== selectionState.selectedIDs.length) {
+                console.log(`Wrong number of ${selectionState.objectType}s for cluster ${selectionState.selectedIDs.length}: ${filteredResult.length}`)
 
                 return
             }
 
             setAttributeSelectionList(Object.keys(filteredResult[0].attributes))
 
-            const result = filteredResult.map((edge) => { return edge.attributes })
+            const result = filteredResult.map((object) => { return object.attributes })
 
             setClusterAttributes(result)
 
             return
         }
 
-        const id = selectionState.selectedEdges[0]
+        const id = selectionState.selectedIDs[0]
 
-        const result = graphState.edges.data.filter((edge) => {return edge.id === id})
+        const result = data.filter((object) => {return object.id === id})
 
         if (result.length === 0 || result.length > 1) {
-            console.log(`Wrong number of edges with id ${id}: ${result.length}`)
+            console.log(`Wrong number of nodes or edges with id ${id}: ${result.length}`)
 
             return
         }
 
         setAttributes(result[0].attributes)
-
-        return
-
     }, [graphState, selectionState])
 
     if (state === null || graphState == null || graphDispatch == null
@@ -486,7 +465,7 @@ export default function InspectionTab(): JSX.Element {
         return <></>
     }
 
-    if (selectionState.selectedNodes.length === 0 && selectionState.selectedEdges.length === 0) {
+    if (selectionState.selectedIDs.length === 0) {
         return (
             <div
                 style={{
@@ -514,111 +493,87 @@ export default function InspectionTab(): JSX.Element {
         )
     }
 
-    if (selectionState.selectedNodes.length > 0) {
-        if (selectionState.selectedNodes.length > 1) {
-            return (
-                <Container
-                    className="shadow bg-white rounded"
-                    style={{width: '400px',
-                    padding: '0px', top: '50px',
-                    right: '50px',
-                    position:'absolute'}}>
-                    <Tabs>
-                        {ClusterTab(attributeSelectionList, selectionDispatch, clusterAttributes, selectedAttribute, setSelectedAttribute)}
-                        <Tab eventKey='Hide' title='Hide'>
-                        </Tab>
-                    </Tabs>
-                </Container>
-            )
-        }
-
-        const id = selectionState.selectedNodes[0]
-
-        const result = graphState.nodes.data.filter((node) => {return node.id === id})
-
-        if (result.length === 0 || result.length > 1) {
-            console.log(`Wrong number of nodes with id ${id}: ${result.length}`)
-
-            return <></>
-        }
-
-        const node = result[0]
-
+    if (selectionState.selectedIDs.length > 1) {
         return (
-            <>
-                <ResizeBar
-                    hidden={hidden}
-                    setHidden={setHidden}
-                    width={width}
-                    setWidth={setWidth}
-                    maxWidth={600}
-                    barWidth={20}
-                    minWidth={300}
-                    position={'right'}
-                />
-                <Container
-                    className="shadow bg-white rounded"
-                    style={{
-                        width: `${width}px`,
-                        height: '100%',
-                        top: '0',
-                        right: '0',
-                        position:'absolute',
-                        paddingTop: '10px',
-                        paddingBottom: '10px',
-                    }}
-                    draggable={false}
-                >
-                    <Row>
-                        <Col>
-                            <h2>
-                                Attributes
-                            </h2>
-                        </Col>
-                        <Col>
-                            <Button onClick={() => {setHidden(true)}}>Hide</Button>
-                        </Col>
-                    </Row>
-                    <Row>
-                        <Col>
-                            {
-                                NodeTab(node.id, attributes, setAttributes, graphDispatch, graphState)
-                            }
-                        </Col>
-                    </Row>
-                </Container>
-            </>
+            <Container
+                className="shadow bg-white rounded"
+                style={{width: '400px',
+                padding: '0px', top: '50px',
+                right: '50px',
+                position:'absolute'}}>
+                <Tabs>
+                    {ClusterTab(attributeSelectionList, selectionDispatch, clusterAttributes, selectedAttribute, setSelectedAttribute)}
+                    <Tab eventKey='Hide' title='Hide'>
+                    </Tab>
+                </Tabs>
+            </Container>
         )
     }
 
-    const id = selectionState.selectedEdges[0]
+    const id = selectionState.selectedIDs[0]
 
-    const result = graphState.edges.data.filter((edge) => {return edge.id === id})
+    let result: VisGraph.GraphNode[] | VisGraph.Edge[] = []
 
-    if (result.length === 0 || result.length > 1) {
-        console.log(`Wrong number of edges with id ${id}: ${result.length}`)
+    if (selectionState.objectType === 'node') {
+        result = graphState.nodes.data.filter((node) => {return node.id === id})
+    }
+    else if (selectionState.objectType === 'edge') {
+        result = graphState.edges.data.filter((edge) => {return edge.id === id})
+    }
 
+    if (result === null || result.length === 0 || result.length > 1) {
+        console.log(`Wrong number of nodes or edges with id ${id}: ${result.length}`)
         return <></>
     }
 
-    const edge = result[0]
+    const object = result[0]
 
     return (
         <>
+            <ResizeBar
+                hidden={hidden}
+                setHidden={setHidden}
+                width={width}
+                setWidth={setWidth}
+                maxWidth={600}
+                barWidth={20}
+                minWidth={300}
+                position={'right'}
+            />
             <Container
                 className="shadow bg-white rounded"
                 style={{
-                    width: '400px',
-                    padding: '0px',
-                    top: '50px',
-                    right: '50px',
+                    width: `${width}px`,
+                    height: '100%',
+                    top: '0',
+                    right: '0',
                     position:'absolute',
-                }}>
-                <Tabs >
-                    <Tab eventKey='Edge' title='Edge'>
-                        {EdgeTab(edge.id, edge.source, edge.target, attributes, setAttributes, graphDispatch, graphState)}
-                    </Tab>
-                </Tabs>
+                    paddingTop: '10px',
+                    paddingBottom: '10px',
+                }}
+                draggable={false}
+            >
+                <Row>
+                    <Col>
+                        <h2>
+                            Attributes
+                        </h2>
+                    </Col>
+                    <Col>
+                        <Button
+                            style={{
+                                float: 'right',
+                            }}
+                            onClick={() => {setHidden(true)}}>Hide</Button>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col>
+                        {
+                            ObjectTab(object.id, selectionState.objectType, attributes, setAttributes, graphDispatch, graphState)
+                        }
+                    </Col>
+                </Row>
             </Container>
         </>
     )

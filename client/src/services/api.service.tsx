@@ -126,6 +126,8 @@ export module API {
             return
         }
 
+        console.log('removing node: ' + nodeID)
+
         const newState = {...graphState}
 
         newState.nodes.data = graphState.nodes.data.filter((node) => {
@@ -143,6 +145,8 @@ export module API {
         if (sid === null || userID === null) {
             return
         }
+
+        console.log('removing edge: ' + edgeID)
 
         const newState = {...graphState}
 
@@ -166,17 +170,20 @@ export module API {
                 },
                 data: {
                     ...node.attributes,
-                    id: node.id},
+                    id: node.id
+                },
             }
         })
+
 
         const edges: VisGraph.CytoEdge[] = graphState.edges.data.map((edge: VisGraph.Edge) => {
             return {
                 data: {
-                    ...edge.attributes,
+                    attributes: {...edge.attributes},
                     source: edge.source,
                     target: edge.target,
-                    id: edge.attributes.id}
+                    id: edge.id
+                }
             }
         })
 
@@ -356,8 +363,6 @@ export module API {
             messageSource: 'user'
         })
     }
-
-
 
     export function pause() {
         if (sid === null || userID === null) {

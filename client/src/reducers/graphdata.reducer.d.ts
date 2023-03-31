@@ -4,7 +4,7 @@
  * This file contains the graph data reducer, which is used to store the graph data.
  */
 import { VisGraph } from '../types';
-export declare type MetadataType = {
+export type MetadataType = {
     type: 'ordered';
     dataType: 'number';
     min: number;
@@ -37,7 +37,7 @@ export interface GraphDataState {
     };
     directed: boolean;
 }
-export declare type GraphDataReducerAction = {
+export type GraphDataReducerAction = {
     type: 'set';
     property: 'data';
     value: {

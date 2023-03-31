@@ -8,7 +8,6 @@ import { SelectionDataReducerAction, SelectionDataState } from "../reducers/sele
 import { API } from '../services/api.service'
 import { BaseType } from "d3"
 
-
 // Create and load bitmap font.
 PIXI.BitmapFont.from('font', {
     fontFamily: 'sans-serif',
@@ -461,6 +460,8 @@ function cleanMemory() {
     // })
     console.log('Cleaned Memory')
 
+    startupFlag = false
+
     window.onpopstate = null
 }
 
@@ -736,8 +737,6 @@ export function Renderer({
         startupFlag = true
     }
 
-    console.log('Rendering...')
-
     PIXI.Ticker.shared.stop()
 
     renderedNodes.forEach((renderedNode) => {
@@ -779,8 +778,15 @@ export function Renderer({
         app.stage.addChild(text)
 
         const id = node.id
-        nodeSprite.on(('mousedown'), () => {
+        nodeSprite.on(('mousedown'), (event: PIXI.InteractionEvent) => {
             if (selectionDispatch === null) {
+                return
+            }
+
+            console.log(nodeSprite.worldVisible)
+
+            // Check if event x is smaller than 500.
+            if (event.data.global.x < 500) {
                 return
             }
 
@@ -802,8 +808,15 @@ export function Renderer({
             })}, 250)
         })
 
-        nodeSprite.on(('pointertap'), () => {
+        nodeSprite.on(('pointertap'), (event: PIXI.InteractionEvent) => {
             if (selectionDispatch === null) {
+                return
+            }
+
+            console.log(nodeSprite.worldVisible)
+
+            // Check if event x is smaller than 500.
+            if (event.data.global.x < 500) {
                 return
             }
 
@@ -823,8 +836,20 @@ export function Renderer({
             })
         })
 
-        nodeSprite.on(('pointerup'), () => {
+        nodeSprite.on(('pointerup'), (event: PIXI.InteractionEvent) => {
+            console.log(event)
             if (selectionDispatch === null) {
+                return
+            }
+
+            if (selectionDispatch === null) {
+                return
+            }
+
+            console.log(nodeSprite.worldVisible)
+
+            // Check if event x is smaller than 500.
+            if (event.data.global.x < 500) {
                 return
             }
 
@@ -834,7 +859,12 @@ export function Renderer({
             }
         })
 
-        nodeSprite.on(('pointerupoutside'), () => {
+        nodeSprite.on(('pointerupoutside'), (event: PIXI.InteractionEvent) => {
+            console.log(event)
+            if (event.target === null) {
+                return
+            }
+
             if (selectionDispatch === null) {
                 return
             }
@@ -912,8 +942,6 @@ export function Renderer({
         window.onpopstate = cleanMemory;
 
         app.stage.sortChildren()
-
-        console.log('done rendering')
 
         return {
             destroy: () => {

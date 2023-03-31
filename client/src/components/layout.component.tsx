@@ -197,9 +197,10 @@ export default function Layout() {
             })
 
             // Selection logic
-            if (selectionState.selectedNodes.length !== 0
+            if (selectionState.objectType === 'node'
+                && selectionState.selectedIDs.length > 0
                 && globalSettingsState.selectionHighlight !== 'none'
-                && !selectionState.selectedNodes.includes(node.attributes['id'].toString())
+                && !selectionState.selectedIDs.includes(node.attributes['id'].toString())
                 ) {
                 switch (globalSettingsState?.selectionHighlight) {
                     case 'transparency':
@@ -230,8 +231,9 @@ export default function Layout() {
         let hashedEdges = graphState.edges.data.map((edge) => {
             edge.visualAttributes.alpha = 1.0
 
-            if (selectionState?.selectedEdges.length !== 0) {
-                if (selectionState?.selectedEdges.includes(edge.attributes['id'].toString())) {
+            if (selectionState.objectType === 'edge'
+                && selectionState?.selectedIDs.length > 0) {
+                if (selectionState?.selectedIDs.includes(edge.attributes['id'].toString())) {
                     edge.visualAttributes.alpha = 1.0
                 }
                 else {

@@ -3,7 +3,7 @@ import { Tabs, Tab, Container, Collapse, Button, Row, Col } from 'react-bootstra
 import MappingTab from './mapping.component'
 import SessionTab from './session.component'
 import { SimulatorTab } from './simulate.component'
-import ObjectListTab from './objectlist.component'
+import SearchTab from './searchtab.component'
 import { VisGraph } from '../types'
 
 import { Simulator } from '../reducers/sessiondata.reducer'
@@ -26,7 +26,6 @@ const Navigator = memo(function Navigator(
     if (hidden) {
         return (
             <Button
-                variant="outline-primary"
                 onClick={() => setHidden(false)}
                 style={{
                     position: 'absolute',
@@ -54,12 +53,10 @@ const Navigator = memo(function Navigator(
                 draggable={false}
                 >
                 <Row>
-                    <Col md={{offset: 10, span: 2}}>
+                    <Col>
                         <Button
-                            variant="outline-primary"
-                            onClick={() => setHidden(true)}
-                            >
-                                -
+                            onClick={() => setHidden(true)}>
+                                Hide
                         </Button>
                     </Col>
                 </Row>
@@ -88,7 +85,7 @@ const Navigator = memo(function Navigator(
                                 <SimulatorTab />
                             </Tab>
                             <Tab eventKey='Search' title='Search'>
-                                <ObjectListTab />
+                                <SearchTab />
                             </Tab>
                             <Tab eventKey='Session' title={props.disconnected ? <GrCircleAlert></GrCircleAlert> : 'Session'} >
                                 <SessionTab />

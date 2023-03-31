@@ -3,8 +3,8 @@ type SelectionMode =
     | 'multi'
 
 export interface SelectionDataState {
-    selectedNodes: string[]
-    selectedEdges: string[]
+    selectedIDs: string[],
+    objectType: 'node' | 'edge',
     selectionMode: SelectionMode
 }
 
@@ -19,9 +19,10 @@ export type SelectionDataReducerAction =
     | { type: 'selection/reset' }
     | { type: 'selection/shortClick', payload: { attribute: AttributeType, id: string }}
     | { type: 'selection/longClick', payload: { attribute: AttributeType, id: string }}
+    | { type: 'selection/clean', payload: { nodeIDs: string[], edgeIDs: string[] }}
 
 function resetState(state: SelectionDataState): SelectionDataState {
-    if (state.selectedEdges.length === 0 && state.selectedNodes.length === 0) {
+    if (state.selectedIDs.length === 0) {
         return state
     }
 
@@ -31,46 +32,36 @@ function resetState(state: SelectionDataState): SelectionDataState {
     }
 
     return {
-        selectedNodes: [],
-        selectedEdges: [],
+        selectedIDs: [],
+        objectType: state.objectType,
         selectionMode: 'single'
     }
 }
 
-function addValue(currentValues: string[], value: string): string[] {
-    if (currentValues.includes(value)) {
-        return currentValues
+function addID(currentIDs: string[], id: string): string[] {
+    if (currentIDs.includes(id)) {
+        return currentIDs
     }
 
-    return currentValues.concat(value)
+    return currentIDs.concat(id)
 }
 
-function removeValue(currentValues: string[], value: string): string[] {
-    if (!currentValues.includes(value)) {
-        return currentValues
+function removeID(currentIDs: string[], id: string): string[] {
+    if (!currentIDs.includes(id)) {
+        return currentIDs
     }
 
-    currentValues.splice(currentValues.indexOf(value), 1)
+    currentIDs.splice(currentIDs.indexOf(id), 1)
 
-    return currentValues
+    return currentIDs
 }
 
 function setState(type: AttributeType, value: string[], mode: SelectionMode): SelectionDataState {
-    switch (type) {
-        case 'node':
-            return {
-                selectedNodes: value,
-                selectedEdges: [],
-                selectionMode: mode
-            }
-        default:
-            return {
-                selectedNodes: [],
-                selectedEdges: value,
-                selectionMode: mode
-            }
+    return {
+        selectedIDs: value,
+        objectType: type,
+        selectionMode: mode
     }
-
 }
 
 export function SelectionDataReducer(state: SelectionDataState, action: SelectionDataReducerAction): SelectionDataState {
@@ -78,49 +69,41 @@ export function SelectionDataReducer(state: SelectionDataState, action: Selectio
         return resetState(state)
     }
 
-    if (state.selectedNodes.length < 2 && state.selectedEdges.length < 2) {
+    if (state.selectedIDs.length === 1) {
         state.selectionMode = 'single'
     }
 
     switch (action.type) {
         case 'selection/added':
-            if (action.payload.attribute === 'node') {
-                return setState(action.payload.attribute, addValue(state.selectedNodes, action.payload.value), 'multi')
-            } else {
-                return setState(action.payload.attribute, addValue(state.selectedEdges, action.payload.value), 'multi')
-            }
+            return setState(action.payload.attribute, addID(state.selectedIDs, action.payload.value), 'multi')
         case 'selection/removed':
-            if (action.payload.attribute === 'node') {
-                let newSelectedNodes = removeValue(state.selectedNodes, action.payload.value)
+            let newIDs = removeID(state.selectedIDs, action.payload.value)
 
-                return setState(action.payload.attribute, newSelectedNodes, newSelectedNodes.length > 0 ? 'multi' : 'single')
-            } else {
-                let newSelectedEdges = removeValue(state.selectedEdges, action.payload.value)
-
-                return setState(action.payload.attribute, newSelectedEdges, newSelectedEdges.length > 0 ? 'multi' : 'single')
-            }
+            return setState(action.payload.attribute, newIDs, newIDs.length > 0 ? 'multi' : 'single')
         case 'selection/set':
-            if (state.selectedNodes.length === 0 && state.selectedEdges.length === 0 && action.payload.value.length === 0) {
+            if (state.selectedIDs.length === 0 && action.payload.value.length === 0) {
                 return state
             }
 
             return setState(action.payload.attribute, action.payload.value, action.payload.value.length > 1 ? 'multi' : 'single')
         case 'selection/shortClick':
             if (state.selectionMode === 'multi') {
-                if (action.payload.attribute === 'node') {
-                    return setState(action.payload.attribute, addValue(state.selectedNodes, action.payload.id), 'multi')
-                }
-
-                return setState(action.payload.attribute, addValue(state.selectedEdges, action.payload.id), 'multi')
+                return setState(action.payload.attribute, addID(state.selectedIDs, action.payload.id), 'multi')
             }
 
             return setState(action.payload.attribute, [action.payload.id], 'single')
         case 'selection/longClick':
-            if (action.payload.attribute === 'node') {
-                return setState(action.payload.attribute, addValue(state.selectedNodes, action.payload.id), 'multi')
-            }
+            return setState(action.payload.attribute, addID(state.selectedIDs, action.payload.id), 'multi')
+        case 'selection/clean':
+            let newSelectedIDs = state.selectedIDs.filter(id => {
+                if (state.objectType === 'node') {
+                    return action.payload.nodeIDs.includes(id)
+                }
 
-            return setState(action.payload.attribute, addValue(state.selectedEdges, action.payload.id), 'multi')
+                return action.payload.edgeIDs.includes(id)
+            })
+
+            return setState(state.objectType, newSelectedIDs, newSelectedIDs.length > 1 ? 'multi' : 'single')
         default:
             return state
     }

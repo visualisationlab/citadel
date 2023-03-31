@@ -371,11 +371,14 @@ function PaletteSettings(props: {mappingsState: MappingsState,
             paddingTop: '10px',
         }}>
             <Row>
-                <Col>
+                <Col md={{span: 6}}>
                     <h3>Palettes</h3>
                 </Col>
-                <Col md={{span: 1, offset: 8}}>
+                <Col md={{offset: 4}}>
                     <CloseButton
+                        style={{
+                            marginTop: '7px'
+                        }}
                         onClick={() => props.setSettingsType(null)}></CloseButton>
                 </Col>
             </Row>

@@ -104,13 +104,13 @@ interface InspectEdge {
 
 function renderMainList(
     objectIDs: string[],
-    selectedEdges: string[] | undefined,
-    selectedNodes: string[] | undefined,
+    selectedIDs: string[],
+    selectionType: 'node' | 'edge',
     searchType: 'edge' | 'node',
     selectionDispatch: React.Dispatch<SelectionDataReducerAction> | null)
     : JSX.Element {
 
-    if (selectionDispatch === null || selectedEdges === undefined || selectedNodes === undefined) {
+    if (selectionDispatch === null || objectIDs.length === 0) {
         return (<></>)
     }
 
@@ -128,15 +128,7 @@ function renderMainList(
                     {objectIDs.map((id) => {
                         let button = null
 
-                        let selectedObjects = []
-
-                        if (searchType === 'node') {
-                            selectedObjects = selectedNodes
-                        } else {
-                            selectedObjects = selectedEdges
-                        }
-
-                        if (selectedObjects.includes(id)) {
+                        if (selectedIDs.includes(id)) {
                             button = (
                                 <Button variant="outline-danger" onClick={(e) => {
                                     selectionDispatch({
@@ -185,17 +177,13 @@ function renderMainList(
     )
 }
 
-export default function ObjectListTab() {
+export default function SearchTab() {
     let [objectIDs, setObjectIDs] = useState<string[]>([])
     let [query, setQuery] = useState('')
     let [searchType, setSearchType] = useState<'node' | 'edge'>('node')
 
     const { graphState } = useContext(GraphDataContext)
     const { selectionState, selectionDispatch } = useContext(SelectionDataContext)
-
-    const list = useMemo(() => renderMainList(objectIDs, selectionState?.selectedEdges,
-        selectionState?.selectedNodes, searchType, selectionDispatch),
-        [objectIDs, selectionDispatch, searchType, selectionState?.selectedEdges, selectionState?.selectedNodes])
 
     // Update the list of nodes and edges when the graph state changes or the query changes
     useEffect(() => {
@@ -297,14 +285,13 @@ export default function ObjectListTab() {
     let selectButton = null
 
     // If all nodes are selected and searchType is node, then the select button should be deselect all
-    if (searchType === 'node' && selectionState.selectedNodes.length === objectIDs.length) {
+    if (searchType === 'node' && selectionState.selectedIDs.length === objectIDs.length) {
         selectButton = deselectAllButton
-    } else if (searchType === 'edge' && selectionState.selectedEdges.length === objectIDs.length) {
+    } else if (searchType === 'edge' && selectionState.selectedIDs.length === objectIDs.length) {
         selectButton = deselectAllButton
     } else {
         selectButton = selectAllButton
     }
-
 
     return (
         <Container style={{
@@ -339,7 +326,7 @@ export default function ObjectListTab() {
                     </InputGroup>
                 </Col>
             </Row>
-            {list}
+            {renderMainList(objectIDs, selectionState.selectedIDs, selectionState.objectType, searchType, selectionDispatch)}
             <Row>
                 <Col md={{offset: 8}}>
                     {selectButton}

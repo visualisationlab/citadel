@@ -1,11 +1,11 @@
-declare type SelectionMode = 'single' | 'multi';
+type SelectionMode = 'single' | 'multi';
 export interface SelectionDataState {
-    selectedNodes: string[];
-    selectedEdges: string[];
+    selectedIDs: string[];
+    objectType: 'node' | 'edge';
     selectionMode: SelectionMode;
 }
-declare type AttributeType = 'node' | 'edge';
-export declare type SelectionDataReducerAction = {
+type AttributeType = 'node' | 'edge';
+export type SelectionDataReducerAction = {
     type: 'selection/set';
     payload: {
         attribute: AttributeType;
@@ -36,6 +36,12 @@ export declare type SelectionDataReducerAction = {
     payload: {
         attribute: AttributeType;
         id: string;
+    };
+} | {
+    type: 'selection/clean';
+    payload: {
+        nodeIDs: string[];
+        edgeIDs: string[];
     };
 };
 export declare function SelectionDataReducer(state: SelectionDataState, action: SelectionDataReducerAction): SelectionDataState;

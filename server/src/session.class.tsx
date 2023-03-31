@@ -1617,7 +1617,8 @@ export class Session {
                     return node
                 }),
                 edges: edges.map((edge, index) => {
-                    const edgeKeys = Object.keys(edge)
+                    // IF edge contains data, edgekeys is data, otherwise just edgekeys
+                    const edgeKeys = (edge['data'] !== undefined) ? Object.keys(edge['data']) : Object.keys(edge)
 
                     if (edgeKeys.includes('attributes')) {
                         edge['data'] = edge.attributes

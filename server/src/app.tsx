@@ -336,9 +336,12 @@ var graphSchema = {
                     },
                     "attributes": {
                         "type": "object"
+                    },
+                    "id": {
+                        "type": ["string", "integer"]
                     }
                 },
-                "required": ["source", "target", "attributes"]
+                "required": ["source", "target", "attributes", "id"]
             },
             "minItems": 1,
             "uniqueItems": true

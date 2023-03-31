@@ -6,4 +6,4 @@
  */
 /// <reference types="react" />
 import './home.component.css';
-export default function ObjectListTab(): JSX.Element;
+export default function SearchTab(): JSX.Element;

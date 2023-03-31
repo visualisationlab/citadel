@@ -11,22 +11,26 @@ import { GraphDataReducerAction } from '../reducers/graphdata.reducer'
 import { API } from '../services/api.service'
 
 import { QR } from '../services/qrcode.service'
+import { SelectionDataReducerAction } from '../reducers/selection.reducer'
 interface RouterProps {
     sessionDataDispatch: Dispatch<SessionReducer>,
-    graphDataDispatch: Dispatch<GraphDataReducerAction>
+    graphDataDispatch: Dispatch<GraphDataReducerAction>,
+    selectionDataDispatch: Dispatch<SelectionDataReducerAction>
 }
 
 let sessionDataDispatch: Dispatch<SessionReducer> | null = null
 let graphDataDispatch: Dispatch<GraphDataReducerAction> | null = null
+let selectionDataDispatch: Dispatch<SelectionDataReducerAction> | null = null
 
 export module Router {
     export function setup(props: RouterProps) {
         sessionDataDispatch = props.sessionDataDispatch
         graphDataDispatch = props.graphDataDispatch
+        selectionDataDispatch = props.selectionDataDispatch
     }
 
     export function route(message: MessageTypes.OutMessage) {
-        if (!sessionDataDispatch || !graphDataDispatch) {
+        if (!sessionDataDispatch || !graphDataDispatch || !selectionDataDispatch) {
             return
         }
 
@@ -96,6 +100,11 @@ export module Router {
                         directed: false
                     }
                 })
+
+                selectionDataDispatch({type: 'selection/clean', payload: {
+                    nodeIDs: nodes.map((node) => node.id),
+                    edgeIDs: edges.map((edge) => edge.id)
+                }})
 
                 break
             case 'session':

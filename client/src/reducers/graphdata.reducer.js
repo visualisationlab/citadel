@@ -4,29 +4,34 @@ function updateData(state, action) {
     if (action.type !== 'update') {
         return state;
     }
-    switch (action.object) {
-        case 'node':
-            const result = state.nodes.data.filter((node) => { return node.id === action.value.id; });
-            if (result.length === 0 || result.length > 1) {
-                console.log(`Wrong number of nodes with id ${action.value.id}: {result.length}`);
-                return state;
-            }
-            if (result[0].attributes.length !== action.value.attributes.length) {
-                console.log(`Wrong number of attributes in update (a:${result[0].attributes.length} vs u:${action.value.attributes.length})`);
-                return state;
-            }
-            const newNodes = state.nodes.data.map((node) => {
-                if (node.id !== action.value.id)
-                    return node;
-                node.attributes = action.value.attributes;
+    let newState = [];
+    if (action.object === 'node') {
+        newState = state.nodes.data.map((node) => {
+            if (node.id !== action.value.id)
                 return node;
-            });
-            state.nodes.data = newNodes;
-            API.updateGraph(state);
-            return Object.assign({}, state);
-        default:
-            return state;
+            node.attributes = action.value.attributes;
+            return node;
+        });
     }
+    else if (action.object === 'edge') {
+        newState = state.edges.data.map((edge) => {
+            if (edge.id !== action.value.id)
+                return edge;
+            edge.attributes = action.value.attributes;
+            return edge;
+        });
+    }
+    if (action.object === 'node') {
+        state.nodes.data = newState;
+        state.nodes.metadata = calculateMetadata(state.nodes.data);
+        API.updateGraph(state);
+    }
+    else if (action.object === 'edge') {
+        state.edges.data = newState;
+        state.edges.metadata = calculateMetadata(state.edges.data);
+        API.updateGraph(state);
+    }
+    return Object.assign({}, state);
 }
 function calculateMetadata(data) {
     let nodeMetadata = {};
