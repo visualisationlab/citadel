@@ -92,15 +92,28 @@ function ClusterTab(
             y: {
                 title: {
                     display: true,
-                    text: 'Frequency'
+                    text: 'Frequency',
+                    // Bold text
+                    font: {
+                        weight: 'bold'
+                    }
+                },
+                ticks: {
+                    stepSize: 1
                 }
             },
             x: {
                 title: {
                     display: true,
-                    text: selectedAttribute
+                    text: selectedAttribute,
+                    font: {
+                        weight: 'bold'
+                    },
+                    ticks: {
+                        maxRotation: 90
+                    }
                 }
-            }
+            },
         }
     }
     let clusterStatistics = <></>
@@ -113,94 +126,142 @@ function ClusterTab(
         clusterStatistics = (
             <>
                 <tr>
-                    <td>Min</td>
+                    <td><b>Min</b></td>
                     <td>{min(vals)}</td>
                 </tr>
                 <tr>
-                    <td>Max</td>
+                    <td><b>Max</b></td>
                     <td>{max(vals)}</td>
                 </tr>
                 <tr>
-                    <td>Mean</td>
+                    <td><b>Mean</b></td>
                     <td>{mean(vals)}</td>
                 </tr>
                 <tr>
-                    <td>Median</td>
+                    <td><b>Median</b></td>
                     <td>{median(vals)}</td>
                 </tr>
             </>
         )
     }
 
-    return (
+    const histogramElement = selectedAttribute !== '' ? (
         <>
-            <Row>
-                <Col>
-                    <ListGroup
-                        style={{
-                            maxHeight: '20vh',
-                            overflowY: 'auto',
-                        }}
-                    >
-                        {attributeSelectionList.map((att) => {
-                            return (
-                                <ListGroup.Item
-                                    action
-                                    key={att}
-                                    eventKey={att}
-                                    onClick={
-                                        () => {
-                                            setSelectedAttribute(att)
-                                        }
-                                    }
-                                    >
-                                        {
-                                            att
-                                        }
-                                </ListGroup.Item>
-                            )
-                        })}
-                    </ListGroup>
-                </Col>
-            </Row>
             <Row style={{
                 marginTop: '1em',
-                marginBottom: '1em',
             }}>
+                <Col>
+                    <h4>Histogram</h4>
+                </Col>
+            </Row>
+            <Row>
                 <Col>
                     <Bar options={options} data={data}/>
                 </Col>
             </Row>
-            <Row>
+        </>
+    ) : (
+        <Row style={{
+            marginTop: '1em',
+        }}>
+            <Col>
+                <i>Click on an attribute to view its histogram.</i>
+            </Col>
+        </Row>
+    )
+
+    return (
+        <>
+            <Row style={{
+                height: '80vh',
+                overflowY: 'auto',
+            }}>
                 <Col>
-                <Table striped bordered>
-                    <thead>
-                        <tr>
-                            <th>Statistics</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Count</td>
-                            <td>{attributeList.length}</td>
-                        </tr>
-                        {
-                            clusterStatistics
-                        }
-                    </tbody>
-                </Table>
+
+                    <Row>
+                        <Col>
+                            <h4>Attributes</h4>
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col md={{
+                            span: 9
+                        }}>
+                            <ListGroup
+                                style={{
+                                    maxHeight: '15vh',
+                                    overflowY: 'auto',
+                                }}
+                            >
+                                {attributeSelectionList.map((att) => {
+                                    return (
+                                        <ListGroup.Item
+                                            action
+                                            key={att}
+                                            eventKey={att}
+                                            active={att === selectedAttribute}
+                                            onClick={
+                                                () => {
+                                                    setSelectedAttribute(att)
+                                                }
+                                            }
+                                            >
+                                                {
+                                                    att
+                                                }
+                                        </ListGroup.Item>
+                                    )
+                                })}
+                            </ListGroup>
+                        </Col>
+                    </Row>
+                    {
+                        histogramElement
+                    }
+                    <Row style={{
+                                    marginTop: '1em',
+                                }}>
+                        <Col>
+                            <h4>Statistics</h4>
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col>
+                            <Table striped bordered>
+                                {/* <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>Value</th>
+                                    </tr>
+                                </thead> */}
+                                <tbody>
+                                    <tr>
+                                        <td><b>Count</b></td>
+                                        <td>{attributeList.length}</td>
+                                    </tr>
+                                    {
+                                        clusterStatistics
+                                    }
+                                </tbody>
+                            </Table>
+                        </Col>
+                    </Row>
                 </Col>
             </Row>
-            <Button variant='outline-danger'
-                onClick={() => {
-                console.log('here');
-                selectionDispatch({
-                    type: 'selection/set',
-                    payload: {
-                        attribute: 'node', value: []
-                }})}}>
-                    Deselect All
-            </Button>
+            <Row>
+                <Col>
+                    <Button variant='outline-danger'
+                        onClick={() => {
+                        console.log('here');
+                        selectionDispatch({
+                            type: 'selection/set',
+                            payload: {
+                                attribute: 'node', value: []
+                        }})}}>
+                            Deselect All
+                    </Button>
+                </Col>
+            </Row>
         </>
     )
 }
@@ -296,78 +357,6 @@ function ObjectTab(
                 </Row>
             </Stack>
         </Stack>
-    )
-}
-
-function EdgeTab(
-    id: string,
-    source: string,
-    target: string,
-    attributes: {[id: string] : any},
-    setAttributes: React.Dispatch<React.SetStateAction<{[id: string]: any}>>,
-    graphDispatch: React.Dispatch<GraphDataReducerAction>,
-    graphState: GraphDataState) {
-
-    return (
-        <>
-            <Row>
-                <p>Edge ID: {id}</p>
-                <p>Source Node: {source}</p>
-                <p>Target Node: {target}</p>
-            </Row>
-            <Row>
-                <p>Attributes</p>
-                {Object.keys(attributes).map((key) => {
-                    return (
-                        <Row>
-                            <Col>
-                                {key}
-                            </Col>
-                            <Col>
-                                <Form.Control
-                                    onChange={
-                                        (e) => {
-                                            let newState = {...attributes}
-
-                                            newState[key] = e.target.value
-
-                                            setAttributes(newState)
-                                        }
-                                    }
-                                    value={attributes[key]}
-                                    defaultValue={attributes[key]}
-                                    placeholder={attributes[key]}></Form.Control>
-                            </Col>
-                        </Row>
-                    )
-                })}
-                <Row>
-                    <Col md={{offset: 6}}>
-                        <Button onClick={() => {
-                            graphDispatch({
-                                type: 'update',
-                                property: 'data',
-                                object: 'edge',
-                                value: {
-                                    id: id,
-                                    attributes: attributes
-                                }
-                            })
-                        }} type='submit'>Update</Button>
-                    </Col>
-                </Row>
-            </Row>
-            <Row>
-                <Col>
-                    <Button variant='outline-danger'
-                        onClick={() => {
-                            API.removeEdge(id, graphState)
-                        }}>
-                            Remove edge
-                    </Button>
-                </Col>
-            </Row>
-        </>
     )
 }
 
