@@ -108,9 +108,7 @@ function ClusterTab(
                     text: selectedAttribute,
                     font: {
                         weight: 'bold'
-                    },
-                    ticks: {
-                        maxRotation: 90
+
                     }
                 }
             },

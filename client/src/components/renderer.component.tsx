@@ -834,7 +834,6 @@ export function Renderer({
         })
 
         nodeSprite.on(('pointerupoutside'), (event: PIXI.InteractionEvent) => {
-            console.log(event)
             if (event.target === null) {
                 return
             }

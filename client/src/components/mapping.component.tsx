@@ -20,7 +20,8 @@ import {
     Dropdown,
     Table,
     InputGroup,
-    Stack} from 'react-bootstrap'
+    Stack,
+    ButtonGroup} from 'react-bootstrap'
 
 import { UserDataContext } from '../components/main.component'
 import { GraphDataContext } from '../components/main.component'
@@ -48,7 +49,11 @@ function renderLayoutSettings(
     }
 
     return (
-        <>
+        <div style={{
+            flexFlow: 'column',
+            display: 'flex',
+            height: '100%'
+        }}>
             <Row style={{
                 marginTop: '10px',
                 marginBottom: '10px'
@@ -62,7 +67,6 @@ function renderLayoutSettings(
 
             <Row style={{
                 overflowY: 'auto',
-                maxHeight: '50vh'
             }}>
                 <Col>
                     {
@@ -153,15 +157,24 @@ function renderLayoutSettings(
                     }
                 </Col>
             </Row>
-            <Row>
-                <Col md={{offset: 8, span: 4}}>
+            <Row style={{
+                display: 'flex',
+                flex: '0 1 40px'
+            }}>
+                <Col>
                     <Button variant='outline-primary'
                         onClick={() => {
                             API.setLayout(layout)
-                        }}>Apply</Button>
+                        }}
+                        style={{
+                            float: 'right'
+                        }}
+                        >
+                            Apply
+                        </Button>
                 </Col>
             </Row>
-        </>
+        </div>
     )
 }
 
@@ -197,7 +210,12 @@ function renderLayoutInterface(
                             attribute: 'selectedLayout',
                             value: item
                         })
-                    }}>
+                    }}
+                        style = {{
+                            float: 'right'
+                        }}
+                        align='end'
+                    >
                         <Dropdown.Toggle>
                             {layoutInfo?.selectedLayout === null ? 'none' : layoutInfo?.selectedLayout}
                         </Dropdown.Toggle>
@@ -876,44 +894,42 @@ function generateRow(
     )
 
     return (
-        <ListGroup.Item key={JSON.stringify(mapping)}
-            >
-                <Row>
-                    <Col >
-                        {objectTypeDropdown}
-                    </Col>
-                    <Col >
-                        {attributeDropdown}
-                    </Col>
-                    <Col >
-                        {channelDropdown}
-                    </Col>
-                    {(mapping.mappingName !== 'none' && mappingProperties.get(mapping.mappingName)?.channelType === 'categorical') &&
-                            <Col>
-                                <Button variant='outline-primary' onClick={
-                                    () => {
-                                        setSettingsType(mapping)
-                                    }
-                                }>
-                                    <BiCog></BiCog>
-                                </Button>
-                            </Col>
-                    }
-                    {!(mapping.mappingName !== 'none' && mappingProperties.get(mapping.mappingName)?.channelType === 'categorical') &&
+        <ListGroup.Item key={JSON.stringify(mapping)}>
+            <Row>
+                <Col >
+                    {objectTypeDropdown}
+                </Col>
+                <Col >
+                    {attributeDropdown}
+                </Col>
+                <Col >
+                    {channelDropdown}
+                </Col>
+                {(mapping.mappingName !== 'none' && mappingProperties.get(mapping.mappingName)?.channelType === 'categorical') &&
                         <Col>
+                            <Button variant='outline-primary' onClick={
+                                () => {
+                                    setSettingsType(mapping)
+                                }
+                            }>
+                                <BiCog></BiCog>
+                            </Button>
                         </Col>
-                    }
-                    <Col md={{order: 'last'}}>
-                        <Button variant='outline-danger' onClick={() => {
-                            mappingsDispatch({
-                                type: 'selection',
-                                action: 'remove',
-                                mapping: mapping
-                            })
-                        }}>X</Button>
+                }
+                {!(mapping.mappingName !== 'none' && mappingProperties.get(mapping.mappingName)?.channelType === 'categorical') &&
+                    <Col>
                     </Col>
-                </Row>
-
+                }
+                <Col md={{order: 'last'}}>
+                    <Button variant='outline-danger' onClick={() => {
+                        mappingsDispatch({
+                            type: 'selection',
+                            action: 'remove',
+                            mapping: mapping
+                        })
+                    }}>X</Button>
+                </Col>
+            </Row>
         </ListGroup.Item>
     )
 }
@@ -927,18 +943,16 @@ function MappingList(
     if (Object.keys(mappingsState.selectedMappings).length === 0) {
         // If there are no mappings selected, default message.
         return (
-                <ListGroup.Item>
-                        <Row>
-                            <Col>
-                                No mappings
-                            </Col>
-                        </Row>
-                </ListGroup.Item>
+            <Row>
+                <Col>
+                    No mappings
+                </Col>
+            </Row>
         )
     }
 
     return (
-        <>
+        <ListGroup style={{height: '100%'}}>
             {
                 mappingsState.selectedMappings.toList().map((mapping) => {
                         return generateRow(
@@ -948,22 +962,17 @@ function MappingList(
                             mapping.toJS() as any,
                             setSettingsType)})
             }
-        </>
+        </ListGroup>
     )
-}
-
-function renderAvailableAttributeSelection() {
-
 }
 
 export default function MappingTab() {
     const { state } = useContext(UserDataContext)
     const { graphState, graphDispatch } = useContext(GraphDataContext)
     const { mappingsState, mappingsDispatch } = useContext(MappingContext)
-
     const [ layoutSettingsState, layoutSettingsReducer ] = useReducer(LayoutSettingsReducer, null)
-
     const [ settingsType, setSettingsType ] = useState<MappingType | 'palette' | null>(null)
+    const [ mappingMenuType, setMappingMenuType ] = useState<'layout' | 'visual'>('visual')
 
     let layouts = state?.layouts
     let currentLayout = state?.currentLayout
@@ -1078,55 +1087,81 @@ export default function MappingTab() {
         </Button>
     )
 
+    const content = mappingMenuType === 'visual' ? (
+            <>
+                <Row style={{
+                    height: '100%'
+                }}>
+                    <Col>
+                        <div style={{
+                            overflowY: 'auto',
+                            height: '90vh'
+                        }}>
+                            {MappingList(mappingsState, mappingsDispatch, graphState, setSettingsType)}
+                        </div>
+                    </Col>
+                </Row>
+                <Row style={{
+                    position: 'absolute',
+                    bottom: '10px',
+                    width: '100%'
+                }}>
+                    <Col md={{span: 6}}>
+                        {addButton}
+                    </Col>
+                    <Col>
+                        {editPaletteButton}
+                    </Col>
+                </Row>
+            </>
+        ) : renderLayoutInterface(
+                state.layouts.map((layout) => {return layout.name}),
+                layoutSettingsState,
+                layoutSettingsReducer,
+                state.currentLayout,
+                state.state)
+
     return (
-        <div>
-            <h3>Mapping</h3>
-            <Accordion defaultActiveKey='nodemap'>
-                <Accordion.Item eventKey='nodemap'>
-                    <Accordion.Header>Selected Mappings</Accordion.Header>
-                    <Accordion.Body style={{
-                        padding: '0px',
+        <>
+            <Row style={{
+                marginTop: '10px',
+                marginBottom: '10px'
+            }}>
+                <Col>
+                    <h3>Mapping</h3>
+                </Col>
+
+                <Col>
+                    <ButtonGroup style={{
+                        float: 'right'
                     }}>
-                        <ListGroup>
-                            <div style={{
-                                overflowY: 'auto',
-                                height: '45vh'
-                            }}>
-                                {MappingList(mappingsState, mappingsDispatch, graphState, setSettingsType)}
-                            </div>
-                            <ListGroup.Item>
-                                <Row>
-                                    <Col>
-                                        {addButton}
-                                    </Col>
-                                    <Col>
-                                        {editPaletteButton}
-                                    </Col>
-                                </Row>
-                                <Row>
-                                    <Col>
-                                        <Button disabled={true} variant='outline-primary'>Save</Button>
-                                    </Col>
-                                    <Col>
-                                        <Button disabled={true} variant='outline-primary'>Load</Button>
-                                    </Col>
-                                </Row>
-                            </ListGroup.Item>
-                        </ListGroup>
-                    </Accordion.Body>
-                </Accordion.Item>
-                <Accordion.Item eventKey='layoutmap'>
-                    <Accordion.Header>Layout Mapping</Accordion.Header>
-                    <Accordion.Body>
-                        {renderLayoutInterface(
-                            state.layouts.map((layout) => {return layout.name}),
-                            layoutSettingsState,
-                            layoutSettingsReducer,
-                            state.currentLayout,
-                            state.state)}
-                    </Accordion.Body>
-                </Accordion.Item>
-            </Accordion>
-        </div>
+                        <Button
+                            variant={mappingMenuType === 'visual' ? 'primary' : 'outline-primary'}
+                            onClick={() => {setMappingMenuType('visual')}}
+                        >
+                            Visual
+                        </Button>
+                        <Button
+                            variant={mappingMenuType === 'layout' ? 'primary' : 'outline-primary'}
+                            onClick={() => {setMappingMenuType('layout')}}
+                        >
+                            Layout
+                        </Button>
+                    </ButtonGroup>
+                </Col>
+            </Row>
+            <Row>
+                <Col>
+                    <hr/>
+                </Col>
+            </Row>
+            <Row style={{
+                height: '100%'
+            }}>
+                <Col>
+                    {content}
+                </Col>
+            </Row>
+        </>
     )
 }

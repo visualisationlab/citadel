@@ -1,5 +1,5 @@
 import React, {useState, memo} from 'react'
-import { Tabs, Tab, Container, Collapse, Button, Row, Col } from 'react-bootstrap'
+import { Navbar, Container, Collapse, Button, Row, Col, Nav } from 'react-bootstrap'
 import MappingTab from './mapping.component'
 import SessionTab from './session.component'
 import { SimulatorTab } from './simulate.component'
@@ -22,6 +22,7 @@ const Navigator = memo(function Navigator(
 
     const [ hidden, setHidden ] = useState(false)
     const [ width, setWidth ] = useState(500)
+    const [ activeTab, setActiveTab ] = useState('mapping')
 
     if (hidden) {
         return (
@@ -39,6 +40,23 @@ const Navigator = memo(function Navigator(
         )
     }
 
+    let content = <></>
+
+    switch (activeTab) {
+        case 'mapping':
+            content = <MappingTab />
+            break
+        case 'search':
+            content = <SearchTab />
+            break
+        case 'simulator':
+            content = <SimulatorTab />
+            break
+        case 'settings':
+            content = <SessionTab />
+            break
+    }
+
     return (
         <>
             <Container
@@ -53,46 +71,56 @@ const Navigator = memo(function Navigator(
                 draggable={false}
                 >
                 <Row>
-                    <Col>
-                        <Button
+                    <Col
+                    onDragStart={(e) => { e.preventDefault() }}
+                    draggable={false}
+                    >
+                        <Navbar>
+                            <Navbar.Brand>
+                                Citadel
+                            </Navbar.Brand>
+                            <Nav activeKey={activeTab}>
+                                {/* Set active */}
+                                <Nav.Link eventKey={'mapping'} onClick={() => {
+                                    setActiveTab('mapping')
+                                }}>
+                                    Mapping
+                                </Nav.Link>
+                                <Nav.Link eventKey={'search'} onClick={() => {
+                                    setActiveTab('search')
+                                }}>Search</Nav.Link>
+                                <Nav.Link eventKey={'simulator'} onClick={
+                                    () => {
+                                        setActiveTab('simulator')
+                                    }
+                                }>Simulator</Nav.Link>
+                                <Nav.Link eventKey={'settings'} onClick={
+                                    () => {
+                                        setActiveTab('settings')
+                                    }
+                                }>Settings</Nav.Link>
+                            </Nav>
+                        </Navbar>
+                    </Col>
+                    <Col style={{
+                        paddingBottom: '10px',
+
+                    }}>
+                        <Button style={{
+                            float: 'right'
+                        }}
                             onClick={() => setHidden(true)}>
                                 Hide
                         </Button>
                     </Col>
                 </Row>
-                <Row>
-                    <Col
-                    onDragStart={(e) => { e.preventDefault() }}
-                    draggable={false}
-                    >
-                        <Tabs
-                            defaultActiveKey={'Mapping'}
-                            id="navigator"
-                            // @ts-ignore
-                            justify
 
-                        >
-                            <Tab
-                                eventKey='Mapping'
-                                title='Mapping'
-                            >
-                                <MappingTab />
-                            </Tab>
-                            {/* <Tab eventKey='Filter' title='Filter'>
-
-                            </Tab> */}
-                            <Tab eventKey='Simulate' title='Simulate'>
-                                <SimulatorTab />
-                            </Tab>
-                            <Tab eventKey='Search' title='Search'>
-                                <SearchTab />
-                            </Tab>
-                            <Tab eventKey='Session' title={props.disconnected ? <GrCircleAlert></GrCircleAlert> : 'Session'} >
-                                <SessionTab />
-                            </Tab>
-                        </Tabs>
+                <Row style={{
+                    height: '100%',
+                }}>
+                    <Col>
+                        {content}
                     </Col>
-
                 </Row>
             </Container>
             <ResizeBar
