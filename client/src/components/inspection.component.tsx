@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react'
-import { Container, Form, Button, Tabs, Tab, Row, Col, Dropdown, Stack } from 'react-bootstrap'
+import { Container, Form, Button, Tabs, Tab, Row, Col, Dropdown, Stack, Table, ListGroup } from 'react-bootstrap'
 
 import { SelectionDataContext, UserDataContext } from '../components/main.component'
 import { GraphDataContext } from '../components/main.component'
@@ -47,6 +47,7 @@ ChartJS.register(
 
 function ClusterTab(
         attributeSelectionList: string[],
+        objectType: 'node' | 'edge',
         selectionDispatch: React.Dispatch<SelectionDataReducerAction>,
         clusterAttributes: {[id: string]: any}[],
         selectedAttribute: string,
@@ -83,55 +84,111 @@ function ClusterTab(
         responsive: true,
         plugins: {
             legend: {
-            position: 'top' as const,
+                display: false,
+                position: 'top' as const,
             },
         },
+        scales: {
+            y: {
+                title: {
+                    display: true,
+                    text: 'Frequency'
+                }
+            },
+            x: {
+                title: {
+                    display: true,
+                    text: selectedAttribute
+                }
+            }
+        }
     }
     let clusterStatistics = <></>
     // If all attributes are numeric, then we can do some statistics
     if (attributeList.every((attribute) => {
         return !isNaN(Number(attribute))
     })) {
-        let vals = attributeList.map((e) => {return parseInt(e)})
+        let vals = attributeList.map((e) => {return parseFloat(e)})
+
         clusterStatistics = (
-            <Col>
-                <p>Min: {min(vals)}</p>
-                <p>Max: {max(vals)}</p>
-                <p>Mean: {mean(vals)}</p>
-                <p>Median: {median(vals)}</p>
-            </Col>
+            <>
+                <tr>
+                    <td>Min</td>
+                    <td>{min(vals)}</td>
+                </tr>
+                <tr>
+                    <td>Max</td>
+                    <td>{max(vals)}</td>
+                </tr>
+                <tr>
+                    <td>Mean</td>
+                    <td>{mean(vals)}</td>
+                </tr>
+                <tr>
+                    <td>Median</td>
+                    <td>{median(vals)}</td>
+                </tr>
+            </>
         )
     }
 
     return (
-        <Tab eventKey='Cluster' title={`Cluster (Count: ${attributeList.length})`}>
+        <>
             <Row>
                 <Col>
-                    <Dropdown onSelect={(item) => {
-                        if (item === null)
-                            return
-
-                        setSelectedAttribute(item)
-                    }}>
-                        <Dropdown.Toggle>
-                            {selectedAttribute === '' ? 'None' : selectedAttribute}
-                        </Dropdown.Toggle>
-                        <Dropdown.Menu>
+                    <ListGroup
+                        style={{
+                            maxHeight: '20vh',
+                            overflowY: 'auto',
+                        }}
+                    >
                         {attributeSelectionList.map((att) => {
                             return (
-                                <Dropdown.Item key={att} eventKey={att}>{att}</Dropdown.Item>
+                                <ListGroup.Item
+                                    action
+                                    key={att}
+                                    eventKey={att}
+                                    onClick={
+                                        () => {
+                                            setSelectedAttribute(att)
+                                        }
+                                    }
+                                    >
+                                        {
+                                            att
+                                        }
+                                </ListGroup.Item>
                             )
                         })}
-                        </Dropdown.Menu>
-                    </Dropdown>
+                    </ListGroup>
+                </Col>
+            </Row>
+            <Row style={{
+                marginTop: '1em',
+                marginBottom: '1em',
+            }}>
+                <Col>
+                    <Bar options={options} data={data}/>
                 </Col>
             </Row>
             <Row>
-                {clusterStatistics}
-            </Row>
-            <Row>
                 <Col>
-                    <Bar options={options} data={data}/>
+                <Table striped bordered>
+                    <thead>
+                        <tr>
+                            <th>Statistics</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Count</td>
+                            <td>{attributeList.length}</td>
+                        </tr>
+                        {
+                            clusterStatistics
+                        }
+                    </tbody>
+                </Table>
                 </Col>
             </Row>
             <Button variant='outline-danger'
@@ -144,7 +201,7 @@ function ClusterTab(
                 }})}}>
                     Deselect All
             </Button>
-        </Tab>
+        </>
     )
 }
 
@@ -415,6 +472,10 @@ export default function InspectionTab(): JSX.Element {
         }
 
         if (selectionState.selectedIDs.length === 0) {
+            setAttributes({})
+            setClusterAttributes([])
+            setSelectedAttribute('')
+            setAttributeSelectionList([])
 
             return
         }
@@ -429,7 +490,6 @@ export default function InspectionTab(): JSX.Element {
 
         if (selectionState.selectedIDs.length > 1) {
             const filteredResult = data.filter((object) => { return selectionState.selectedIDs.includes(object.id)})
-
 
             if (filteredResult.length !== selectionState.selectedIDs.length) {
                 console.log(`Wrong number of ${selectionState.objectType}s for cluster ${selectionState.selectedIDs.length}: ${filteredResult.length}`)
@@ -493,40 +553,33 @@ export default function InspectionTab(): JSX.Element {
         )
     }
 
+    let tabContent = <></>
+
     if (selectionState.selectedIDs.length > 1) {
-        return (
-            <Container
-                className="shadow bg-white rounded"
-                style={{width: '400px',
-                padding: '0px', top: '50px',
-                right: '50px',
-                position:'absolute'}}>
-                <Tabs>
-                    {ClusterTab(attributeSelectionList, selectionDispatch, clusterAttributes, selectedAttribute, setSelectedAttribute)}
-                    <Tab eventKey='Hide' title='Hide'>
-                    </Tab>
-                </Tabs>
-            </Container>
-        )
+        tabContent = ClusterTab(attributeSelectionList, selectionState.objectType, selectionDispatch,
+            clusterAttributes, selectedAttribute, setSelectedAttribute)
+    } else {
+        const id = selectionState.selectedIDs[0]
+
+        let result: VisGraph.GraphNode[] | VisGraph.Edge[] = []
+
+        if (selectionState.objectType === 'node') {
+            result = graphState.nodes.data.filter((node) => {return node.id === id})
+        }
+        else if (selectionState.objectType === 'edge') {
+            result = graphState.edges.data.filter((edge) => {return edge.id === id})
+        }
+
+        if (result === null || result.length === 0 || result.length > 1) {
+            console.log(`Wrong number of nodes or edges with id ${id}: ${result.length}`)
+            return <></>
+        }
+
+        tabContent = ObjectTab(result[0].id, selectionState.objectType, attributes, setAttributes, graphDispatch, graphState)
     }
 
-    const id = selectionState.selectedIDs[0]
-
-    let result: VisGraph.GraphNode[] | VisGraph.Edge[] = []
-
-    if (selectionState.objectType === 'node') {
-        result = graphState.nodes.data.filter((node) => {return node.id === id})
-    }
-    else if (selectionState.objectType === 'edge') {
-        result = graphState.edges.data.filter((edge) => {return edge.id === id})
-    }
-
-    if (result === null || result.length === 0 || result.length > 1) {
-        console.log(`Wrong number of nodes or edges with id ${id}: ${result.length}`)
-        return <></>
-    }
-
-    const object = result[0]
+    const header = selectionState.selectedIDs.length > 1 ?
+        selectionState.objectType.charAt(0).toUpperCase() + selectionState.objectType.slice(1) + ' Cluster' : 'Details'
 
     return (
         <>
@@ -554,12 +607,16 @@ export default function InspectionTab(): JSX.Element {
                 draggable={false}
             >
                 <Row>
-                    <Col>
+                    <Col md={{span: 9}}>
                         <h2>
-                            Attributes
+                            {
+                                header
+                            }
                         </h2>
                     </Col>
-                    <Col>
+                    <Col style={{
+                        paddingLeft: 0
+                    }}>
                         <Button
                             style={{
                                 float: 'right',
@@ -570,7 +627,7 @@ export default function InspectionTab(): JSX.Element {
                 <Row>
                     <Col>
                         {
-                            ObjectTab(object.id, selectionState.objectType, attributes, setAttributes, graphDispatch, graphState)
+                            tabContent
                         }
                     </Col>
                 </Row>

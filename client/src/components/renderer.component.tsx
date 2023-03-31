@@ -88,13 +88,9 @@ class SpriteCache {
     static cache: {[key: string]: PIXI.Sprite[]} = {}
 
     static pushSprite(sprite: PIXI.Sprite, shape: VisGraph.Shape) {
-
         if (this.cache[shape.toString()] === undefined) {
             this.cache[shape.toString()] = []
         }
-
-        sprite.x = 0
-        sprite.y = 0
 
         // Disable the sprite
         sprite.visible = false
@@ -104,7 +100,6 @@ class SpriteCache {
         sprite.removeAllListeners()
 
         this.cache[shape.toString()].unshift(sprite)
-
     }
 
     static getSprite(shape: VisGraph.Shape) {
@@ -783,13 +778,6 @@ export function Renderer({
                 return
             }
 
-            console.log(nodeSprite.worldVisible)
-
-            // Check if event x is smaller than 500.
-            if (event.data.global.x < 500) {
-                return
-            }
-
             if (multiSelectTimer !== null) {
                 return
             }
@@ -810,13 +798,6 @@ export function Renderer({
 
         nodeSprite.on(('pointertap'), (event: PIXI.InteractionEvent) => {
             if (selectionDispatch === null) {
-                return
-            }
-
-            console.log(nodeSprite.worldVisible)
-
-            // Check if event x is smaller than 500.
-            if (event.data.global.x < 500) {
                 return
             }
 
@@ -843,13 +824,6 @@ export function Renderer({
             }
 
             if (selectionDispatch === null) {
-                return
-            }
-
-            console.log(nodeSprite.worldVisible)
-
-            // Check if event x is smaller than 500.
-            if (event.data.global.x < 500) {
                 return
             }
 

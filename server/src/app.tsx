@@ -341,7 +341,7 @@ var graphSchema = {
                         "type": ["string", "integer"]
                     }
                 },
-                "required": ["source", "target", "attributes", "id"]
+                "required": ["source", "target", "attributes"]
             },
             "minItems": 1,
             "uniqueItems": true
