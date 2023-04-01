@@ -8,7 +8,8 @@
 import { Switch, Route, Redirect } from 'react-router-dom';
 
 import './App.css';
-import "bootstrap/dist/css/bootstrap.min.css";
+import '../scss/custom.scss';
+
 
 import Upload from '../components/upload.component'
 import Main from '../components/main.component'

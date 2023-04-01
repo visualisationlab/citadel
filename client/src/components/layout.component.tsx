@@ -271,10 +271,10 @@ export default function Layout() {
                 }
             }
 
-            const defaultEdgeHue = 234
+            const defaultEdgeHue = 226
 
             edge.visualAttributes.hue = defaultEdgeHue
-            edge.visualAttributes.lightness = 0.5
+            edge.visualAttributes.lightness = 0.25
             edge.visualAttributes.saturation = 1
             edge.visualAttributes.text = ''
             edge.visualAttributes.width = 2
