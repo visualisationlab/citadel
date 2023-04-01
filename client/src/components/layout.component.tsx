@@ -55,6 +55,8 @@ export default function Layout() {
 
             node.visualAttributes.lightness = 0.5
             node.visualAttributes.saturation = 1
+            node.visualAttributes.x = node.x
+            node.visualAttributes.y = node.y
 
             mappingsState.selectedMappings.forEach((mapping) => {
                 let mapJS = mapping.toJS() as MappingType
@@ -65,10 +67,37 @@ export default function Layout() {
                         hash: 'abc'
                     }
 
+                if (mapJS.mappingName === 'x-position') {
+                    let attributeData = nodeMetadata[mapJS.attributeName]
+
+                    if (attributeData.type === 'ordered') {
+                        try {
+                            let val = (node.attributes[mapJS.attributeName] - attributeData.min) / (attributeData.max - attributeData.min)
+                            node.visualAttributes.x = ScaleToInterval(val, 0, 1000)
+                        }
+                        catch (e) {
+                        }
+                    }
+                }
+
+                if (mapJS.mappingName === 'y-position') {
+                    let attributeData = nodeMetadata[mapJS.attributeName]
+
+                    if (attributeData.type === 'ordered') {
+                        try {
+                            let val = (node.attributes[mapJS.attributeName] - attributeData.min) / (attributeData.max - attributeData.min)
+                            node.visualAttributes.y = ScaleToInterval(val, 0, -1000)
+                        }
+                        catch (e) {
+
+                        }
+                    }
+                }
+
                 if (mapJS.mappingName === 'text') {
 
                     node.visualAttributes.text = node.attributes[mapJS.attributeName]
-                    node.visualAttributes.textScale = globalSettingsState.textScale
+                    node.visualAttributes.textScale = globalSettingsState.textScale * 0.3
 
                     if (mappingsState.config.get(JSON.stringify(mapping))?.settings.get(node.attributes[mapJS.attributeName]) === 0) {
                         node.visualAttributes.text = ''

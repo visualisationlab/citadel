@@ -219,6 +219,8 @@ export module VisGraph {
             alpha: number,
             text: string,
             textScale: number,
+            x: number,
+            y: number,
         }
     }
 

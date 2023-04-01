@@ -11,10 +11,10 @@ import { BaseType } from "d3"
 // Create and load bitmap font.
 PIXI.BitmapFont.from('font', {
     fontFamily: 'sans-serif',
-    fontSize: 40,
+    fontSize: 50,
     align: 'center',
     stroke: 'white',
-    strokeThickness: 4,
+    strokeThickness: 6,
     wordWrap: true,
     wordWrapWidth: 5,
     breakWords: true
@@ -295,8 +295,8 @@ function moveRenderedNode(node: RenderedNode, x: number, y: number) {
     node.nodesprite.x = node.currentX
     node.nodesprite.y = node.currentY
 
-    node.textsprite.x = node.currentX - node.textsprite.textWidth / 2 * (node.visualAttributes.textScale / 2)
-    node.textsprite.y = node.currentY - node.textsprite.textHeight / 2 * (node.visualAttributes.textScale / 2)
+    node.textsprite.x = node.currentX - node.textsprite.textWidth / 2 * (node.visualAttributes.textScale)
+    node.textsprite.y = node.currentY - node.textsprite.textHeight / 2 * (node.visualAttributes.textScale)
 }
 
 function renderBackground(stage: PIXI.Container,
@@ -722,6 +722,7 @@ export function Renderer({
     selectionDispatch
     }: RendererProps) {
 
+    console.log('Renderer called')
     container.appendChild(app.view)
     app.stage.addChild(selectionRect)
     if (!startupFlag) {
@@ -752,6 +753,9 @@ export function Renderer({
     var multiSelectTimer: ReturnType<typeof setTimeout> | null = null
 
     renderedNodes = nodes.map((node, index) => {
+        const nodeX = node.visualAttributes.x
+        const nodeY = node.visualAttributes.y
+
         const nodeSprite = getSprite(node.visualAttributes.shape)
 
         const text = new PIXI.BitmapText('ABCD', {fontName: 'font'})
@@ -764,11 +768,11 @@ export function Renderer({
         nodeSprite.interactive = true
 
         text.text = node.visualAttributes.text
-        text.scale = new PIXI.Point(node.visualAttributes.textScale / 2,
-            node.visualAttributes.textScale / 2)
+        text.scale = new PIXI.Point(node.visualAttributes.textScale,
+            node.visualAttributes.textScale)
 
-        text.x = (node.x * transformK + transformX) - (text.textWidth / 2) * (node.visualAttributes.textScale / 2)
-        text.y = (node.y * transformK + transformY) - (text.textHeight / 2) * (node.visualAttributes.textScale / 2)
+        text.x = (nodeX * transformK + transformX) - (text.textWidth / 2) * (node.visualAttributes.textScale )
+        text.y = (nodeY * transformK + transformY) - (text.textHeight / 2) * (node.visualAttributes.textScale)
 
         text.zIndex = 100
 
@@ -858,10 +862,13 @@ export function Renderer({
             })
         })
 
+        node.x = nodeX
+        node.y = nodeY
+
         nodeDict[node.id] = node
 
-        let currentX = node.x * transformK + transformX
-        let currentY = node.y * transformK + transformY
+        let currentX = nodeX * transformK + transformX
+        let currentY = nodeY * transformK + transformY
 
         if (renderedNodes.length > index && renderedNodes[index].id === node.id) {
             currentX = renderedNodes[index].currentX
@@ -873,8 +880,8 @@ export function Renderer({
 
         return {
             id: node.id,
-            x: node.x,
-            y: node.y,
+            x: node.visualAttributes.x,
+            y: node.visualAttributes.y,
             currentX: currentX,
             currentY: currentY,
             attributes: {...node.attributes},

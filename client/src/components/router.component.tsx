@@ -56,7 +56,9 @@ export module Router {
                             shape: 'circle',
                             prevShape: 'circle',
                             text: "",
-                            textScale: 1
+                            textScale: 1,
+                            x: 0,
+                            y: 0
                         }
                     }
                 })
