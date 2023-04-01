@@ -11,7 +11,7 @@ import { BaseType } from "d3"
 // Create and load bitmap font.
 PIXI.BitmapFont.from('font', {
     fontFamily: 'sans-serif',
-    fontSize: 20,
+    fontSize: 40,
     align: 'center',
     stroke: 'white',
     strokeThickness: 4,
@@ -295,8 +295,8 @@ function moveRenderedNode(node: RenderedNode, x: number, y: number) {
     node.nodesprite.x = node.currentX
     node.nodesprite.y = node.currentY
 
-    node.textsprite.x = node.currentX - node.textsprite.textWidth / 2
-    node.textsprite.y = node.currentY - node.textsprite.textHeight / 2
+    node.textsprite.x = node.currentX - node.textsprite.textWidth / 2 * (node.visualAttributes.textScale / 2)
+    node.textsprite.y = node.currentY - node.textsprite.textHeight / 2 * (node.visualAttributes.textScale / 2)
 }
 
 function renderBackground(stage: PIXI.Container,
@@ -764,9 +764,11 @@ export function Renderer({
         nodeSprite.interactive = true
 
         text.text = node.visualAttributes.text
+        text.scale = new PIXI.Point(node.visualAttributes.textScale / 2,
+            node.visualAttributes.textScale / 2)
 
-        text.x = (node.x * transformK + transformX) - text.textWidth / 2
-        text.y = (node.y * transformK + transformY) - text.textHeight / 2
+        text.x = (node.x * transformK + transformX) - (text.textWidth / 2) * (node.visualAttributes.textScale / 2)
+        text.y = (node.y * transformK + transformY) - (text.textHeight / 2) * (node.visualAttributes.textScale / 2)
 
         text.zIndex = 100
 

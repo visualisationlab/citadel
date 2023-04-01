@@ -238,6 +238,21 @@ function renderGlobalSettings(globalSettingsState: GlobalSettingsState,
                     </InputGroup>
                 </Col>
             </Row>
+            <Row>
+                <Col>
+                {/* Form range */}
+                    <Form.Label>Text Scale</Form.Label>
+                    <Form.Range
+                        min="1"
+                        max="2"
+                        step="0.1"
+                        value={globalSettingsState.textScale}
+                        onChange={(e) => {
+                            globalSettingsReducer({type: 'textScaleChanged', payload: {value: parseFloat(e.target.value)}})
+                        }}
+                    />
+                </Col>
+            </Row>
         </Container>
     )
 }

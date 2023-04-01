@@ -217,7 +217,8 @@ export module VisGraph {
             prevShape: Shape,
             radius: number,
             alpha: number,
-            text: string
+            text: string,
+            textScale: number,
         }
     }
 

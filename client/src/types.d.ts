@@ -221,6 +221,7 @@ export declare module VisGraph {
             radius: number;
             alpha: number;
             text: string;
+            textScale: number;
         };
     }
     export interface HashedGraphNode extends GraphNode {

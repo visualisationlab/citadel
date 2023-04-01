@@ -14,11 +14,13 @@ type highlightType = 'transparency' | 'saturation' | 'lightness' | 'none'
 
 export type GlobalSettingsState = {
     selectionHighlight: highlightType
+    textScale: number
     stateStack: GlobalSettingsState[]
 }
 
 export type GlobalSettingsReducerAction =
     { type: 'selectionHighlightChanged', payload: { value:  highlightType} } |
+    { type: 'textScaleChanged', payload: { value: number }} |
     { type: 'settingsReset' } |
     { type: 'settingsLoaded', payload: { value: GlobalSettingsState }} |
     { type: 'undo'}
@@ -32,10 +34,17 @@ export function GlobalSettingsReducer(state: GlobalSettingsState, action: Global
                 ...state,
                 selectionHighlight: action.payload.value
             }
+        case 'textScaleChanged':
+            state.stateStack.push(state)
 
+            return {
+                ...state,
+                textScale: action.payload.value
+            }
         case 'settingsReset':
             return {
                 selectionHighlight: 'transparency',
+                textScale: 1,
                 stateStack: []
             }
         case 'undo':

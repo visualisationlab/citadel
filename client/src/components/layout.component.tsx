@@ -68,6 +68,7 @@ export default function Layout() {
                 if (mapJS.mappingName === 'text') {
 
                     node.visualAttributes.text = node.attributes[mapJS.attributeName]
+                    node.visualAttributes.textScale = globalSettingsState.textScale
 
                     if (mappingsState.config.get(JSON.stringify(mapping))?.settings.get(node.attributes[mapJS.attributeName]) === 0) {
                         node.visualAttributes.text = ''

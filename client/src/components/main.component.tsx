@@ -97,6 +97,7 @@ export default function Main() {
 
     let [globalSettingsState, globalSettingsDispatch] = useReducer<Reducer<GlobalSettingsState, GlobalSettingsReducerAction>>(GlobalSettingsReducer, {
         selectionHighlight: 'transparency',
+        textScale: 1,
         stateStack: []
     })
 

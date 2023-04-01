@@ -6,12 +6,18 @@
 type highlightType = 'transparency' | 'saturation' | 'lightness' | 'none';
 export type GlobalSettingsState = {
     selectionHighlight: highlightType;
+    textScale: number;
     stateStack: GlobalSettingsState[];
 };
 export type GlobalSettingsReducerAction = {
     type: 'selectionHighlightChanged';
     payload: {
         value: highlightType;
+    };
+} | {
+    type: 'textScaleChanged';
+    payload: {
+        value: number;
     };
 } | {
     type: 'settingsReset';
