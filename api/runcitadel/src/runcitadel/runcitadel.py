@@ -240,9 +240,9 @@ def process_response(connection: websockets.WebSocketClientProtocol, response,
             elif (param['type'] == 'boolean'):
                 params[param['attribute']] = bool(param['value'])
 
-        fun = types.FunctionType(simulatefun.__code__, {})
+        # fun = types.FunctionType(simulatefun.__code__, {})
 
-        res = fun(connection, jsonObj['data']['nodes'],
+        res = simulatefun(connection, jsonObj['data']['nodes'],
                   jsonObj['data']['edges'], params)
 
         params = [res[2][param['attribute']]
@@ -295,9 +295,10 @@ async def connect(url: str,
     validate_params_schema(startParams)
 
     # Filter globals
-    fun = types.FunctionType(simulatefun.__code__, filter_globals(simulatefun),
+    fun = types.FunctionType(simulatefun.__code__, simulatefun.__globals__,
                              simulatefun.__name__, simulatefun.__defaults__,
                              simulatefun.__closure__)
+
 
     uri = f"wss://{url}:{int(port)}?sid={sid}&key={key}"
 

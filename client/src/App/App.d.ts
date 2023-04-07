@@ -4,6 +4,7 @@
  * It contains the routing logic for the app.
  *
  */
+/// <reference types="react" />
 import './App.css';
 import '../scss/custom.scss';
 export default function App(): JSX.Element;

@@ -107,73 +107,113 @@ function renderMainList(
     selectedIDs: string[],
     selectionType: 'node' | 'edge',
     searchType: 'edge' | 'node',
+    nodeCount: number,
+    edgeCount: number,
     selectionDispatch: React.Dispatch<SelectionDataReducerAction> | null)
     : JSX.Element {
 
-    if (selectionDispatch === null || objectIDs.length === 0) {
+    if (selectionDispatch === null) {
         return (<></>)
     }
 
+    if (objectIDs.length === 0) {
+        return (
+            <Row
+                style={{
+                    paddingTop: '10px',
+                    paddingLeft: '15px',
+                    paddingBottom: '10px'
+                }}
+            >
+                <Col>
+                    <i>No {searchType}s matched</i>
+                </Col>
+            </Row>
+        )
+    }
+
+    const maxObjects = searchType === 'node' ? nodeCount : edgeCount
+
     return (
-        <Row>
-            <Col>
-                <ListGroup>
-                    <div
-                        style={{
-                            overflowY: 'scroll',
-                            height: '80vh',
-                            paddingRight: '0px'
-                        }}
-                    >
-                    {objectIDs.map((id) => {
-                        let button = null
+        <>
+            <Row
+                style={{
+                    paddingTop: '10px',
+                    paddingLeft: '15px',
+                    paddingBottom: '10px'
+                }}
+            >
+                {
+                    (objectIDs.length !== maxObjects) && (
+                        <Col>
+                            <i>
+                                Matched {objectIDs.length} {searchType}{objectIDs.length > 1 ? 's' : ''} of {maxObjects}
+                            </i>
 
-                        if (selectedIDs.includes(id)) {
-                            button = (
-                                <Button variant="outline-danger" onClick={(e) => {
+                        </Col>
+                    )
+                }
+            </Row>
+            <Row>
+                <Col>
+                    <ListGroup>
+                        <div
+                            style={{
+                                overflowY: 'scroll',
+                                height: '80vh',
+                                paddingRight: '0px'
+                            }}
+                        >
+                        {objectIDs.map((id) => {
+                            let button = null
+
+                            if (selectedIDs.includes(id)) {
+                                button = (
+                                    <Button variant="outline-danger" onClick={(e) => {
+                                        selectionDispatch({
+                                            'type': 'selection/removed',
+                                            payload: {
+                                                'attribute': searchType,
+                                                'value': id
+                                            }
+                                        })
+                                    }}>
+                                        Deselect
+                                    </Button>
+                                )
+                            } else {
+                                button = <Button variant="outline-primary" onClick={(e) => {
                                     selectionDispatch({
-                                        'type': 'selection/removed',
-                                        payload: {
-                                            'attribute': searchType,
-                                            'value': id
-                                        }
-                                    })
-                                }}>
-                                    Deselect
+                                            'type': 'selection/set',
+                                            payload: {
+                                                'attribute': searchType,
+                                                'value': [id]
+                                            }
+                                        })
+                                    }}>
+                                    Select
                                 </Button>
+                            }
+
+
+                            return (
+                                <ListGroup.Item key={id}>
+                                    <Row>
+                                        <Col>
+                                            {searchType.charAt(0).toUpperCase() + searchType.slice(1)} ID: {id}
+                                        </Col>
+                                        <Col>
+                                            {button}
+                                        </Col>
+                                    </Row>
+                                </ListGroup.Item>
                             )
-                        } else {
-                            button = <Button variant="outline-primary" onClick={(e) => {
-                                selectionDispatch({
-                                        'type': 'selection/set',
-                                        payload: {
-                                            'attribute': searchType,
-                                            'value': [id]
-                                        }
-                                    })
-                                }}>
-                                Select
-                            </Button>
-                        }
-
-
-                        return (
-                            <ListGroup.Item key={id}>
-                                <Row>
-                                    <Col>
-                                        {searchType.charAt(0).toUpperCase() + searchType.slice(1)} ID: {id}
-                                    </Col>
-                                    <Col>
-                                        {button}
-                                    </Col>
-                                </Row>
-                            </ListGroup.Item>
-                        )
-                    })}
-                    </div>
-                </ListGroup>
-            </Col>
-        </Row>
+                        })}
+                        </div>
+                    </ListGroup>
+                </Col>
+            </Row>
+        </>
     )
 }
 
@@ -255,21 +295,28 @@ export default function SearchTab() {
 
     // If all nodes are selected, then the select all button should be deselect all
     let selectAllButton = (
-        <Button variant='outline-primary' onClick={(e) => {
-            selectionDispatch({
-                'type': 'selection/set',
-                payload: {
-                    'attribute': searchType,
-                    'value': objectIDs
-                }
-            })
-        }}>
+        <Button
+            variant='outline-primary'
+            style={{float: 'right'}}
+            onClick={(e) => {
+                selectionDispatch({
+                    'type': 'selection/set',
+                    payload: {
+                        'attribute': searchType,
+                        'value': objectIDs
+                    }
+                })
+            }}
+        >
             Select All
         </Button>
     )
 
     let deselectAllButton = (
-        <Button variant='outline-danger' onClick={(e) => {
+        <Button
+            variant='outline-danger'
+            style={{float: 'right'}}
+            onClick={(e) => {
             selectionDispatch({
                 'type': 'selection/set',
                 payload: {
@@ -293,11 +340,26 @@ export default function SearchTab() {
         selectButton = selectAllButton
     }
 
+    if (graphState === null) {
+        return <></>
+    }
+
     return (
-        <Container style={{
-            paddingLeft: '0px',
-            paddingRight: '0px'
-        }}>
+        <>
+            <Row
+                style={{
+                    marginTop: '10px',
+                }}
+            >
+                <Col>
+                    <h3>Search</h3>
+                </Col>
+            </Row>
+            <Row>
+                <Col>
+                    <hr/>
+                </Col>
+            </Row>
             <Row>
                 <Col>
                     <InputGroup style={{
@@ -326,12 +388,18 @@ export default function SearchTab() {
                     </InputGroup>
                 </Col>
             </Row>
-            {renderMainList(objectIDs, selectionState.selectedIDs, selectionState.objectType, searchType, selectionDispatch)}
-            <Row>
+            {renderMainList(objectIDs, selectionState.selectedIDs,
+                selectionState.objectType, searchType, graphState.nodes.data.length,
+                graphState.edges.data.length, selectionDispatch)}
+            <Row style={{marginTop: '10px'}}>
                 <Col md={{offset: 8}}>
-                    {selectButton}
+                    {
+                        objectIDs.length === 0 ? <></> : (
+                            selectButton
+                        )
+                    }
                 </Col>
             </Row>
-        </Container>
+        </>
     )
 }

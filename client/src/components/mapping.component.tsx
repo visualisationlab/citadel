@@ -835,6 +835,7 @@ function generateRow(
             // Dropdown for channel selection.
             const newType: MappingType = {
                 ...mapping,
+
                 mappingName: selected
             }
 
@@ -844,6 +845,8 @@ function generateRow(
                 prevMapping: mapping,
                 newMapping: newType
             })
+
+            setSettingsType(mapping)
             }}>
             <Dropdown.Toggle
                 id="dropdown-basic"
@@ -905,29 +908,36 @@ function generateRow(
                 <Col >
                     {channelDropdown}
                 </Col>
-                {(mapping.mappingName !== 'none' && mappingProperties.get(mapping.mappingName)?.channelType === 'categorical') &&
-                        <Col>
-                            <Button variant='outline-primary' onClick={
-                                () => {
-                                    setSettingsType(mapping)
-                                }
-                            }>
-                                <BiCog></BiCog>
-                            </Button>
+                <Col>
+                    <Row>
+                        {(mapping.mappingName !== 'none' && mappingProperties.get(mapping.mappingName)?.channelType === 'categorical') &&
+                                <Col>
+                                    <Button
+                                        variant='outline-primary' onClick={
+                                        () => {
+                                            setSettingsType(mapping)
+                                        }
+                                    }>
+                                        <BiCog></BiCog>
+                                    </Button>
+                                </Col>
+                        }
+                        {!(mapping.mappingName !== 'none' && mappingProperties.get(mapping.mappingName)?.channelType === 'categorical') &&
+                            <Col>
+                            </Col>
+                        }
+                        <Col md={{order: 'last'}}>
+                            <Button variant='outline-danger'
+                                style={{float: 'right'}}
+                                onClick={() => {
+                                mappingsDispatch({
+                                    type: 'selection',
+                                    action: 'remove',
+                                    mapping: mapping
+                                })
+                            }}>X</Button>
                         </Col>
-                }
-                {!(mapping.mappingName !== 'none' && mappingProperties.get(mapping.mappingName)?.channelType === 'categorical') &&
-                    <Col>
-                    </Col>
-                }
-                <Col md={{order: 'last'}}>
-                    <Button variant='outline-danger' onClick={() => {
-                        mappingsDispatch({
-                            type: 'selection',
-                            action: 'remove',
-                            mapping: mapping
-                        })
-                    }}>X</Button>
+                    </Row>
                 </Col>
             </Row>
         </ListGroup.Item>
@@ -1125,7 +1135,6 @@ export default function MappingTab() {
         <>
             <Row style={{
                 marginTop: '10px',
-                marginBottom: '10px'
             }}>
                 <Col>
                     <h3>Mapping</h3>

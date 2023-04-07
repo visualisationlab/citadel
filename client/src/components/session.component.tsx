@@ -357,98 +357,100 @@ export default function SessionTab() {
     }
 
     return (
-        <Container>
-            <Row>
-                <Col>
-                    <Stack>
-                        <h3>Users</h3>
-                        {
-                            renderUsers(state.userName, state.users)
-                        }
-                        <h3>Settings</h3>
-                        {
-                            renderSettings(
-                                state.userName,
-                                state.expirationDate,
-                                state.graphURL,
-                                state.sid,
-                                newUserName, setNewUserName,
-                                sessionRef,
-                                graphRef,
-                                downloadURL
+        <>
+            <Stack
+                style={{
+                    marginTop: '10px',
+                }}
+            >
+                <h3>Settings</h3>
+                <hr/>
+                <h3>Users</h3>
+                {
+                    renderUsers(state.userName, state.users)
+                }
+                <h3>Settings</h3>
+                {
+                    renderSettings(
+                        state.userName,
+                        state.expirationDate,
+                        state.graphURL,
+                        state.sid,
+                        newUserName, setNewUserName,
+                        sessionRef,
+                        graphRef,
+                        downloadURL
+                    )
+                }
+                <h3>Global Settings</h3>
+                <Button variant='outline-primary' onClick={() => {
+                    setShowGlobalSettings(true)
+                }}>
+                    Edit
+                </Button>
+                <h3>Headsets</h3>
+                <ListGroup>
+                    <div style={{
+                        overflowY:'auto',
+                        maxHeight: '200px'
+                    }}>
+
+                        {state.headsets.map((headset) => {
+                            if (headset.connected) {
+                                return (
+                                    <ListGroup.Item>
+                                        <InputGroup>
+                                            <InputGroup.Text>Headset</InputGroup.Text>
+                                            <Button variant='success'>
+                                                Connected
+                                            </Button>
+                                            <Button variant="outline-warning"
+                                                    onClick={() => {
+                                                        console.log("Disconnect")
+                                                    }}>
+                                                Disconnect
+                                            </Button>
+                                        </InputGroup>
+                                    </ListGroup.Item>
+                                )
+                            }
+
+                            return (
+                                <ListGroup.Item>
+                                        <InputGroup>
+                                            <InputGroup.Text>Headset</InputGroup.Text>
+                                            <Button variant='secondary' disabled>
+                                                Disconnected
+                                            </Button>
+                                            <Button variant="outline-primary"
+                                                    onClick={() => {
+                                                        console.log('here')
+                                                        let uid = API.getUID()
+
+                                                        if (uid) {
+                                                            console.log('here')
+                                                            QR.genQR(state.sessionURL, state.websocketPort, state.sid,
+                                                                headset.headsetID, uid)
+                                                        }
+                                                    }}>
+                                                Connect
+                                            </Button>
+                                        </InputGroup>
+                                </ListGroup.Item>
                             )
-                        }
-                        <h3>Global Settings</h3>
-                        <Button variant='outline-primary' onClick={() => {
-                            setShowGlobalSettings(true)
-                        }}>
-                            Edit
-                        </Button>
-                        <h3>Headsets</h3>
-                        <ListGroup>
-                            <div style={{
-                                overflowY:'auto',
-                                maxHeight: '200px'
+                        })}
+                    </div>
+                    <ListGroup.Item>
+                        <Button variant='outline-success'
+                            onClick={() => {
+                                API.addHeadset()
                             }}>
 
-                                {state.headsets.map((headset) => {
-                                    if (headset.connected) {
-                                        return (
-                                            <ListGroup.Item>
-                                                <InputGroup>
-                                                    <InputGroup.Text>Headset</InputGroup.Text>
-                                                    <Button variant='success'>
-                                                        Connected
-                                                    </Button>
-                                                    <Button variant="outline-warning"
-                                                            onClick={() => {
-                                                                console.log("Disconnect")
-                                                            }}>
-                                                        Disconnect
-                                                    </Button>
-                                                </InputGroup>
-                                            </ListGroup.Item>
-                                        )
-                                    }
-
-                                    return (
-                                        <ListGroup.Item>
-                                                <InputGroup>
-                                                    <InputGroup.Text>Headset</InputGroup.Text>
-                                                    <Button variant='secondary' disabled>
-                                                        Disconnected
-                                                    </Button>
-                                                    <Button variant="outline-primary"
-                                                            onClick={() => {
-                                                                console.log('here')
-                                                                let uid = API.getUID()
-
-                                                                if (uid) {
-                                                                    console.log('here')
-                                                                    QR.genQR(state.sessionURL, state.websocketPort, state.sid,
-                                                                        headset.headsetID, uid)
-                                                                }
-                                                            }}>
-                                                        Connect
-                                                    </Button>
-                                                </InputGroup>
-                                        </ListGroup.Item>
-                                    )
-                                })}
-                            </div>
-                            <ListGroup.Item>
-                                <Button variant='outline-success'
-                                    onClick={() => {
-                                        API.addHeadset()
-                                    }}>
-
-                                    Add headset
-                                </Button>
-                            </ListGroup.Item>
-                        </ListGroup>
-                    </Stack>
-                </Col>
-            </Row>
-        </Container>
+                            Add headset
+                        </Button>
+                    </ListGroup.Item>
+                </ListGroup>
+            </Stack>
+        </>
     )
 }

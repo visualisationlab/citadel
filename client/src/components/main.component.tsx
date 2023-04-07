@@ -75,7 +75,8 @@ export default function Main() {
         graphIndexCount: 1,
         simState: {
             step: 0,
-            stepMax: 0
+            stepMax: 0,
+            name: ''
         },
         websocketPort: '3000',
         sessionURL: '',

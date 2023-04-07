@@ -5,15 +5,19 @@
  */
 
 import React, { useState, useEffect, useContext, useRef } from 'react'
-import { Container, Row, Col, Button, ListGroup, Dropdown, ProgressBar,
-    Form, CloseButton, InputGroup } from 'react-bootstrap'
+
+import { Row, Col, Button, ListGroup, Dropdown, ProgressBar,
+    Form, CloseButton, InputGroup, ButtonGroup, SplitButton, Modal } from 'react-bootstrap'
     import { GrPlay, GrPause } from 'react-icons/gr'
 
 import { UserDataContext } from '../components/main.component'
 import { API } from '../services/api.service'
 import './home.component.css'
-import { SimulatorParam } from '../reducers/sessiondata.reducer'
+import { ServerState, SimulatorParam } from '../reducers/sessiondata.reducer'
 import { Router } from './router.component'
+import { SimulatorState } from '../services/websocket.service'
+
+import './simulate.component.scss'
 
 // Renders sim item in simulator list.
 function renderSimItem(param: SimulatorParam, index: number, key: string, params: SimulatorParam[]) {
@@ -124,33 +128,32 @@ function renderSimItem(param: SimulatorParam, index: number, key: string, params
 
     return (
         <ListGroup.Item key={index}>
-            <Container fluid>
+            <Row>
+                <Col>
+                    {param.attribute}
+                </Col>
+                <Col>
+                    {param.type}
+                </Col>
+                <Col>
+                    {inputField}
+                </Col>
+                <Col>
+                    {param.value !== param.defaultValue &&
+                        <Button variant='primary' onClick={() => {
+                            Router.setSimulatorSettings(key, params.map((paramIter) => {
+                                if (paramIter.attribute === param.attribute) {
+                                    paramIter.value = paramIter.defaultValue
+                                }
 
-                <Row>
-                    <Col>
-                        {param.attribute}
-                    </Col>
-                    <Col>
-                        {param.type}
-                    </Col>
-                    <Col>
-                        {inputField}
-                    </Col>
-                    <Col>
-                        {param.value !== param.defaultValue &&
-                            <Button variant='primary' onClick={() => {
-                                Router.setSimulatorSettings(key, params.map((paramIter) => {
-                                    if (paramIter.attribute === param.attribute) {
-                                        paramIter.value = paramIter.defaultValue
-                                    }
-
-                                    return paramIter
-                                }))
-                            }}>Reset</Button>
-                        }
-                    </Col>
-                </Row>
-            </Container>
+                                return paramIter
+                            }))
+                        }}>
+                            Reset
+                        </Button>
+                    }
+                </Col>
+            </Row>
         </ListGroup.Item>
     )
 }
@@ -160,13 +163,11 @@ function renderSimulatorSettings(key: string, params: SimulatorParam[],
     setSimOptionsSelection: React.Dispatch<React.SetStateAction<string | null>>) {
 
     const closeButton = (
-            <Row>
-                <Col md={{span: 2}}>
-                    <CloseButton onClick={()=>{setSimOptionsSelection(null)}}>
+        <CloseButton
+            style={{float: 'right', paddingTop: '20px'}}
+            onClick={()=>{setSimOptionsSelection(null)}}>
 
-                    </CloseButton>
-                </Col>
-            </Row>
+        </CloseButton>
     )
 
     const simList = (
@@ -179,8 +180,25 @@ function renderSimulatorSettings(key: string, params: SimulatorParam[],
 
     return (
         <>
-            {closeButton}
-            {simList}
+            <Row style={{marginTop: '10px'}}>
+                <Col md={{span: 10}}>
+                    <h3>Simulator settings</h3>
+                </Col>
+
+                <Col>
+                    {closeButton}
+                </Col>
+            </Row>
+            <Row>
+                <Col>
+                    <hr/>
+                </Col>
+            </Row>
+            <Row>
+                <Col>
+                    {simList}
+                </Col>
+            </Row>
         </>
     )
 }
@@ -205,16 +223,278 @@ function renderValidateButton(simKey: string | null, validated: 'valid' | 'unkno
     }}>Validate</Button>
 }
 
+function ModalContent(props: {simKey: string, sid: string, sessionURL: string,
+    port: string, connected: boolean, setShowSimulatorModal: React.Dispatch<React.SetStateAction<boolean>>}) {
+
+    const sessionRef = useRef(null)
+    const [ advancedView, setAdvancedView ] = useState(false)
+
+    let exportString = [{
+        name: 'Args',
+        value: `${props.sessionURL} ${props.port} ${props.sid} ${props.simKey}`
+    }]
+
+    let text = `
+        Citadel Simulators allow users to update, modify or remove data based
+        on preset algorithms. The results can be viewed in real time and
+        exported to a JSON file. To use a simulator, insert the following string
+        into the simulator's command line arguments. For more information on
+        developing a simulator, please visit the Citadel documentation.
+    `
+
+    if (advancedView) {
+        exportString = [
+            { name: 'URL', value: props.sessionURL},
+            { name: 'Port', value: props.port},
+            { name: 'SID', value: props.sid},
+            { name: 'Key', value: props.simKey}
+        ]
+    }
+
+    // URL port sid key
+    return (
+        <>
+            <Modal.Header closeButton>
+                <Modal.Title>
+                    <Row>
+                        <Col md={{span: 1}}>
+                            <img
+                                width='25px'
+                                src="https://chimay.science.uva.nl:8061/VisLablogo-cropped-notitle.svg"
+                                className="custom-logo"
+                                alt="Visualisation Lab"
+                            />
+                        </Col>
+                        <Col>
+                            Connect Simulator via API
+                        </Col>
+                    </Row>
+                </Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <Row>
+                    <Col>
+                        {/* Checkbox button */}
+                        <Form.Check
+                            style={{
+                                float: 'right'
+                            }}
+                            label='Advanced View'
+                            className="mb-3"
+                            type='switch'
+                            id='advanced-view'
+                            onChange={(e) => {
+                                setAdvancedView(e.target.checked)
+                            }}
+                        />
+                    </Col>
+                </Row>
+
+                {
+                    exportString.map((item, index) => {
+                        return (
+                            <Row key={index} style={{
+                                marginTop: '10px'
+                            }}>
+                                <Col>
+                                    <InputGroup>
+                                        <InputGroup.Text
+                                            style={{
+                                                width: '80px'
+                                            }}
+                                        >
+                                                {item.name}
+                                        </InputGroup.Text>
+                                        <Form.Control
+                                            readOnly
+
+                                            value={item.value} ref={sessionRef}/>
+                                        <Button variant="outline-secondary"
+                                            id="button-copy"
+                                            onClick={() => {
+                                                if (window.isSecureContext && navigator.clipboard) {
+                                                    navigator.clipboard.writeText(item.value)
+                                                }
+                                            }}>
+                                            Copy
+                                        </Button>
+                                    </InputGroup>
+                                </Col>
+                            </Row>
+                        )
+                    })
+                }
+                <Row
+                    style={{ marginTop: '10px' }}
+                >
+                    <Col>
+                        <i>{text}</i>
+                    </Col>
+                </Row>
+            </Modal.Body>
+            <Modal.Footer>
+                <Row>
+                    <Col>
+                        <Button variant={'outline-' + (props.connected ? 'success' : 'danger')} disabled>
+                            {props.connected ? 'Sim Connected' : 'Sim Disconnected'}
+                        </Button>
+                    </Col>
+                </Row>
+                <Col>
+                    <Button variant='outline-primary' onClick={() => {
+                        props.setShowSimulatorModal(false)
+                    }}
+                        style={{float: 'right'}}
+                    >
+                        Close
+                    </Button>
+                </Col>
+            </Modal.Footer>
+        </>
+    )
+}
+
+function SimulatorRow(props: {generating: boolean,
+    simKey: string, setSimKey: React.Dispatch<React.SetStateAction<string>>,
+    simState: SimulatorState, setSimOptionsSelection: React.Dispatch<React.SetStateAction<string | null>>,
+    setShowSimulatorModal: React.Dispatch<React.SetStateAction<boolean>>,
+    setModalSimKey: React.Dispatch<React.SetStateAction<string>>,
+    options: SimulatorParam[],
+    simName: string,
+    serverState: ServerState,
+    }) {
+
+    const [ stepSetting, setStepSetting ] = useState(1)
+    const [ stopping, setStopping ] = useState(false)
+
+    useEffect(() => {
+        if (props.simState === 'idle') {
+            setStopping(false)
+        }
+    }, [props.simState])
+
+    let simStateControls = <></>
+
+    if (props.simState === 'disconnected') (
+        simStateControls = (<Col>
+            <Button
+                variant='outline-primary'
+                onClick={() => {
+
+                    props.setShowSimulatorModal(true)
+
+                }}
+            >
+                Connect
+            </Button>
+        </Col>
+        )
+    )
+    else if (props.simState === 'idle') {
+        const stepButton = (
+            <Button
+                disabled={props.serverState !== 'idle'}
+                onClick={() => {
+                    API.step(stepSetting, props.simKey, props.options, props.simName)
+                }}>
+                Step
+            </Button>
+        )
+
+        let stepCounter = (
+            <Col>
+                <Form.Control
+                    disabled={props.serverState !== 'idle'}
+                    type='number'
+                    value={stepSetting}
+                    onChange={(e) => {
+                        if (parseInt(e.target.value) > 0 && parseInt(e.target.value) < 1000)
+                            setStepSetting(parseInt(e.target.value))
+                    }}
+                />
+            </Col>
+        )
+
+        simStateControls = (
+            <>
+                <Col md={{span: 2}}>
+                    {stepButton}
+                </Col>
+                <Col md={{span: 3}}>
+                    {stepCounter}
+                </Col>
+            </>
+        )
+    }
+    else if (props.simState === 'generating') {
+        simStateControls = (
+            <Col>
+                <Button
+                    disabled={stopping}
+                    variant='outline-danger'
+                    onClick={() => {
+                        API.stop()
+                        setStopping(true)
+                    }}
+                >
+                    { stopping ? 'Stopping...' : 'Stop' }
+                </Button>
+            </Col>
+        )
+    }
+
+    return (
+        <Row>
+            {simStateControls}
+            <Col style={{paddingTop: '5px'}}>
+                <i>{props.simName}</i>
+            </Col>
+            <Col style={{ float: 'right' }}>
+                <Dropdown
+                    align={'end'}
+                    style={{ float: 'right' }}
+                    as={ButtonGroup}
+                    onSelect={(eventKey) => {
+                        if (eventKey === 'delete') {
+                            API.removeSim(props.simKey)
+                        }
+                    }}
+                >
+                    <Button
+                        disabled={props.options.length === 0}
+                        onClick={() => {
+                            props.setSimOptionsSelection(props.simKey)
+                        }}
+                        variant={'outline-primary'}
+
+                    >
+                        Options
+                    </Button>
+                    <Dropdown.Toggle
+                        key={'thingy'}
+                        id={`dropdown-split-variants-thingy`}
+                    />
+                    <Dropdown.Menu>
+                        {/* <Dropdown.Item eventKey="params">Parameters</Dropdown.Item> */}
+                        <Dropdown.Item eventKey="check" disabled active={false}>Check Graph</Dropdown.Item>
+                        <Dropdown.Item className='text-danger' active={false} disabled={props.simKey === ''} eventKey="delete">Delete</Dropdown.Item>
+                    </Dropdown.Menu>
+                </Dropdown>
+            </Col>
+        </Row>
+    )
+}
+
 // Renders the simulator options and list.
 export function SimulatorTab() {
     const { state,  } = useContext(UserDataContext)
 
-    const [ selectedSim, setSelectedSim ] = useState('')
     const [ simOptionsSelection, setSimOptionsSelection ] = useState<string | null>(null)
-    const [ stepCount, setStepCount ] = useState(1)
 
-    const textRef = useRef(null)
-    const sessionRef = useRef(null)
+    const [ showSimulatorModal, setShowSimulatorModal ] = useState(false)
+    const [ showAllSimulators, setShowAllSimulators ] = useState(false)
+
+    const [ simKey, setSimKey ] = useState('')
 
     let simulators = state?.simulators
 
@@ -231,280 +511,247 @@ export function SimulatorTab() {
         }
     }, [simOptionsSelection, simulators])
 
-    if (!state) {
+    useEffect(() => {
+        const sims = state?.simulators
+
+        if (sims === undefined || simKey !== '_waiting') {
+            return
+        }
+
+        sims.forEach((sim) => {
+            if (sim.state === 'disconnected' && sim.key !== null) {
+                setSimKey(sim.key)
+            }
+        })
+    }, [state?.simulators, simKey])
+
+    if (state === null) {
         return <></>
     }
 
-    // Renders the simulator list.
-    const sims = state?.simulators.map((sim, index) => {
-        let buttonVariant = 'outline-secondary'
+    // Flag for if the simulator is unavailable.
+    const disabled = state.state !== 'idle' || state.simulators.filter((sim) => {
+        return sim.state !== 'idle'
+    }).length > 0
 
-        if (sim.state === 'generating') {
-            buttonVariant = 'outline-primary'
-        } else if (sim.state === 'disconnected') {
-            buttonVariant = 'outline-danger'
+    // Renders the simulator list.
+    const sims = state.simulators.map((sim, index) => {
+        if (sim.key === null) {
+            return <></>
         }
 
         return (
-            <ListGroup.Item key={index}>
-                <Container fluid>
-                    <Row >
-                        <Col md={{span: 1}}>
-                            { sim.key !== null &&
-                                <Form.Check
-                                    checked={selectedSim === sim.key}
-                                    type='radio'
-                                    onChange={(() => {
-                                        if (sim.key === null)
-                                            return
+            <ListGroup.Item>
+                <SimulatorRow
+                    simKey={sim.key}
+                    setSimKey={setSimKey}
+                    simState={sim.state}
+                    setSimOptionsSelection={setSimOptionsSelection}
+                    setShowSimulatorModal={setShowSimulatorModal}
+                    setModalSimKey={setSimKey}
+                    options={sim.options}
+                    simName={sim.title}
+                    generating={sim.state === 'generating'}
+                    serverState={state.state}
 
-                                        setSelectedSim(sim.key)
-                                })}></Form.Check>
-                            }
-                        </Col>
-                        <Col md={{span: 2}}>
-                            {((sim.username !== null && sim.username !== '') || !sim.validator) ? sim.username : (
-
-                                    renderValidateButton(sim.key, sim.valid)
-                            )}
-                        </Col>
-                        <Col md={{span: 2}}>
-                            {sim.key}
-                        </Col>
-                        <Col md={{span: 2}}>
-                            {sim.title}
-                        </Col>
-                        <Col md={{span: 1}}>
-                            {
-                                sim.options.length > 0 &&
-
-                                <Button onClick={()=> {setSimOptionsSelection(sim.key)}}>Options</Button>
-                            }
-                        </Col>
-                        <Col md={{span: 2, offset: 1}}><Button disabled variant={buttonVariant}>{sim.state}</Button></Col>
-
-                    </Row>
-                </Container>
+                    />
             </ListGroup.Item>
         )
     })
 
-    // Flag for if the simulator is unavailable.
-    const disabled = selectedSim === '' || state.state !== 'idle' || state.simulators.filter((sim) => {
-        return sim.key === selectedSim && sim.state !== 'idle'
-    }).length > 0
-
     // Renders the simulator controls.
-    const simulatorControl = state.graphIndexCount > 1 ? (
+    const simulatorControl = (
         <Row>
-            <Col md={{span: 4}}>
+            <Col >
                 <Row>
                     <Col>
-                        <Button onClick={() => {
-                            API.setGraphIndex(0)
-                        }}>First</Button>
+                        <Button
+                            style={{float: 'left'}}
+                            onClick={() => {
+                                API.setGraphIndex(0)
+                            }}>
+                            {'<<'}
+                        </Button>
                     </Col>
                     <Col>
-                        <Button onClick={() => {
-                            API.setGraphIndex(state.graphIndex - 1)
-                        }}>Previous</Button>
+                        <Button
+                            onClick={() => {
+                                API.setGraphIndex(state.graphIndex - 1)
+                            }}
+                            style={{float: 'left'}}
+                        >
+                            {'<'}
+                        </Button>
                     </Col>
                 </Row>
             </Col>
-            <Col md={{span: 4}}>
+            <Col>
                 <Row>
-                    <Col md={{span: 8}}>
+                    <Col>
                         <Form.Control
                             type='number'
+                            style={{width: '80px'}}
                             value={state.graphIndex + 1}
                             onChange={(e) => {
                                 if (parseInt(e.target.value) > 0 && parseInt(e.target.value) < 1000)
                                     API.setGraphIndex(parseInt(e.target.value) - 1)
                             }}></Form.Control>
                     </Col>
-                    <Col md={{span: 4}}>
+                    <Col style={{paddingTop: '5px'}}>
                         / {state.graphIndexCount}
                     </Col>
                 </Row>
             </Col>
-            <Col md={{span: 4}}>
+            <Col>
                 <Row>
                     <Col>
                         <Button onClick={() => {
                             API.setGraphIndex(state.graphIndex + 1)
-                        }}>Next</Button>
+                        }}>
+                            {'>'}
+                        </Button>
                     </Col>
                     <Col>
                         <Button onClick={() => {
                             API.setGraphIndex(state.graphIndexCount - 1)
-                        }}>Last</Button>
+                        }}>
+                            {'>>'}
+                        </Button>
                     </Col>
                 </Row>
             </Col>
         </Row>
-    ) : <></>
+    )
 
     var playbutton = (<></>)
 
     // Renders the play/pause button.
     if (state.playmode) {
         playbutton = (
-            <Col>
-                <Button onClick={() => {
-                    API.pause()
-                }}>
-                    <GrPause></GrPause>
-                </Button>
-            </Col>
+            <Button onClick={() => {
+                API.pause()
+            }}>
+                <GrPause></GrPause>
+            </Button>
         )
     }
 
     if (!state.playmode && state.graphIndexCount > 1) {
         playbutton = (
-            <Col>
-                <Button onClick={() => {
-                    API.play()
-                }}
-                disabled={disabled}>
-                    <GrPlay></GrPlay>
-                </Button>
-            </Col>
+            <Button onClick={() => {
+                API.play()
+            }}
+            disabled={disabled}>
+                <GrPlay></GrPlay>
+            </Button>
         )
     }
 
-    // If simulating render a stop button, otherwise play button
-    const simButton = state.state === 'simulating' ? (
-        <Col>
-            <Button
-                variant='danger'
-                // disabled={disabled}
-                onClick={() => {
-                    API.stop()
-                }}>
-                Stop
-            </Button>
-        </Col>
-    ) : (
-        <Col>
-            <Button
-                disabled={disabled}
-                onClick={() => {
-                    if (!disabled)
-                        API.step(stepCount, selectedSim, state.simulators.filter((sim) => {return sim.key === selectedSim})[0].options)
-                }}>
-                Step
-            </Button>
-        </Col>
-    )
+    let content = <></>
 
-    const res = simOptionsSelection === null ? (
-        <Container fluid style={{
-            paddingBottom: '10px',
-            paddingTop: '10px',
-        }}>
+    content = (
+        <>
             <Row>
-                <h3>Simulate</h3>
-            </Row>
-            <Row>
-                <Col md={{span: 12}}>
-                    <InputGroup>
-                        <InputGroup.Text>Simulator URL:</InputGroup.Text>
-                        <Form.Control
-                            readOnly
-                            value={state.sessionURL} ref={sessionRef}/>
-                        <Button variant="outline-secondary"
-                            id="button-copy"
-                            onClick={() => {
-                                if (window.isSecureContext && navigator.clipboard) {
-                                    navigator.clipboard.writeText(state.sessionURL)
-                                } else {
-                                    // @ts-ignore
-                                    sessionRef.current.select()
-
-                                    document.execCommand('copy')
-                                }
-                            }}>
-                            Copy
-                        </Button>
-                    </InputGroup>
+                <Col>
+                    <hr/>
                 </Col>
             </Row>
-            <Row style={{
-                marginBottom: '10px',
-            }}>
-                <Col md={{span: 6}}>
-                    <InputGroup>
-                        <InputGroup.Text>Simulator port:</InputGroup.Text>
-                        <Form.Control
-                            readOnly
-                            value={state.websocketPort} ref={textRef}/>
-                        <Button variant="outline-secondary"
-                            id="button-copy"
-                            onClick={() => {
-                                if (window.isSecureContext && navigator.clipboard) {
-                                    navigator.clipboard.writeText(state.websocketPort)
-                                } else {
-                                    // @ts-ignore
-                                    textRef.current.select()
-
-                                    document.execCommand('copy')
-                                }
-                            }}>
-                            Copy
-                        </Button>
-                    </InputGroup>
-                </Col>
-            </Row>
-            <Row style={{
-                marginBottom: '10px',
-            }}>
+            <Row style={{marginBottom: '10px'}}>
                 <Col>
                     <ListGroup>
                         <div style={{
-
                             overflowY: 'auto',
-                            height: '200px',
+                            height: '50vh',
                         }}>
                             {sims}
-                        </div>
-                        <ListGroup.Item>
-                                <Container fluid>
-                                    <Row>
-                                        <Col md={{
-                                            span: 3,
-                                            offset: 9
-                                        }}>
-                                            <Button onClick={() => {API.addSim()}}
-                                                variant='outline-success'>
-                                                Add
-                                            </Button>
-                                        </Col>
-                                    </Row>
-                                </Container>
+                            <ListGroup.Item>
+                                <Row>
+                                    <Col>
+                                        <Button
+                                                disabled={(state.simulators.filter((sim) => {
+                                                    return sim.state === 'disconnected'
+                                                }).length > 0)}
+                                                onClick={() => {
+                                            if (state.simulators.filter((sim) => {
+                                                return sim.state === 'disconnected'
+                                            }).length > 0) {
+                                                return
+                                            }
+
+                                            API.addSim()
+                                            setSimKey('_waiting')
+                                        }}
+                                            variant='outline-success'>
+                                            Add
+                                        </Button>
+                                    </Col>
+                                </Row>
                             </ListGroup.Item>
+                        </div>
                     </ListGroup>
                 </Col>
             </Row>
-            <Row>
-                {playbutton}
-                <Col md={{span: 2}}>
-                    <Form.Control
-                        type='number'
-                        value={stepCount}
-                        onChange={(e) => {
-                            if (parseInt(e.target.value) > 0 && parseInt(e.target.value) < 1000)
-                                setStepCount(parseInt(e.target.value))
-                        }}></Form.Control>
-                </Col>
-                    {simButton}
+            {state.simState.stepMax > 0 &&
+                <>
+                    <Row >
+                        <Col>
+                            <i>
+                                Simulating step {state.simState.step + 1} of {state.simState.stepMax} for {state.simState.name}...
+                            </i>
+                        </Col>
+                    </Row>
+                    <Row style={{marginBottom: '10px', marginTop: '10px'}}>
+                        <Col>
+                                <ProgressBar animated now={(state.simState.step + 1) / (state.simState.stepMax) * 100}></ProgressBar>
+                        </Col>
+                    </Row>
+                </>
+            }
+            {simulatorControl}
+        </>
+    )
+
+    console.log(state)
+
+    const res = simOptionsSelection === null ? (
+        <>
+            <Modal show={showSimulatorModal} onHide={() => {setShowSimulatorModal(false)}}>
+                <ModalContent
+                    simKey={simKey}
+                    sessionURL={state.sessionURL}
+                    port={state.websocketPort}
+                    sid={state.sid}
+                    connected={state.simulators.filter((sim) => {return sim.key === simKey})[0]?.state === 'idle'}
+                    setShowSimulatorModal={setShowSimulatorModal}
+                />
+            </Modal>
+            <Row style={{
+                marginTop: '10px',
+            }}>
                 <Col>
-                        {state.simState.stepMax > 0 &&
-                            <ProgressBar animated now={state.simState.step / state.simState.stepMax * 100}></ProgressBar>
-                        }
+                    <h3>Simulate</h3>
+                </Col>
+                <Col>
+                    <ButtonGroup style={{
+                        float: 'right'
+                    }}>
+                        <Button
+                            variant={!showAllSimulators ? 'primary' : 'outline-primary'}
+                            onClick={() => {setShowAllSimulators(false)}}
+                        >
+                            Personal
+                        </Button>
+                        <Button
+                            variant={showAllSimulators ? 'primary' : 'outline-primary'}
+                            onClick={() => {setShowAllSimulators(true)}}
+                        >
+                            Others
+                        </Button>
+                    </ButtonGroup>
                 </Col>
             </Row>
-            {simulatorControl}
-        </Container>
+            {content}
+        </>
     ) : renderSimulatorSettings(simOptionsSelection,
             state.simulators.filter((sim) => {return sim.key === simOptionsSelection})[0].options,
             setSimOptionsSelection)

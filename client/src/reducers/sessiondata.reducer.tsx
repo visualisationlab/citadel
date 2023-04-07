@@ -14,7 +14,8 @@ export interface SessionState {
     graphIndexCount: number,
     simState: {
         step: number,
-        stepMax: number
+        stepMax: number,
+        name: string
     },
     sessionURL: string,
     websocketPort: string,
@@ -151,6 +152,7 @@ export function SessionDataReducer(state: SessionState, action: SessionReducer):
                 simState: {
                     step: action.value.data.simState.step,
                     stepMax: action.value.data.simState.stepMax,
+                    name: action.value.data.simState.name
                 },
                 playmode: action.value.data.playmode
             }

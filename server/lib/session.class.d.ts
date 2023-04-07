@@ -39,7 +39,7 @@ export declare module MessageTypes {
         sessionID: string;
         userID: string;
         messageSource: 'simulator' | 'user';
-        messageType: 'get' | 'set';
+        messageType: 'get' | 'set' | 'remove';
         apiKey?: string;
         data?: any;
         dataType?: any;
@@ -79,6 +79,15 @@ export declare module MessageTypes {
         dataType: SetType;
         params: any;
     }
+    export interface RemoveMessage extends InMessage {
+        messageSource: 'user';
+        messageType: 'remove';
+        userID: string;
+        dataType: 'simulator';
+        params: {
+            apikey: string;
+        };
+    }
     export interface SetUsernameMessage extends InMessage {
         messageSource: 'user';
         messageType: 'set';
@@ -106,6 +115,7 @@ export declare module MessageTypes {
         params: {
             stepCount: number;
             apiKey: string;
+            name: string;
         };
     }
     export interface SetSimulatorInstanceMessage extends InMessage {
@@ -152,6 +162,7 @@ export declare module MessageTypes {
             simState: {
                 step: number;
                 stepMax: number;
+                name: string;
             };
             layoutInfo: LayoutInfo[];
             expirationDate: string;
@@ -245,6 +256,7 @@ export declare class Session {
     private parseSimulatorMessage;
     private parseGetMessage;
     private parseSetMessage;
+    private parseRemoveMessage;
     private parseUserMessage;
     layoutTimer(resolve: any, worker: Worker, signal: AbortSignal): Promise<void>;
     setLayout(settings: LayoutSettings): Promise<unknown>;

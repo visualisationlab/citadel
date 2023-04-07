@@ -17,6 +17,7 @@ export interface SessionState {
     simState: {
         step: number;
         stepMax: number;
+        name: string;
     };
     sessionURL: string;
     websocketPort: string;

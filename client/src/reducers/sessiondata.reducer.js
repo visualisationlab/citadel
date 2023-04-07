@@ -40,6 +40,7 @@ export function SessionDataReducer(state, action) {
                 simState: {
                     step: action.value.data.simState.step,
                     stepMax: action.value.data.simState.stepMax,
+                    name: action.value.data.simState.name
                 },
                 playmode: action.value.data.playmode
             };

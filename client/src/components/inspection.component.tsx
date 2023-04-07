@@ -421,12 +421,14 @@ export function ResizeBar(props: {
                 style={{
                     position: 'absolute',
                     top: 0,
-                    right: (props.position === 'right') ? 0 : -10,
+                    right: (props.position === 'right') ? 10 : 0,
+                    left: (props.position === 'left') ? 0 : 10,
                     width: 10,
                     height: '100%',
                     zIndex: 1000,
                     backgroundColor: 'white',
-                    borderLeft: '1px solid #e0e0e0',
+                    borderLeft: (props.position === 'right' ? '1px solid #e0e0e0' : 'none'),
+                    borderRight: (props.position === 'left' ? '1px solid #e0e0e0' : 'none'),
                     cursor: dragging ? 'grabbing' : 'grab',
                 }}
             />
@@ -581,7 +583,7 @@ export default function InspectionTab(): JSX.Element {
                 position={'right'}
             />
             <Container
-                className="shadow bg-white rounded"
+                className="shadow bg-white"
                 style={{
                     width: `${width}px`,
                     height: '100%',
@@ -595,11 +597,11 @@ export default function InspectionTab(): JSX.Element {
             >
                 <Row>
                     <Col md={{span: 9}}>
-                        <h2>
+                        <h3>
                             {
                                 header
                             }
-                        </h2>
+                        </h3>
                     </Col>
                     <Col style={{
                         paddingLeft: 0
@@ -609,6 +611,11 @@ export default function InspectionTab(): JSX.Element {
                                 float: 'right',
                             }}
                             onClick={() => {setHidden(true)}}>Hide</Button>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col>
+                        <hr/>
                     </Col>
                 </Row>
                 <Row>

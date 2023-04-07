@@ -85,7 +85,8 @@ export module API {
         })
     }
 
-    export function step(stepCount: number, apiKey: string, params: SimulatorParam[]) {
+    export function step(stepCount: number, apiKey: string,
+        params: SimulatorParam[], simName: string) {
         if (sid === null || userID === null) {
             return
         }
@@ -99,7 +100,8 @@ export module API {
             params: {
                 stepCount: stepCount,
                 params: params,
-                apiKey: apiKey
+                apiKey: apiKey,
+                name: simName
             }
         })
     }
@@ -117,6 +119,23 @@ export module API {
             messageSource: 'user',
             params: {
                 state: false,
+            },
+        })
+    }
+
+    export function removeSim(simKey: string) {
+        if (sid === null || userID === null) {
+            return
+        }
+
+        websocketService.sendRemoveMessage({
+            userID: userID,
+            sessionID: sid,
+            messageType: 'remove',
+            dataType: 'simulator',
+            messageSource: 'user',
+            params: {
+                apikey: simKey
             },
         })
     }

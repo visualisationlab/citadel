@@ -15,12 +15,13 @@ export interface LayoutInfo {
     link: string;
     settings: LayoutSetting[];
 }
-type Simulator = {
+export type SimulatorState = 'disconnected' | 'idle' | 'generating' | 'connecting';
+export type Simulator = {
     readonly apikey: string | null;
     readonly userID: string;
     socket: WebSocket;
     params: any;
-    state: 'disconnected' | 'idle' | 'generating';
+    state: SimulatorState;
 };
 export declare module MessageTypes {
     type SessionState = 'idle' | 'busy';
@@ -46,7 +47,7 @@ export declare module MessageTypes {
         sessionID: string;
         userID: string;
         messageSource: 'simulator' | 'user';
-        messageType: 'get' | 'set';
+        messageType: 'get' | 'set' | 'remove';
         apiKey?: string;
         data?: any;
         dataType?: any;
@@ -75,6 +76,15 @@ export declare module MessageTypes {
         userID: string;
         dataType: SetType;
         params: any;
+    }
+    export interface RemoveMessage extends InMessage {
+        messageSource: 'user';
+        messageType: 'remove';
+        userID: string;
+        dataType: 'simulator';
+        params: {
+            apikey: string;
+        };
     }
     export interface SetSimulatorMessage extends InMessage {
         messageSource: 'user';
@@ -123,6 +133,7 @@ declare class WebsocketService {
     connect(sid: string, username: string | null, keys: number | null): void;
     sendSetMessage(message: MessageTypes.SetMessage): void;
     sendGetMessage(message: MessageTypes.GetMessage): void;
+    sendRemoveMessage(message: MessageTypes.RemoveMessage): void;
 }
 export declare const websocketService: WebsocketService;
 export {};

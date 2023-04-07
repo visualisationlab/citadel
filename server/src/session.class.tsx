@@ -86,7 +86,7 @@ export module MessageTypes {
         sessionID: string,
         userID: string,
         messageSource: 'simulator' | 'user'
-        messageType: 'get' | 'set'
+        messageType: 'get' | 'set' | 'remove'
         apiKey?: string
         data?: any
         dataType?: any
@@ -131,6 +131,16 @@ export module MessageTypes {
         params: any
     }
 
+    export interface RemoveMessage extends InMessage {
+        messageSource: 'user'
+        messageType: 'remove'
+        userID: string,
+        dataType: 'simulator'
+        params: {
+            apikey: string
+        }
+    }
+
     export interface SetUsernameMessage extends InMessage {
         messageSource: 'user'
         messageType: 'set'
@@ -159,7 +169,8 @@ export module MessageTypes {
         dataType: 'simulator'
         params: {
             stepCount: number,
-            apiKey: string
+            apiKey: string,
+            name: string,
         }
     }
 
@@ -209,7 +220,8 @@ export module MessageTypes {
             }[]
             simState: {
                 step: number,
-                stepMax: number
+                stepMax: number,
+                name: string
             }
             layoutInfo: LayoutInfo[]
             expirationDate: string
@@ -500,6 +512,7 @@ function getAvailableLayouts(): LayoutInfo[] {
 type SimState = {
     step: number,
     stepMax: number,
+    name: string,
     apiKey: null | string,
     params: SimulatorParam[]
 }
@@ -538,6 +551,7 @@ export class Session {
     private simState: SimState = {
         step: 0,
         stepMax: 0,
+        name: '',
         apiKey: null,
         params: []
     }
@@ -784,6 +798,7 @@ export class Session {
                     this.simState = {
                         step: 0,
                         stepMax: 0,
+                        name: '',
                         apiKey: null,
                         params: msg.params.params
                     }
@@ -833,6 +848,7 @@ export class Session {
                                 step: 0,
                                 stepMax: 0,
                                 apiKey: null,
+                                name: '',
                                 params: msg.params.params
                             }
 
@@ -999,7 +1015,8 @@ export class Session {
                     step: 0,
                     stepMax: message.params.stepCount,
                     apiKey: message.params.apiKey,
-                    params: message.params.params
+                    params: message.params.params,
+                    name: message.params.name
                 }
 
                 this.setState('simulating')
@@ -1090,6 +1107,33 @@ export class Session {
         }
     }
 
+    private parseRemoveMessage(message: MessageTypes.RemoveMessage,
+        resolve: (value: () => void | PromiseLike<() => void>) => void,
+        reject: (reason?: any) => void) {
+
+        switch (message.dataType) {
+            case 'simulator':
+                this.simulators = this.simulators.filter((sim) => {
+                    const match = sim.apikey === message.params.apikey
+
+                    if (match) {
+                        if (sim.socket !== null) {
+                            sim.socket.close()
+                        }
+                    }
+
+                    return !match
+                })
+
+                console.log(this.simulators)
+
+                resolve(() => {this.sendSessionState()} )
+
+                break
+
+        }
+    }
+
     private parseUserMessage(message: MessageTypes.InMessage,
         resolve: (value: () => void | PromiseLike<() => void>) => void,
         reject: (reason?: any) => void) {
@@ -1100,6 +1144,9 @@ export class Session {
                 break
             case 'set':
                 this.parseSetMessage(message as MessageTypes.SetMessage, resolve, reject)
+                break
+            case 'remove':
+                this.parseRemoveMessage(message as MessageTypes.RemoveMessage, resolve, reject)
                 break
         }
     }
@@ -1274,6 +1321,7 @@ export class Session {
             this.simState = {
                 step: 0,
                 stepMax: 0,
+                name: '',
                 apiKey: null,
                 params: []
             }
@@ -1381,7 +1429,8 @@ export class Session {
                     }),
                     simState: {
                         step: this.simState.step,
-                        stepMax: this.simState.stepMax
+                        stepMax: this.simState.stepMax,
+                        name: this.simState.name
                     },
                     sessionURL: this.localAddress,
                     layoutInfo: getAvailableLayouts(),
@@ -1465,6 +1514,7 @@ export class Session {
                     this.simState = {
                         step: 0,
                         stepMax: 0,
+                        name: '',
                         apiKey: null,
                         params: []
                     }
@@ -1579,6 +1629,7 @@ export class Session {
                     this.simState = {
                         step: 0,
                         stepMax: 0,
+                        name: '',
                         apiKey: null,
                         params: []
                     }
@@ -1618,15 +1669,16 @@ export class Session {
                 }),
                 edges: edges.map((edge, index) => {
                     // IF edge contains data, edgekeys is data, otherwise just edgekeys
-                    const edgeKeys = (edge['data'] !== undefined) ? Object.keys(edge['data']) : Object.keys(edge)
+                    const edgeData = (edge['data']) ? {...edge['data']} : {...edge}
+                    const edgeKeys = Object.keys(edgeData)
 
                     if (edgeKeys.includes('attributes')) {
-                        edge['data'] = edge.attributes
+                        edge['data'] = edgeData.attributes
                         edge['attributes'] = {}
                     }
 
                     if (edgeKeys.includes('id')) {
-                        edge['data']['id'] = edge['id'].toString()
+                        edge['data']['id'] = edgeData.id.toString()
                     }
 
                     if (!edgeKeys.includes('id')) {
@@ -1634,11 +1686,11 @@ export class Session {
                     }
 
                     if (edgeKeys.includes('source')) {
-                        edge['data']['source'] = edge['source'].toString()
+                        edge['data']['source'] = edgeData.source.toString()
                     }
 
                     if (edgeKeys.includes('target')) {
-                        edge['data']['target'] = edge['target'].toString()
+                        edge['data']['target'] = edgeData.target.toString()
                     }
 
                     return edge

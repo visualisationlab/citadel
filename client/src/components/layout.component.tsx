@@ -271,7 +271,7 @@ export default function Layout() {
                 }
             }
 
-            const defaultEdgeHue = 226
+            const defaultEdgeHue = 219
 
             edge.visualAttributes.hue = defaultEdgeHue
             edge.visualAttributes.lightness = 0.25

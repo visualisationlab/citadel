@@ -60,7 +60,7 @@ const Navigator = memo(function Navigator(
     return (
         <>
             <Container
-                className="shadow bg-white rounded"
+                className="shadow bg-white"
                 style={{
                     width: width + 'px',
                     height: '100vh',
@@ -75,7 +75,11 @@ const Navigator = memo(function Navigator(
                     onDragStart={(e) => { e.preventDefault() }}
                     draggable={false}
                     >
-                        <Navbar>
+                        <Navbar
+                            style={{
+                                paddingTop: '0px',
+                            }}
+                        >
                             <Navbar.Brand>
                                 Citadel
                             </Navbar.Brand>

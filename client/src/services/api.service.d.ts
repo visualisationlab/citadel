@@ -8,8 +8,9 @@ export declare module API {
     function addSim(): void;
     function addHeadset(): void;
     function validate(apiKey: string): void;
-    function step(stepCount: number, apiKey: string, params: SimulatorParam[]): void;
+    function step(stepCount: number, apiKey: string, params: SimulatorParam[], simName: string): void;
     function stop(): void;
+    function removeSim(simKey: string): void;
     function removeNode(nodeID: string, graphState: GraphDataState): void;
     function removeEdge(edgeID: string, graphState: GraphDataState): void;
     function updateGraph(graphState: GraphDataState): void;
