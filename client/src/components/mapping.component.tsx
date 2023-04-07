@@ -846,7 +846,7 @@ function generateRow(
                 newMapping: newType
             })
 
-            setSettingsType(mapping)
+            setSettingsType(newType)
             }}>
             <Dropdown.Toggle
                 id="dropdown-basic"
