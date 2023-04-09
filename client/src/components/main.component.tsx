@@ -50,7 +50,12 @@ export const GlobalSettingsContext = createContext({
 export default function Main() {
     let [mappingsState, mappingsDispatch] = useReducer<Reducer<MappingsState, MappingsReducerAction>>(MappingsReducer,
         {
-            schemes: Map(),
+            // Add default colour scheme
+            schemes: Map({
+            'default': [
+                0, 32, 52, 120, 204,276
+            ]
+            }),
             config: Map(),
             selectedMappings: Set()
         })
@@ -132,6 +137,8 @@ export default function Main() {
         try {
             schemes = Map(JSON.parse(localStorage.getItem('schemes') || ''))
 
+            // Combine with default schemes.
+            schemes = schemes.merge(mappingsState.schemes)
             console.log("loaded schemes from localstorage")
 
             mappingsDispatch({

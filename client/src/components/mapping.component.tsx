@@ -465,20 +465,44 @@ function CategoryMapping(   mappingsState: MappingsState,
 
     return (
         <>
-            <Row>
-                <Col md={{span: 1, offset: 11}}>
+            <Row style={{marginTop: '10px'}}>
+                <Col md={{span: 10}}>
+                    <h3>{settingsType.mappingName.charAt(0).toUpperCase() + settingsType.mappingName.slice(1)} Mapping</h3>
+                </Col>
+                <Col >
                     <CloseButton
+                        style={{
+                            float: 'right',
+                            paddingTop: '10px'
+                        }}
                         onClick={() => setSettingsType(null)}></CloseButton>
                 </Col>
             </Row>
+
+            <Row>
+                <Col>
+                    <>
+                        <i>
+                            {settingsType.objectType === 'node' ? 'Node' : 'Edge'} attribute: {settingsType.attributeName}
+                        </i>
+                    </>
+                </Col>
+            </Row>
+            <Row>
+                <Col>
+                    <hr/>
+                </Col>
+            </Row>
             <Row style={{
+                marginTop: '10px',
                 marginBottom: '10px'
             }}>
                 <Col>
                     {settingsType.mappingName === 'hue' &&
                     <Row>
                         <Col style={{
-                            marginLeft: '10px'
+                            marginLeft: '10px',
+                            paddingTop: '5px'
                         }}
                         md={{
                             span: 2
@@ -529,7 +553,10 @@ function CategoryMapping(   mappingsState: MappingsState,
                         <Col>
                             <div style={{
                                 overflowY: 'scroll',
-                                height: '400px',
+                                    // Height is set dynamically based on y dimension - button height - header
+                                    height: `calc(100vh - 80px - 174px)`,
+
+
                             }}>
                                 <Table striped bordered hover>
                                     <thead>
@@ -848,6 +875,8 @@ function generateRow(
 
             if (mappingProperties.get(selected)?.channelType === 'categorical') {
                 setSettingsType(newType)
+
+
             }
             }}>
             <Dropdown.Toggle

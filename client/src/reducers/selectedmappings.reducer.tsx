@@ -233,8 +233,9 @@ export function MappingsReducer(state: MappingsState, action: MappingsReducerAct
                     state.selectedMappings = state.selectedMappings.add(Map(action.newMapping))
 
                     if (!state.config.has(JSON.stringify(action.newMapping))) {
+                        // If the mapping does not have a config, create one.
                         state.config = state.config.set(JSON.stringify(action.newMapping), {
-                            colourScheme: null,
+                            colourScheme: 'default',
                             regionNum: 0,
                             settings: Map(),
                         })
