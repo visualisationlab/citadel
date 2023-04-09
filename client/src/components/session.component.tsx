@@ -51,8 +51,8 @@ function renderSettings(
     ) {
 
     return (
-        <Stack gap={2}>
-            <Stack>
+        <>
+            <Stack gap={2}>
                 <h5>
                     Username
                 </h5>
@@ -94,8 +94,6 @@ function renderSettings(
                         Update
                     </Button>
                 </InputGroup>
-            </Stack>
-            <Stack>
                 <h5>
                     Expiration Date
                 </h5>
@@ -103,8 +101,6 @@ function renderSettings(
                     readOnly
                     value={expirationDate.toString()}
                 />
-            </Stack>
-            <Stack>
                 <h5>
                     Session Link
                 </h5>
@@ -129,8 +125,6 @@ function renderSettings(
                         Copy
                     </Button>
                 </InputGroup>
-            </Stack>
-            <Stack>
                 <h5>
                     Graph Source
                 </h5>
@@ -154,36 +148,34 @@ function renderSettings(
                         Copy
                     </Button>
                 </InputGroup>
-            </Stack>
-            <Stack>
                 <h5>
                     Download Graph
                 </h5>
-                <Row>
-                    <Col>
+            </Stack>
+            <Row>
+                <Col>
+                    <Button
+                        disabled={true}
+                        style={{
+                            width: '100%',
+                        }}
+                    >
+                        Whole series
+                    </Button>
+                </Col>
+                <Col>
+                    <a href={downloadURL} download="graph.json">
                         <Button
-                            disabled={true}
                             style={{
                                 width: '100%',
                             }}
                         >
-                            Whole series
+                            Single frame
                         </Button>
-                    </Col>
-                    <Col>
-                        <a href={downloadURL} download="graph.json">
-                            <Button
-                                style={{
-                                    width: '100%',
-                                }}
-                            >
-                                Single frame
-                            </Button>
-                        </a>
-                    </Col>
-                </Row>
-            </Stack>
-        </Stack>
+                    </a>
+                </Col>
+            </Row>
+        </>
     )
 }
 
@@ -192,10 +184,7 @@ function renderGlobalSettings(globalSettingsState: GlobalSettingsState,
     setShowGlobalSettings: React.Dispatch<React.SetStateAction<boolean>>) {
 
     return (
-        <Container style={{
-            marginBottom: '10px',
-            marginTop: '10px',
-        }}>
+        <>
             <Row>
                 <Col>
                     <h3>Global Settings</h3>
@@ -253,7 +242,7 @@ function renderGlobalSettings(globalSettingsState: GlobalSettingsState,
                     />
                 </Col>
             </Row>
-        </Container>
+        </>
     )
 }
 
@@ -357,12 +346,14 @@ export default function SessionTab() {
     }
 
     return (
-        <>
-            <Stack
-                style={{
-                    marginTop: '10px',
-                }}
-            >
+        <Row style={{
+            marginTop: '10px',
+            overflowY: 'auto',
+            // Height is set dynamically based on y dimension - button height - header
+            height: `calc(100vh - 100px)`,
+
+        }}>
+            <Col>
                 <h3>Settings</h3>
                 <hr/>
                 <h3>Users</h3>
@@ -450,7 +441,7 @@ export default function SessionTab() {
                         </Button>
                     </ListGroup.Item>
                 </ListGroup>
-            </Stack>
-        </>
+            </Col>
+        </Row>
     )
 }

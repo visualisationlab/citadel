@@ -246,7 +246,11 @@ function ClusterTab(
                     </Row>
                 </Col>
             </Row>
-            <Row>
+            <Row style={{
+                    position: 'absolute',
+                    bottom: '10px',
+                    width: '100%'
+                }}>
                 <Col>
                     <Button variant='outline-danger'
                         onClick={() => {
@@ -321,7 +325,11 @@ function ObjectTab(
                         }
                     </Stack>
                 </div>
-                <Row>
+                <Row style={{
+                    position: 'absolute',
+                    bottom: '10px',
+                    width: '100%'
+                }}>
                     <Col>
                         <Button variant='outline-danger'
                             onClick={() => {

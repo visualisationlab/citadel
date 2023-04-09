@@ -118,14 +118,8 @@ const Navigator = memo(function Navigator(
                         </Button>
                     </Col>
                 </Row>
+                {content}
 
-                <Row style={{
-                    height: '100%',
-                }}>
-                    <Col>
-                        {content}
-                    </Col>
-                </Row>
             </Container>
             <ResizeBar
                 hidden={hidden}

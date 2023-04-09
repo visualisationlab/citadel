@@ -846,7 +846,9 @@ function generateRow(
                 newMapping: newType
             })
 
-            setSettingsType(newType)
+            if (mappingProperties.get(selected)?.channelType === 'categorical') {
+                setSettingsType(newType)
+            }
             }}>
             <Dropdown.Toggle
                 id="dropdown-basic"

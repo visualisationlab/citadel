@@ -160,7 +160,8 @@ function renderMainList(
                         <div
                             style={{
                                 overflowY: 'scroll',
-                                height: '80vh',
+                                // Height is set dynamically based on y dimension - button height - header
+                                height: `calc(100vh - 80px - 174px)`,
                                 paddingRight: '0px'
                             }}
                         >
@@ -391,10 +392,15 @@ export default function SearchTab() {
             {renderMainList(objectIDs, selectionState.selectedIDs,
                 selectionState.objectType, searchType, graphState.nodes.data.length,
                 graphState.edges.data.length, selectionDispatch)}
-            <Row style={{marginTop: '10px'}}>
+            <Row style={{
+                    position: 'absolute',
+                    bottom: '10px',
+                    width: '100%'
+                }}>
                 <Col md={{offset: 8}}>
                     {
                         objectIDs.length === 0 ? <></> : (
+
                             selectButton
                         )
                     }

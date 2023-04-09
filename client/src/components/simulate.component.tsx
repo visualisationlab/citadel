@@ -561,7 +561,11 @@ export function SimulatorTab() {
 
     // Renders the simulator controls.
     const simulatorControl = (
-        <Row>
+        <Row style={{
+            position: 'absolute',
+            bottom: '10px',
+            width: '100%'
+        }}>
             <Col >
                 <Row>
                     <Col>
