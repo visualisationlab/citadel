@@ -289,7 +289,9 @@ function ObjectTab(
                 <div
                     style={{
                         overflowY: 'auto',
-                        maxHeight: '70vh',
+                        // Height is set dynamically based on y dimension - button height - header
+                        height: `calc(100vh - 80px - 174px)`,
+
                     }}
                 >
                     <Stack gap={3}>
