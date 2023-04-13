@@ -298,7 +298,7 @@ function ObjectTab(
                         {
                             Object.keys(attributes).map((key) => {
                                 return (
-                                    <Stack>
+                                    <Stack key={key}>
                                         <h6
                                             style={{
                                                 maxWidth: '100%',
@@ -318,9 +318,9 @@ function ObjectTab(
                                                 }
                                             }
                                             type="text"
-                                            value={attributes[key]}
+                                            value={attributes[key] === (undefined || null) ? '' : attributes[key].toString()}
 
-                                            placeholder={attributes[key]}/>
+                                            placeholder={attributes[key] === (undefined || null) ? '' : attributes[key].toString()}/>
                                     </Stack>
                                 )
                             })

@@ -6,7 +6,6 @@ import { VisGraph } from '../types'
 import { SelectionDataReducerAction, SelectionDataState } from "../reducers/selection.reducer"
 
 import { API } from '../services/api.service'
-import { BaseType } from "d3"
 
 // Create and load bitmap font.
 PIXI.BitmapFont.from('font', {
@@ -77,7 +76,7 @@ let prevTransform: d3.ZoomTransform | null = null
 
 let transformHandler = (event: any) => {}
 
-let selectionRect = new PIXI.Graphics()
+let selectionRect: null | PIXI.Graphics = null
 
 let animatorTriggered = false
 
@@ -94,21 +93,24 @@ class SpriteCache {
 
         // Disable the sprite
         sprite.visible = false
+        sprite.interactive = false
+        sprite.interactiveChildren = false
+        sprite.removeAllListeners()
 
         app.stage.removeChild(sprite)
-
-        sprite.removeAllListeners()
 
         this.cache[shape.toString()].unshift(sprite)
     }
 
     static getSprite(shape: VisGraph.Shape) {
         let shapeString = shape.toString()
+
         if (this.cache[shapeString] === undefined) {
             this.cache[shapeString] = []
         }
 
         if (this.cache[shapeString].length === 0) {
+            console.log('Cache empty, creating new sprite.')
             if (shape === 'line') {
                 return new PIXI.Sprite(PIXI.Texture.WHITE)
             }
@@ -140,19 +142,22 @@ function setTransformCallback(transformUpdate: () => void) {
 
     transformHandler = (event: any) => {
         if (!panEnabled && prevTransform) {
-            // Draw selection box.
-            selectionRect.destroy()
+            if (selectionRect) {
+                app.stage.removeChild(selectionRect)
+                selectionRect.destroy()
+            }
 
             selectionRect = new PIXI.Graphics()
             selectionRect.beginFill(0x00B200, 0.3)
             selectionRect.lineStyle(3)
-            selectionBox.x1 = event.transform.x - prevTransform.x
-            selectionBox.y1 = event.transform.y - prevTransform.y
+
+            selectionBox.x1 = event.transform.x - prevTransform.x + selectionBox.x0
+            selectionBox.y1 = event.transform.y - prevTransform.y + selectionBox.y0
 
             selectionRect.drawRect( (selectionBox.x0),
                                     (selectionBox.y0),
-                                    (event.transform.x - prevTransform.x)  ,
-                                    (event.transform.y - prevTransform.y)  )
+                                    (selectionBox.x1 - selectionBox.x0)  ,
+                                    (selectionBox.y1 - selectionBox.y0)  )
             selectionRect.endFill()
             selectionRect.zIndex = 100
             app.stage.addChild(selectionRect)
@@ -163,7 +168,6 @@ function setTransformCallback(transformUpdate: () => void) {
         if (!panEnabled) {
             return
         }
-
 
         transformX = event.transform.x
         transformY = event.transform.y
@@ -181,8 +185,6 @@ function setTransformCallback(transformUpdate: () => void) {
         .scaleExtent([0.01, 3])
         .on('start', () => {
             if (prevTransform) {
-                console.log('Resetting view')
-
                 panEnabled = true
                 d3.select('.render').call((d3.zoom() as any).transform, prevTransform)
             }
@@ -250,7 +252,6 @@ function setupRendering() {
         .scaleExtent([0.01, 3])
         .on('start', () => {
             if (prevTransform) {
-                console.log('Resetting view')
                 d3.select('.render').call((d3.zoom() as any).transform, prevTransform)
             }
 
@@ -274,18 +275,6 @@ function setupRendering() {
     transformK = 1
 
     API.setPan(transformX, transformY, transformK)
-
-    // Generate a set of edges.
-    // for (let i = 0; i < edgeStartingCount; i++) {
-    //     let lineSprite = getSprite('line')
-
-    //     app.stage.addChild(lineSprite)
-    // }
-
-    // Generate a set of nodes.
-    // for (let i = 0; i < nodeStartingCount; i++) {
-
-    // }
 }
 
 function moveRenderedNode(node: RenderedNode, x: number, y: number) {
@@ -299,11 +288,18 @@ function moveRenderedNode(node: RenderedNode, x: number, y: number) {
     node.textsprite.y = node.currentY - node.textsprite.textHeight / 2 * (node.visualAttributes.textScale)
 }
 
+let background: null | PIXI.Sprite = null
+
 function renderBackground(stage: PIXI.Container,
     dispatch: React.Dispatch<SelectionDataReducerAction> | null,
     nodes: RenderedNode[], selectionDispatch: React.Dispatch<SelectionDataReducerAction>) {
 
-    const background = new PIXI.Sprite(PIXI.Texture.WHITE);
+    if (background) {
+        app.stage.removeChild(background)
+        background.destroy()
+    }
+
+    background = new PIXI.Sprite(PIXI.Texture.WHITE)
 
     background.width = window.innerWidth
     background.height = window.innerHeight
@@ -342,14 +338,24 @@ function renderBackground(stage: PIXI.Container,
     // Pointer up event.
     background.on(('pointerup'), () => {
         if (!panEnabled) {
-            selectionRect.destroy()
-            selectionRect = new PIXI.Graphics()
+            if (selectionRect) {
+                selectionRect.destroy()
+                app.stage.removeChild(selectionRect)
+                selectionRect = null
+            }
 
+            const xmin = Math.min(selectionBox.x0, selectionBox.x1)
+            const xmax = Math.max(selectionBox.x0, selectionBox.x1)
+            const ymin = Math.min(selectionBox.y0, selectionBox.y1)
+            const ymax = Math.max(selectionBox.y0, selectionBox.y1)
             nodes.forEach((node) => {
-                if (node.x * transformK + transformX > selectionBox.x0
-                    && node.x * transformK + transformX < selectionBox.x0 + selectionBox.x1
-                    && node.y * transformK + transformY > selectionBox.y0
-                    && node.y * transformK + transformY < selectionBox.y0 + selectionBox.y1) {
+                // Selection is x0 + x1, y0 + y1
+                // x0 is not necessarily less than x1, so we need to check both.
+
+                if (node.x * transformK + transformX > xmin
+                    && node.x * transformK + transformX < xmax
+                    && node.y * transformK + transformY > ymin
+                    && node.y * transformK + transformY < ymax)    {
 
                     selectionDispatch({
                         type: 'selection/added',
@@ -381,9 +387,11 @@ function renderBackground(stage: PIXI.Container,
 
     background.on(('pointerupoutside'), () => {
         if (prevTransform !== null) {
-
-            selectionRect.destroy()
-            selectionRect = new PIXI.Graphics()
+            if (selectionRect) {
+                selectionRect.destroy()
+                app.stage.removeChild(selectionRect)
+                selectionRect = null
+            }
 
             nodes.forEach((node) => {
                 if (node.x * transformK + transformX > selectionBox.x0
@@ -423,13 +431,19 @@ function renderBackground(stage: PIXI.Container,
         }
     })
 
-    stage.addChild(background)
+    app.stage.addChild(background)
 
     return background
 }
 
 function cleanMemory() {
     console.log(`Cleaning stage (${app.stage.children.length} objects)`)
+
+    selectionRect?.destroy()
+    selectionRect = null
+
+    background?.destroy()
+    background = null
 
     renderedEdges.forEach((edge) => {
         edge.gfx?.destroy()
@@ -722,9 +736,8 @@ export function Renderer({
     selectionDispatch
     }: RendererProps) {
 
-    console.log('Renderer called')
     container.appendChild(app.view)
-    app.stage.addChild(selectionRect)
+
     if (!startupFlag) {
         setupRendering()
 
@@ -740,7 +753,8 @@ export function Renderer({
 
         renderedNode.textsprite.destroy()
 
-        app.stage.removeChild(renderedNode.textsprite)})
+        app.stage.removeChild(renderedNode.textsprite)
+    })
 
     renderedEdges.forEach((renderedEdge) => {
         if (renderedEdge.gfx)
@@ -911,11 +925,13 @@ export function Renderer({
         }
     })
 
-    PIXI.Ticker.shared.start()
+
 
     /* If there are still rendered nodes, only update the positions. */
     if (renderedNodes.length !== 0) {
         updateNodePositions(nodes)
+
+        PIXI.Ticker.shared.start()
 
         setTransformCallback(updateTransform)
 
@@ -938,9 +954,6 @@ export function Renderer({
     window.onpopstate = cleanMemory;
 
     app.stage.sortChildren()
-
-
-
 
     return {
         destroy: () => {
