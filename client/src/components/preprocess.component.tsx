@@ -7,25 +7,68 @@
 
 import React, { useRef, useContext } from 'react';
 
-import { VisGraph } from '../types'
-
 import { Renderer } from './renderer.component'
-import { GraphDataContext } from '../components/main.component'
+import { GraphDataContext } from './main.component'
 import { SelectionDataContext, GlobalSettingsContext } from "./main.component"
-import { MappingContext } from '../components/main.component'
+import { MappingContext } from './main.component'
 import { MappingType } from '../reducers/selectedmappings.reducer';
+import { BasicEdge, BasicNode } from './router.component';
+
+export type Shape =
+        | 'circle'
+        | 'square'
+        | 'triangle'
+        | 'star'
+        | 'line'
+
+export interface ExtendedNode extends BasicNode {
+    visualAttributes: {
+        hue: number,
+        saturation: number,
+        lightness: number,
+        shape: Shape,
+        prevShape: Shape,
+        radius: number,
+        alpha: number,
+        text: string,
+        textScale: number,
+        x: number,
+        y: number,
+    }
+}
+
+export interface ExtendedEdge extends BasicEdge {
+    visualAttributes: {
+        hue: number,
+        saturation: number,
+        lightness: number,
+        text: string,
+        width: number,
+        alpha: number,
+    }
+}
 
 // Takes number between 0 and 1 and returns a number scaled to the interval [min, max]
 function ScaleToInterval(val: number, min: number, max: number) {
     return min + (max - min) * val
 }
 
+const DEFAULTNODEHUE = 50
+const DEFAULTNODERADIUS = 16
+const DEFAULTNODEALPHA = 1
+const DEFAULTNODELIGHTNESS = 0.5
+const DEFAULTNODESATURATION = 1
+const DEFAULTNODESHAPE = 'circle'
+
+const DEFAULTEDGEHUE = 219
+const DEFAULTEDGEWIDTH = 2
+
 /**
  * Returns a container, which is updated by reference to contain the graph.
  * @param param0 props
  * @returns JSX
  */
-export default function Layout() {
+export default function PreProcess() {
     const { graphState } = useContext(GraphDataContext)
     const { selectionState, selectionDispatch } = useContext(SelectionDataContext)
     const { mappingsState } = useContext(MappingContext)
@@ -46,24 +89,30 @@ export default function Layout() {
         let nodeMetadata = graphState.nodes.metadata
         let edgeMetadata = graphState.edges.metadata
 
-        let hashedNodes = newNodes.map((node) => {
-            node.visualAttributes.alpha = 1
-            node.visualAttributes.text = ''
-            node.visualAttributes.radius = 16
-            node.visualAttributes.hue = 50
-            node.visualAttributes.prevShape = node.visualAttributes.shape
-
-            node.visualAttributes.lightness = 0.5
-            node.visualAttributes.saturation = 1
-            node.visualAttributes.x = node.x
-            node.visualAttributes.y = node.y
+        let extendedNodes: ExtendedNode[] = newNodes.map((node) => {
+            let newNode: ExtendedNode = {
+                ...node,
+                visualAttributes: {
+                    alpha: DEFAULTNODEALPHA,
+                    text: '',
+                    radius: DEFAULTNODERADIUS,
+                    hue: DEFAULTNODEHUE,
+                    prevShape: DEFAULTNODESHAPE,
+                    lightness: DEFAULTNODELIGHTNESS,
+                    saturation: DEFAULTNODESATURATION,
+                    shape: DEFAULTNODESHAPE,
+                    textScale: 1,
+                    x: node.position.x,
+                    y: node.position.y,
+                },
+            }
 
             mappingsState.selectedMappings.forEach((mapping) => {
                 let mapJS = mapping.toJS() as MappingType
 
                 if (mapJS.objectType === 'edge')
                     return {
-                        ...node,
+                        ...newNode,
                         hash: 'abc'
                     }
 
@@ -72,8 +121,8 @@ export default function Layout() {
 
                     if (attributeData.type === 'ordered') {
                         try {
-                            let val = (node.attributes[mapJS.attributeName] - attributeData.min) / (attributeData.max - attributeData.min)
-                            node.visualAttributes.x = ScaleToInterval(val, 0, 1000)
+                            let val = (newNode[mapJS.attributeName] - attributeData.min) / (attributeData.max - attributeData.min)
+                            newNode.visualAttributes.x = ScaleToInterval(val, 0, 1000)
                         }
                         catch (e) {
                         }
@@ -85,8 +134,8 @@ export default function Layout() {
 
                     if (attributeData.type === 'ordered') {
                         try {
-                            let val = (node.attributes[mapJS.attributeName] - attributeData.min) / (attributeData.max - attributeData.min)
-                            node.visualAttributes.y = ScaleToInterval(val, 0, -1000)
+                            let val = (newNode[mapJS.attributeName] - attributeData.min) / (attributeData.max - attributeData.min)
+                            newNode.visualAttributes.y = ScaleToInterval(val, 0, -1000)
                         }
                         catch (e) {
 
@@ -96,11 +145,11 @@ export default function Layout() {
 
                 if (mapJS.mappingName === 'text') {
 
-                    node.visualAttributes.text = node.attributes[mapJS.attributeName]
-                    node.visualAttributes.textScale = globalSettingsState.textScale * 0.3
+                    newNode.visualAttributes.text = newNode[mapJS.attributeName]
+                    newNode.visualAttributes.textScale = globalSettingsState.textScale * 0.3
 
-                    if (mappingsState.config.get(JSON.stringify(mapping))?.settings.get(node.attributes[mapJS.attributeName]) === 0) {
-                        node.visualAttributes.text = ''
+                    if (mappingsState.config.get(JSON.stringify(mapping))?.settings.get(newNode[mapJS.attributeName]) === 0) {
+                        newNode.visualAttributes.text = ''
                     }
                 }
 
@@ -110,11 +159,11 @@ export default function Layout() {
 
                     if (attributeData.type === 'ordered') {
                         try {
-                            let val = (node.attributes[mapJS.attributeName] - attributeData.min) / (attributeData.max - attributeData.min)
-                            node.visualAttributes.alpha = val + 0.1
+                            let val = (newNode[mapJS.attributeName] - attributeData.min) / (attributeData.max - attributeData.min)
+                            newNode.visualAttributes.alpha = val + 0.1
                         }
                         catch (e) {
-                            node.visualAttributes.alpha = 0
+                            newNode.visualAttributes.alpha = DEFAULTNODEALPHA
                         }
                     }
                 }
@@ -124,11 +173,11 @@ export default function Layout() {
 
                     if (attributeData.type === 'ordered') {
                         try {
-                            let val = (node.attributes[mapJS.attributeName] - attributeData.min) / (attributeData.max - attributeData.min)
-                            node.visualAttributes.saturation = ScaleToInterval(val, 0.1, 1)
+                            let val = (newNode[mapJS.attributeName] - attributeData.min) / (attributeData.max - attributeData.min)
+                            newNode.visualAttributes.saturation = ScaleToInterval(val, 0.1, 1)
                         }
                         catch (e) {
-                            node.visualAttributes.saturation = 1
+                            newNode.visualAttributes.saturation = DEFAULTNODESATURATION
                         }
                     }
                 }
@@ -138,11 +187,11 @@ export default function Layout() {
 
                     if (attributeData.type === 'ordered') {
                         try {
-                            let val = (node.attributes[mapJS.attributeName] - attributeData.min) / (attributeData.max - attributeData.min)
-                            node.visualAttributes.lightness = ScaleToInterval(val, 0.1, 0.9)
+                            let val = (newNode[mapJS.attributeName] - attributeData.min) / (attributeData.max - attributeData.min)
+                            newNode.visualAttributes.lightness = ScaleToInterval(val, 0.1, 0.9)
                         }
                         catch (e) {
-                            node.visualAttributes.lightness = 0.5
+                            newNode.visualAttributes.lightness = DEFAULTNODELIGHTNESS
                         }
                     }
                 }
@@ -152,11 +201,11 @@ export default function Layout() {
 
                     if (attributeData.type === 'ordered') {
                         try {
-                            let val = (node.attributes[mapJS.attributeName] - attributeData.min) / (attributeData.max - attributeData.min)
-                            node.visualAttributes.radius = ((val) * 32) + 16
+                            let val = (newNode[mapJS.attributeName] - attributeData.min) / (attributeData.max - attributeData.min)
+                            newNode.visualAttributes.radius = ((val) * 32) + DEFAULTNODERADIUS
                         }
                         catch (e) {
-                            node.visualAttributes.radius = 16
+                            newNode.visualAttributes.radius = DEFAULTNODERADIUS
                         }
                     }
                 }
@@ -178,24 +227,24 @@ export default function Layout() {
                         return
 
                     try {
-                        let index = mappingConfig.settings.get(node.attributes[mapJS.attributeName])
+                        let index = mappingConfig.settings.get(newNode[mapJS.attributeName])
 
                         if (index === undefined) {
-                            node.visualAttributes.hue = 60
+                            newNode.visualAttributes.hue = DEFAULTNODEHUE
                         }
                         else {
                             if (index >= hues.length) {
-                                node.visualAttributes.hue = 60
+                                newNode.visualAttributes.hue = DEFAULTNODEHUE
                             }
                             else {
-                                node.visualAttributes.hue = hues[index]
+                                newNode.visualAttributes.hue = hues[index]
                             }
                         }
 
                     }
                     catch (e) {
                         console.log(e)
-                        node.visualAttributes.hue = 50
+                        newNode.visualAttributes.hue = 50
                     }
                 }
 
@@ -206,21 +255,21 @@ export default function Layout() {
                         return
 
                     // 0 circle, 1: square
-                    let shape = mappingConfig.settings.get(node.attributes[mapJS.attributeName])
+                    let shape = mappingConfig.settings.get(newNode[mapJS.attributeName])
 
                     if (shape === undefined) {
-                        node.visualAttributes.shape = 'circle'
+                        newNode.visualAttributes.shape = 'circle'
                     }
 
                     switch (shape) {
                         case 1:
-                            node.visualAttributes.shape = 'circle'
+                            newNode.visualAttributes.shape = 'circle'
                             break
                         case 0:
-                            node.visualAttributes.shape = 'square'
+                            newNode.visualAttributes.shape = 'square'
                             break
                         default:
-                            node.visualAttributes.shape = 'circle'
+                            newNode.visualAttributes.shape = 'circle'
                             break
                     }
                 }
@@ -230,67 +279,61 @@ export default function Layout() {
             if (selectionState.objectType === 'node'
                 && selectionState.selectedIDs.length > 0
                 && globalSettingsState.selectionHighlight !== 'none'
-                && !selectionState.selectedIDs.includes(node.attributes['id'].toString())
+                && !selectionState.selectedIDs.includes(newNode['id'].toString())
                 ) {
                 switch (globalSettingsState?.selectionHighlight) {
                     case 'transparency':
-                        node.visualAttributes.alpha = Math.max(0.05, node.visualAttributes.alpha - 0.4)
+                        newNode.visualAttributes.alpha = Math.max(0.05, newNode.visualAttributes.alpha - 0.4)
                         break
                     case 'lightness':
-                        node.visualAttributes.lightness = Math.max(0.05, node.visualAttributes.lightness - 0.4)
+                        newNode.visualAttributes.lightness = Math.max(0.05, newNode.visualAttributes.lightness - 0.4)
                         break
                     case 'saturation':
-                        node.visualAttributes.saturation = Math.max(0.05, node.visualAttributes.saturation - 0.4)
+                        newNode.visualAttributes.saturation = Math.max(0.05, newNode.visualAttributes.saturation - 0.4)
                         break
                     default:
                         break
                 }
             }
 
-            return {
-                ...node,
-                // hash: Hash(node, {
-                //     excludeKeys: (key) => {
-                //         return (key === 'x' || key === 'y')
-                //     }
-                // })
-                hash: 'abc'
-            }
+            return newNode
         })
 
-        let hashedEdges = graphState.edges.data.map((edge) => {
-            edge.visualAttributes.alpha = 1.0
+        let extendedEdges: ExtendedEdge[] = graphState.edges.data.map((edge) => {
+            let newEdge: ExtendedEdge = {
+                ...edge,
+                visualAttributes: {
+                    alpha: 1.0,
+                    hue: DEFAULTEDGEHUE,
+                    lightness: 0.25,
+                    saturation: 1,
+                    text: '',
+                    width: DEFAULTEDGEWIDTH,
+                },
+            }
 
             if (selectionState.objectType === 'edge'
                 && selectionState?.selectedIDs.length > 0) {
-                if (selectionState?.selectedIDs.includes(edge.attributes['id'].toString())) {
-                    edge.visualAttributes.alpha = 1.0
+                if (selectionState?.selectedIDs.includes(newEdge.id.toString())) {
+                    newEdge.visualAttributes.alpha = 1.0
                 }
                 else {
-                    edge.visualAttributes.alpha = 0.2
+                    newEdge.visualAttributes.alpha = 0.2
                 }
             }
-
-            const defaultEdgeHue = 219
-
-            edge.visualAttributes.hue = defaultEdgeHue
-            edge.visualAttributes.lightness = 0.25
-            edge.visualAttributes.saturation = 1
-            edge.visualAttributes.text = ''
-            edge.visualAttributes.width = 2
 
             mappingsState.selectedMappings.forEach((mapping) => {
                 let mapJS = mapping.toJS() as MappingType
 
                 if (mapJS.objectType === 'node')
                     return {
-                        ...edge,
+                        ...newEdge,
                         hash: 'abc'
                     }
 
                 if (mapJS.mappingName === 'text') {
 
-                    edge.visualAttributes.text = edge.attributes[mapJS.attributeName]
+                    newEdge.visualAttributes.text = newEdge[mapJS.attributeName]
                 }
 
                 if (mapJS.mappingName === 'alpha') {
@@ -298,11 +341,11 @@ export default function Layout() {
 
                     if (attributeData.type === 'ordered') {
                         try {
-                            let val = (edge.attributes[mapJS.attributeName] - attributeData.min) / (attributeData.max - attributeData.min)
-                            edge.visualAttributes.alpha = val + 0.1
+                            let val = (newEdge[mapJS.attributeName] - attributeData.min) / (attributeData.max - attributeData.min)
+                            newEdge.visualAttributes.alpha = val + 0.1
                         }
                         catch (e) {
-                            edge.visualAttributes.alpha = 0
+                            newEdge.visualAttributes.alpha = 0
                         }
                     }
                 }
@@ -312,11 +355,11 @@ export default function Layout() {
 
                     if (attributeData.type === 'ordered') {
                         try {
-                            let val = (edge.attributes[mapJS.attributeName] - attributeData.min) / (attributeData.max - attributeData.min)
-                            edge.visualAttributes.saturation = val
+                            let val = (newEdge[mapJS.attributeName] - attributeData.min) / (attributeData.max - attributeData.min)
+                            newEdge.visualAttributes.saturation = val
                         }
                         catch (e) {
-                            edge.visualAttributes.saturation = 1
+                            newEdge.visualAttributes.saturation = 1
                         }
                     }
                 }
@@ -326,11 +369,11 @@ export default function Layout() {
 
                     if (attributeData.type === 'ordered') {
                         try {
-                            let val = (edge.attributes[mapJS.attributeName] - attributeData.min) / (attributeData.max - attributeData.min)
-                            edge.visualAttributes.lightness = val
+                            let val = (newEdge[mapJS.attributeName] - attributeData.min) / (attributeData.max - attributeData.min)
+                            newEdge.visualAttributes.lightness = val
                         }
                         catch (e) {
-                            edge.visualAttributes.lightness = 0.5
+                            newEdge.visualAttributes.lightness = 0.5
                         }
                     }
                 }
@@ -339,41 +382,50 @@ export default function Layout() {
                     if (mappingsState.config.get(JSON.stringify(mapping))!.colourScheme !== null) {
                         let hues = mappingsState.schemes.get(mappingsState.config.get(JSON.stringify(mapping))!.colourScheme!)!
 
-                        let index = mappingsState.config.get(JSON.stringify(mapping))!.settings.get(edge.attributes[mapJS.attributeName])
+                        let index = mappingsState.config.get(JSON.stringify(mapping))!.settings.get(newEdge[mapJS.attributeName])
 
                         if (index === undefined) {
-                            edge.visualAttributes.hue = defaultEdgeHue
+                            newEdge.visualAttributes.hue = 219
                         }
                         else {
                             try {
 
                                 if (index >= hues.length) {
-                                    edge.visualAttributes.hue = defaultEdgeHue
+                                    newEdge.visualAttributes.hue = 219
                                 }
                                 else {
-                                    edge.visualAttributes.hue = hues[index]
+                                    newEdge.visualAttributes.hue = hues[index]
                                 }
                             }
                             catch (e) {
                                 console.log(e)
-                                edge.visualAttributes.hue = defaultEdgeHue
+                                newEdge.visualAttributes.hue = 219
                             }
                         }
                     }
                 }
-            })
 
-            return {
-                ...edge,
-                // hash: Hash(edge)
-                hash: 'abc'
-            }
+                if (mapJS.mappingName === 'width') {
+                    let attributeData = edgeMetadata[mapJS.attributeName]
+
+                    if (attributeData.type === 'ordered') {
+                        try {
+                            let val = (newEdge[mapJS.attributeName] - attributeData.min) / (attributeData.max - attributeData.min)
+                            newEdge.visualAttributes.width = val * 5
+                        }
+                        catch (e) {
+                            newEdge.visualAttributes.width = DEFAULTEDGEWIDTH
+                        }
+                    }
+                }
+            })
+            return newEdge
         })
 
         const { destroy } = Renderer({
             container: containerRef.current!,
-            nodes: hashedNodes,
-            edges: hashedEdges,
+            nodes: extendedNodes,
+            edges: extendedEdges,
             directed: graphState.directed,
             selectionState: selectionState,
             selectionDispatch: selectionDispatch})

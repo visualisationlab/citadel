@@ -83,15 +83,13 @@ mappingProperties = mappingProperties.set('saturation', {objectType: 'all', chan
 mappingProperties = mappingProperties.set('lightness', {objectType: 'all', channelType: 'ordered'})
 mappingProperties = mappingProperties.set('radius', {objectType: 'node', channelType: 'ordered'})
 mappingProperties = mappingProperties.set('alpha', {objectType: 'all', channelType: 'ordered'})
-mappingProperties = mappingProperties.set('text', {objectType: 'all', channelType: 'categorical'})
+mappingProperties = mappingProperties.set('text', {objectType: 'node', channelType: 'categorical'})
 mappingProperties = mappingProperties.set('width', {objectType: 'edge', channelType: 'ordered'})
 mappingProperties = mappingProperties.set('none', {objectType: 'all', channelType: 'categorical'})
-mappingProperties = mappingProperties.set('region', {objectType: 'node', channelType: 'categorical'})
+// mappingProperties = mappingProperties.set('region', {objectType: 'node', channelType: 'categorical'})
 mappingProperties = mappingProperties.set('x-position', {objectType: 'node', channelType: 'ordered'})
 mappingProperties = mappingProperties.set('y-position', {objectType: 'node', channelType: 'ordered'})
 mappingProperties = mappingProperties.set('shape', {objectType: 'node', channelType: 'categorical'})
-
-// TODO: Update schemes when scheme is changed
 
 // Reducer for scheme settings.
 function SchemeReducer(state: MappingsState, action: MappingsReducerAction): MappingsState {

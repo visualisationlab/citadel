@@ -1,9 +1,9 @@
-import React, {useEffect, useReducer, createContext, Reducer, useState, SyntheticEvent } from 'react'
+import React, {useEffect, useReducer, createContext, Reducer, useState } from 'react'
 import { Set, Map } from 'immutable'
 import './home.component.css'
 
 import Navigator from './navigator.component'
-import Layout from './layout.component'
+import PreProcess from './preprocess.component'
 
 import { SessionDataReducer, SessionState, SessionReducer } from '../reducers/sessiondata.reducer'
 import { GraphDataReducerAction, GraphDataState, GraphDataReducer } from '../reducers/graphdata.reducer'
@@ -20,6 +20,7 @@ import { QR } from '../services/qrcode.service'
 import { API } from '../services/api.service'
 
 import InspectionTab from './inspection.component'
+import Globals from './globals.component'
 
 export const UserDataContext = createContext({
     state: null as SessionState | null,
@@ -98,7 +99,8 @@ export default function Main() {
             data: [],
             metadata: {}
         },
-        directed: false
+        directed: false,
+        metadata: {}
     })
 
     let [globalSettingsState, globalSettingsDispatch] = useReducer<Reducer<GlobalSettingsState, GlobalSettingsReducerAction>>(GlobalSettingsReducer, {
@@ -183,8 +185,9 @@ export default function Main() {
             <GraphDataContext.Provider value={{ graphState: graphData, graphDispatch: graphDataDispatch }}>
                 <UserDataContext.Provider value={{ state: sessionData, dispatch: sessionDataDispatch}}>
                         <Navigator disconnected = {sessionData.state === 'disconnected'}/>
-                        <Layout/>
+                        <Globals/>
                         <InspectionTab/>
+                        <PreProcess/>
                 </UserDataContext.Provider>
 
             </GraphDataContext.Provider>

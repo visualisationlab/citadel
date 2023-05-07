@@ -18,6 +18,40 @@ import fs from 'fs'
 
 type SessionState = 'disconnected' | 'idle' | 'generating layout' | 'simulating' | 'playing'
 
+type BasicNode = {
+    id: string,
+    position: {
+        x: number,
+        y: number
+    },
+    [key: string]: any
+}
+
+type BasicEdge = {
+    id: string,
+    source: string,
+    target: string,
+    [key: string]: any
+}
+
+type BasicGraph = {
+    nodes: BasicNode[],
+    edges: BasicEdge[],
+    metadata: {
+        [key: string]: any
+    }
+}
+
+type CytoGraph = {
+    elements: {
+        nodes: cytoscape.NodeDefinition[],
+        edges: cytoscape.EdgeDefinition[]
+    },
+    data: {
+        [key: string]: any
+    }
+}
+
 type User = {
     readonly userID: string,
     socket: WebSocket,
@@ -232,10 +266,7 @@ export module MessageTypes {
 
     export interface DataStateMessage extends OutMessage {
         type: 'data',
-        data: {
-            nodes: any
-            edges: any
-        }
+        data: BasicGraph
     }
 
     export interface HeadsetConnectedMessage extends OutMessage {
@@ -578,6 +609,7 @@ export class Session {
                 sourceURL: string,
                 nodes: {[key: string]: any}[],
                 edges: {[key: string]: any}[],
+                globals: {[key: string]: any},
                 localAddress: string,
                 websocketPort: string,
                 logger: Logger) {
@@ -596,7 +628,7 @@ export class Session {
         this.expirationDate = expDate
 
         /* Load graph data. */
-        const data = this.parseJson(nodes, edges)
+        const data = this.parseJson(nodes, edges, globals)
 
         /* Compress graph state and store it. */
         this.graphHistory = [[gzipSync(JSON.stringify(data)).toString('base64'), null]]
@@ -725,7 +757,7 @@ export class Session {
 
             this.currentLayout = this.graphHistory[index][1]
 
-            this.changeGraphState(this.parseJson(data.elements.nodes, data.elements.edges))
+            this.changeGraphState(this.parseJson(data.elements.nodes, data.elements.edges, data.data))
 
             this.graphIndex = index
 
@@ -785,7 +817,7 @@ export class Session {
                 })
                 const msg = (message as MessageTypes.SimulatorDataMessage)
 
-                const data = this.parseJson(msg.params.nodes, msg.params.edges)
+                const data = this.parseJson(msg.params.nodes, msg.params.edges, {})
 
                 // If cancel message is received, reset state.
                 if (this.cancelSim) {
@@ -1043,7 +1075,7 @@ export class Session {
                 break
             case 'graphState':
                 // Update server graph state.
-                this.changeGraphState(this.parseJson(message.params.nodes, message.params.edges))
+                this.changeGraphState(this.parseJson(message.params.nodes, message.params.edges, message.params.data))
 
                 resolve(() => {
                     this.sendGraphState()
@@ -1292,14 +1324,29 @@ export class Session {
     private sendGraphState() {
         this.pruneSessions()
 
-        const graphData = (this.cy.json() as any).elements
+        const graphData = this.cy.json() as CytoGraph
 
+        // TODO: id and position checks
         this.users.forEach((user) => {
             const msg: MessageTypes.DataStateMessage = {
                 sessionID: this.sessionID,
                 sessionState: this.sessionState,
                 type: 'data',
-                data: graphData
+                data: {
+                    nodes: graphData.elements.nodes.map((node) => {
+                        return {
+                            id: node.data.id!,
+                            position: node.position!,
+                            ...node.data,
+                        }}),
+                    edges: graphData.elements.edges.map((edge) => {
+                        return {
+                            id: edge.data.id!,
+                            ...edge.data,
+                        }}
+                    ),
+                    metadata: graphData.data,
+                }
             }
 
             user.socket.send(JSON.stringify(msg))
@@ -1653,7 +1700,8 @@ export class Session {
     }
 
     // Parses JSON for use by cytoscape.
-    private parseJson(nodes: {[key: string]: any}[], edges: {[key: string]: any}[]) {
+    private parseJson(nodes: {[key: string]: any}[],
+        edges: {[key: string]: any}[], globals: {[key: string]: any}) {
         return {
             elements: {
                 nodes: nodes.map((node) => {
@@ -1695,7 +1743,8 @@ export class Session {
 
                     return edge
                 })
-            }
+            },
+            data: globals
         }
     }
 

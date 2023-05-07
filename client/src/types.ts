@@ -7,12 +7,7 @@
 import * as PIXI from 'pixi.js'
 
 export module VisGraph {
-    export type Shape =
-        | 'circle'
-        | 'square'
-        | 'triangle'
-        | 'star'
-        | 'line'
+
 
     export type Colour = [number, number, number]
 
@@ -43,7 +38,6 @@ export module VisGraph {
         validAttributeNames: string[]
     }
 
-    export type NodeDict = { [id: string]: GraphNode}
     export type MarkerDict = {[name in Marker] : MarkerObject}
     export type ColourDict = {[name in Marker] : ColourSettings}
 
@@ -61,44 +55,21 @@ export module VisGraph {
         selectionState: SelectionState
     }
 
-    export interface Edge {
-        source: string,
-        target: string,
-        id: string,
-        attributes: {[id: string]: any},
-        visualAttributes: {
-            hue: number,
-            saturation: number,
-            lightness: number,
-            text: string,
-            width: number,
-            alpha: number,
-        }
-    }
 
-    export interface HashedEdge extends Edge {
-        hash: string
-    }
-
-    export interface RenderedEdge extends HashedEdge  {
-        sourceNode: GraphNode,
-        targetNode: GraphNode,
-        gfx: PIXI.Sprite | null,
-    }
 
     export type GraphSettingsReducerAction = {
         attribute: GraphSettingsAttribute,
         value: number | boolean
     }
 
-    export type ColourDictReducerAction =
-        | {type: 'updateColour', marker: 'FillColour' | 'EdgeColour', colour: Colour, index: number}
-        | {type: 'setCount', marker: 'FillColour' | 'EdgeColour', count: number}
+    // export type ColourDictReducerAction =
+    //     | {type: 'updateColour', marker: 'FillColour' | 'EdgeColour', colour: Colour, index: number}
+    //     | {type: 'setCount', marker: 'FillColour' | 'EdgeColour', count: number}
 
-        export type SelectionReducerAction =
-        | {type: 'reset'}
-        | {type: 'type', value: SelectionType }
-        | {type: 'select', node: string, graphState: GraphState}
+    //     export type SelectionReducerAction =
+    //     | {type: 'reset'}
+    //     | {type: 'type', value: SelectionType }
+    //     | {type: 'select', node: string, graphState: GraphState}
 
     export type GraphStateReducerAction =
         | {type: 'load', name: string, data: any}
@@ -139,15 +110,15 @@ export module VisGraph {
         height: number
     }
 
-    export type GraphState = {
-        selectedGraph: string,
-        nodes: GraphNode[],
-        nodeDict: NodeDict,
-        edges: Edge[],
-        nx: any,
-        mappings: MarkerDict,
-        directed: boolean
-    }
+    // export type GraphState = {
+    //     selectedGraph: string,
+    //     nodes: GraphNode[],
+    //     nodeDict: NodeDict,
+    //     edges: Edge[],
+    //     nx: any,
+    //     mappings: MarkerDict,
+    //     directed: boolean
+    // }
 
     export type SelectionState = {
         selectedNodeID: string,
@@ -165,84 +136,30 @@ export module VisGraph {
     export type AttributeCallback = (id: string) => number
 
     export type FillColourCallback = (id: string, colourMap: MarkerObject, colourSettings: ColourSettings) => number
-    export type EdgeCallback = (edge: Edge, selectionState: SelectionState) => number
 
-    export type AttributeFunctions = {
-        getFillColour: FillColourCallback,
-        getRadius: AttributeCallback,
-        getAlpha: AttributeCallback,
-        getLineWidth: AttributeCallback,
-        getLineAlpha: EdgeCallback,
-        getEdgeColour: AttributeCallback,
-        getLineColour: EdgeCallback,
-    }
 
-    export type ForceGraphProps = {
-        graphState: GraphState,
-        graphSettings: GraphSettings,
-        onClickHandler: (id: string, selectionState : SelectionState) => void,
-        onClickBackground: () => void,
-        attributeFunctions: AttributeFunctions,
-        setParentRendering: (rendering: boolean) => void,
-        rendering: boolean,
-        selectionState: SelectionState,
-        colourDict: ColourDict
-    }
+    // export type AttributeFunctions = {
+    //     getFillColour: FillColourCallback,
+    //     getRadius: AttributeCallback,
+    //     getAlpha: AttributeCallback,
+    //     getLineWidth: AttributeCallback,
+    //     getLineAlpha: EdgeCallback,
+    //     getEdgeColour: AttributeCallback,
+    //     getLineColour: EdgeCallback,
+    // }
 
-    export type PixiProps = {
-        container: Node,
-        nodes: GraphNode[],
-        edges: Edge[],
-        graphSettings: GraphSettings,
-        isDirected: boolean,
-        onClickHandler: (id: string, selectionState: SelectionState) => void,
-        onClickBackground: () => void,
-        getFillColour: FillColourCallback,
-        attributeFunctions: AttributeFunctions,
-        selectionState: SelectionState,
-        mappings: MarkerDict,
-        colourDict: ColourDict
-    }
+    // export type ForceGraphProps = {
+    //     graphState: GraphState,
+    //     graphSettings: GraphSettings,
+    //     onClickHandler: (id: string, selectionState : SelectionState) => void,
+    //     onClickBackground: () => void,
+    //     attributeFunctions: AttributeFunctions,
+    //     setParentRendering: (rendering: boolean) => void,
+    //     rendering: boolean,
+    //     selectionState: SelectionState,
+    //     colourDict: ColourDict
+    // }
 
-    export interface GraphNode {
-        id: string,
-        x: number,
-        y: number,
-        attributes: { [id: string] : any},
-        visualAttributes: {
-            hue: number,
-            saturation: number,
-            lightness: number,
-            shape: Shape,
-            prevShape: Shape,
-            radius: number,
-            alpha: number,
-            text: string,
-            textScale: number,
-            x: number,
-            y: number,
-        }
-    }
-
-    export interface HashedGraphNode extends GraphNode {
-        hash: string
-    }
-
-    export type CytoNode = {
-        data: {id: string, [key: string] : any},
-        position: {x: number, y: number}
-    }
-
-    export type CytoEdge = {
-        data: {
-            id: string,
-            source: string,
-            target: string,
-            attributes: {
-                [key: string] : any
-            }
-        }
-    }
 
     export type Transform = {
         x: number,

@@ -5,6 +5,7 @@ import { SimulatorParam } from '../reducers/sessiondata.reducer'
 import { VisGraph } from '../types'
 import { websocketService } from './websocket.service'
 import {QR} from '../services/qrcode.service'
+import { BasicEdge, BasicNode, CytoEdge, CytoNode } from '../components/router.component'
 export module API {
     let sid: null | string = null
     let userID: null | string = null
@@ -73,16 +74,16 @@ export module API {
             return
         }
 
-        websocketService.sendSetMessage({
-            userID: userID,
-            sessionID: sid,
-            messageType: 'set',
-            dataType: 'validate',
-            messageSource: 'user',
-            params: {
-                apiKey: apiKey
-            }
-        })
+        // websocketService.sendSetMessage({
+        //     userID: userID,
+        //     sessionID: sid,
+        //     messageType: 'set',
+        //     dataType: 'validate',
+        //     messageSource: 'user',
+        //     params: {
+        //         apiKey: apiKey
+        //     }
+        // })
     }
 
     export function step(stepCount: number, apiKey: string,
@@ -181,37 +182,13 @@ export module API {
             return
         }
 
-        const nodes: VisGraph.CytoNode[] = graphState.nodes.data.map((node: VisGraph.GraphNode) => {
-            return {
-                position: {
-                    x: node.x,
-                    y: node.y,
-                },
-                data: {
-                    ...node.attributes,
-                    id: node.id
-                },
-            }
-        })
-
-
-        const edges: VisGraph.CytoEdge[] = graphState.edges.data.map((edge: VisGraph.Edge) => {
-            return {
-                data: {
-                    attributes: {...edge.attributes},
-                    source: edge.source,
-                    target: edge.target,
-                    id: edge.id
-                }
-            }
-        })
-
         websocketService.sendSetMessage({
             messageType: 'set',
             dataType: 'graphState',
             params: {
-                nodes: nodes,
-                edges: edges
+                nodes: graphState.nodes.data,
+                edges: graphState.edges.data,
+                metadata: graphState.metadata
             },
             sessionID: sid,
             userID: userID,
