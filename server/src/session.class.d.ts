@@ -11,6 +11,27 @@ import { Worker } from 'worker_threads';
 import { Logger } from 'winston';
 import { IncomingMessage } from 'http';
 type SessionState = 'disconnected' | 'idle' | 'generating layout' | 'simulating' | 'playing';
+type BasicNode = {
+    id: string;
+    position: {
+        x: number;
+        y: number;
+    };
+    [key: string]: any;
+};
+type BasicEdge = {
+    id: string;
+    source: string;
+    target: string;
+    [key: string]: any;
+};
+type BasicGraph = {
+    nodes: BasicNode[];
+    edges: BasicEdge[];
+    globals: {
+        [key: string]: any;
+    };
+};
 type SimulatorParam = {
     attribute: string;
     type: 'boolean';
@@ -30,6 +51,35 @@ type SimulatorParam = {
 export declare module MessageTypes {
     export type GetType = 'graphState' | 'sessionState' | 'layouts' | 'apiKey' | 'QR';
     export type SetType = 'playstate' | 'graphState' | 'simulator' | 'stopSimulator' | 'simulatorInstance' | 'layout' | 'username' | 'graphIndex' | 'headset' | 'windowSize' | 'pan';
+    type MessageTypeMap = Record<'registerSimulator' | 'simulatorResponse' | 'changeUserame' | 'pan' | 'removeSimulator', RegisterSimulatorPayload | SimulatorDataPayload | {
+        username: string;
+    } | PanPayload | {
+        apikey: string;
+    }>;
+    type PanPayload = {
+        x: number;
+        y: number;
+        k: number;
+    };
+    type RegisterSimulatorPayload = {
+        apikey: string;
+        params: SimulatorParam[];
+    };
+    type SimulatorDataPayload = {
+        nodes: any;
+        edges: any;
+        globals: any;
+        params: any;
+        apikey: string;
+    };
+    export interface Message<T extends keyof MessageTypeMap> {
+        type: T;
+        payload: MessageTypeMap[T];
+        senderID: string;
+        receiverID: string;
+        sessionID: string;
+        timestamp: Date;
+    }
     export interface OutMessage {
         sessionID: string;
         sessionState: SessionState;
@@ -46,26 +96,6 @@ export declare module MessageTypes {
         title?: string;
         validator?: boolean;
     }
-    export interface RegisterSimulatorMessage extends InMessage {
-        sessionID: string;
-        messageSource: 'simulator';
-        messageType: 'set';
-        dataType: 'register';
-        apiKey: string;
-        params: SimulatorParam[];
-    }
-    export interface SimulatorDataMessage extends InMessage {
-        sessionID: string;
-        messageSource: 'simulator';
-        messageType: 'set';
-        dataType: 'data';
-        apiKey: string;
-        params: {
-            nodes: any;
-            edges: any;
-            params: any;
-        };
-    }
     export interface GetMessage extends InMessage {
         messageSource: 'user';
         messageType: 'get';
@@ -78,24 +108,6 @@ export declare module MessageTypes {
         userID: string;
         dataType: SetType;
         params: any;
-    }
-    export interface RemoveMessage extends InMessage {
-        messageSource: 'user';
-        messageType: 'remove';
-        userID: string;
-        dataType: 'simulator';
-        params: {
-            apikey: string;
-        };
-    }
-    export interface SetUsernameMessage extends InMessage {
-        messageSource: 'user';
-        messageType: 'set';
-        userID: string;
-        dataType: 'username';
-        params: {
-            username: string;
-        };
     }
     export interface SetWindowSizeMessage extends InMessage {
         messageSource: 'user';
@@ -131,15 +143,6 @@ export declare module MessageTypes {
         title: string;
         state: 'disconnected' | 'idle' | 'generating' | 'connecting';
     };
-    export interface PanStateMessage extends OutMessage {
-        userID: string;
-        type: 'pan';
-        data: {
-            x: number;
-            y: number;
-            k: number;
-        };
-    }
     export interface SessionStateMessage extends OutMessage {
         userID: string;
         type: 'session';
@@ -172,10 +175,7 @@ export declare module MessageTypes {
     }
     export interface DataStateMessage extends OutMessage {
         type: 'data';
-        data: {
-            nodes: any;
-            edges: any;
-        };
+        data: BasicGraph;
     }
     export interface HeadsetConnectedMessage extends OutMessage {
         type: 'headset';
@@ -185,6 +185,9 @@ export declare module MessageTypes {
         data: {
             nodes: any;
             edges: any;
+            globals: {
+                [key: string]: any;
+            };
             params: SimulatorParam[];
         };
     }
@@ -234,6 +237,7 @@ export declare class Session {
     private simulators;
     private messageQueue;
     private readonly destroyFun;
+    private globals;
     private simState;
     private graphHistory;
     private graphIndex;
@@ -246,7 +250,9 @@ export declare class Session {
         [key: string]: any;
     }[], edges: {
         [key: string]: any;
-    }[], localAddress: string, websocketPort: string, logger: Logger);
+    }[], globals: {
+        [key: string]: any;
+    }, localAddress: string, websocketPort: string, logger: Logger);
     private setState;
     private changeGraphState;
     private storeCurrentGraphState;
