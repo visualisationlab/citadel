@@ -83,11 +83,11 @@ class WebsocketService {
         this.connect(splitString[2], username, keys)
     }
 
-    parseServerMessage(message: MessageTypes.OutMessage) {
+    parseServerMessage<T  extends keyof MessageTypes.MessageTypeMap>(message: MessageTypes.Message<T>) {
         Router.route(message)
     }
 
-    connect(sid: string, username: string | null, keys: number | null) {
+    connect<T  extends keyof MessageTypes.MessageTypeMap>(sid: string, username: string | null, keys: number | null) {
         if (this.ws !== null) {
             this.ws.close()
         }
@@ -99,7 +99,7 @@ class WebsocketService {
         // Handles incoming messages from server.
         this.ws.onmessage = (msg) => {
             try {
-                const messageData: MessageTypes.OutMessage = JSON.parse(msg.data)
+                const messageData: MessageTypes.Message<T> = JSON.parse(msg.data)
 
                 API.setSID(sid)
 
@@ -119,35 +119,7 @@ class WebsocketService {
     }
 
     // Sends messages to server.
-    sendSetMessage(message: MessageTypes.SetMessage) {
-        if (this.ws === null) {
-            return
-        }
-
-        if (this.ws.readyState === WebSocket.CLOSED
-            || this.ws.readyState === WebSocket.CLOSING
-            || this.ws.readyState === WebSocket.CONNECTING) {
-            return
-        }
-
-        this.ws.send(JSON.stringify(message))
-    }
-
-    sendGetMessage(message: MessageTypes.GetMessage) {
-        if (this.ws === null) {
-            return
-        }
-
-        if (this.ws.readyState === WebSocket.CLOSED
-            || this.ws.readyState === WebSocket.CLOSING
-            || this.ws.readyState === WebSocket.CONNECTING) {
-            return
-        }
-
-        this.ws.send(JSON.stringify(message))
-    }
-
-    sendRemoveMessage(message: MessageTypes.RemoveMessage) {
+    sendMessageToServer<T extends keyof MessageTypes.MessageTypeMap>(message: MessageTypes.Message<T>) {
         if (this.ws === null) {
             return
         }

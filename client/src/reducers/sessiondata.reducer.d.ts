@@ -1,3 +1,4 @@
+import { MessageTypes } from "../components/router.component";
 export type ServerState = 'disconnected' | 'idle' | 'generating layout' | 'simulating' | 'playing';
 export interface SessionState {
     currentLayout: string | null;
@@ -25,30 +26,30 @@ export interface SessionState {
         headsetID: string;
         connected: boolean;
     }[];
-    playmode: false;
+    playmode: boolean;
 }
-export type SimulatorParam = {
+export type ParamType = 'boolean' | 'integer' | 'float' | 'string';
+type ParamTypeToDefault<T extends ParamType> = T extends 'boolean' ? boolean : T extends 'integer' ? number : T extends 'float' ? number : T extends 'string' ? string : never;
+type ParamTypeToLimits<T extends ParamType> = T extends 'boolean' ? null : T extends 'integer' ? {
+    min: number;
+    max: number;
+} : T extends 'float' ? {
+    min: number;
+    max: number;
+} : T extends 'string' ? null : never;
+export interface SimulatorParam<T extends ParamType> {
     attribute: string;
-    type: 'boolean';
-    defaultValue: boolean;
-    value: boolean;
-} | {
-    attribute: string;
-    type: 'integer' | 'float';
-    defaultValue: number;
-    value: number;
-} | {
-    attribute: string;
-    type: 'string';
-    defaultValue: string;
-    value: string;
-};
+    type: T;
+    defaultValue: ParamTypeToDefault<T>;
+    value: ParamTypeToDefault<T>;
+    limits: ParamTypeToLimits<T>;
+}
 export interface Simulator {
     key: string | null;
     username: string;
     title: string;
     state: 'disconnected' | 'idle' | 'generating' | 'connecting';
-    options: SimulatorParam[];
+    options: Array<SimulatorParam<ParamType>>;
     valid: 'valid' | 'invalid' | 'unknown';
     validator: boolean;
 }
@@ -73,7 +74,7 @@ export interface LayoutInfo {
 }
 export type SessionReducer = {
     attribute: 'all';
-    value: any;
+    value: MessageTypes.Message<'sendSessionState'>;
 } | {
     attribute: 'username';
     value: string;
@@ -83,7 +84,7 @@ export type SessionReducer = {
 } | {
     attribute: 'simulatorSettings';
     key: string;
-    params: SimulatorParam[];
+    params: Array<SimulatorParam<ParamType>>;
 };
 export declare function SessionDataReducer(state: SessionState, action: SessionReducer): SessionState;
 export {};

@@ -30,7 +30,7 @@ export interface GraphDataState {
             [key: string]: MetadataType;
         };
     };
-    metadata: {
+    globals: {
         [key: string]: any;
     };
     directed: boolean;
@@ -41,7 +41,7 @@ export type GraphDataReducerAction = {
     value: {
         nodes: BasicNode[];
         edges: BasicEdge[];
-        metadata: {
+        globals: {
             [key: string]: any;
         };
     };

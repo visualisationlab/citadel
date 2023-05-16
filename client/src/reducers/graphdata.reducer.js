@@ -100,7 +100,7 @@ function setData(state, action) {
             state.edges.data = action.value.edges;
             state.nodes.data = action.value.nodes;
             state.directed = false;
-            state.metadata = action.value.metadata;
+            state.globals = action.value.globals;
             return Object.assign({}, state);
         case 'directed':
             state.directed = action.value;

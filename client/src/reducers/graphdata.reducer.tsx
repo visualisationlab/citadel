@@ -34,7 +34,7 @@ export interface GraphDataState {
         data: BasicEdge[],
         metadata: {[key: string]: MetadataType}
     }
-    metadata: {[key: string]: any},
+    globals: {[key: string]: any},
     directed: boolean
 }
 
@@ -42,7 +42,7 @@ export type GraphDataReducerAction =
     | { type: 'set', property: 'data', value: {
         nodes: BasicNode[],
         edges: BasicEdge[],
-        metadata: {[key: string]: any},
+        globals: {[key: string]: any},
     }}
     | { type: 'set', property: 'directed', value: boolean}
     | { type: 'update', object: 'node' | 'edge', value: {
@@ -185,7 +185,7 @@ function setData(state: GraphDataState, action: GraphDataReducerAction): GraphDa
 
             state.directed = false
 
-            state.metadata = action.value.metadata
+            state.globals = action.value.globals
 
             return {...state}
         case 'directed':

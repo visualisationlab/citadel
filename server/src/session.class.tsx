@@ -120,6 +120,7 @@ export module MessageTypes {
         'getData': ServerDataType,
         'startSimulator': StartSimulatorPayload,
         'createSimulator': {},
+        'stopSimulator': {},
         'sendSessionState': SessionStatePayload,
         'sendGraphState': BasicGraph,
         'headsetConnected': {headsetID: string, connected: boolean},
@@ -187,9 +188,13 @@ export module MessageTypes {
     type SessionStatePayload = {
         state: SessionState,
         currentLayout: AvailableLayout | null,
+        /** Session URL for sharing. */
         url: string,
+        /** Session data origin. */
         sessionURL: string,
+        /** Current index in dynamic graph. */
         graphIndex: number,
+        /** Total number of graphs in dynamic graph. */
         graphIndexCount: number,
         users: {
             username: string,
@@ -202,172 +207,30 @@ export module MessageTypes {
             connected: boolean
         }[]
         simState: {
+            /** The current simulation step. */
             step: number,
+            /** The number of steps to calculate. */
             stepMax: number,
+            /** Running sim name. */
             name: string
         }
+        /** Layout information for graph layout generation. */
         layoutInfo: LayoutInfo[]
-        expirationDate: string
+        /** Time session expires. */
+        expirationDate: Date
         websocketPort: string
         playmode: boolean
     }
-
-    // export interface OutMessage {
-    //     sessionID: string,
-    //     sessionState: SessionState,
-    //     type: 'data' | 'session' | 'uid' | 'headset' | 'pan'
-    // }
-
-    // export interface InMessage {
-    //     sessionID: string,
-    //     userID: string,
-    //     messageSource: 'simulator' | 'user'
-    //     messageType: 'get' | 'set' | 'remove'
-    //     apiKey?: string
-    //     data?: any
-    //     dataType?: any
-    //     title?: string
-    //     validator?: boolean
-    // }
-
-    // export interface RegisterSimulatorMessage extends InMessage {
-    //     sessionID: string,
-    //     messageSource: 'simulator'
-    //     messageType: 'set'
-    //     dataType: 'register'
-    //     apiKey: string
-    //     params: SimulatorParam[]
-    // }
-
-    // export interface SimulatorDataMessage extends InMessage {
-    //     sessionID: string,
-    //     messageSource: 'simulator',
-    //     messageType: 'set',
-    //     dataType: 'data'
-    //     apiKey: string,
-    //     params: {
-    //         nodes: any,
-    //         edges: any,
-    //         globals: any
-    //         params: any
-    //     }
-    // }
-
-    // export interface GetMessage extends InMessage {
-    //     messageSource: 'user'
-    //     messageType: 'get'
-    //     userID: string,
-    //     dataType: GetType
-    // }
-
-    // export interface SetMessage extends InMessage {
-    //     messageSource: 'user'
-    //     messageType: 'set'
-    //     userID: string,
-    //     dataType: SetType
-    //     params: any
-    // }
-
-    // export interface RemoveMessage extends InMessage {
-    //     messageSource: 'user'
-    //     messageType: 'remove'
-    //     userID: string,
-    //     dataType: 'simulator'
-    //     params: {
-    //         apikey: string
-    //     }
-    // }
-
-    // export interface SetUsernameMessage extends InMessage {
-    //     messageSource: 'user'
-    //     messageType: 'set'
-    //     userID: string
-    //     dataType: 'username'
-    //     params: {
-    //         username: string
-    //     }
-    // }
-
-    // export interface SetWindowSizeMessage extends InMessage {
-    //     messageSource: 'user'
-    //     messageType: 'set'
-    //     userID: string
-    //     dataType: 'windowSize'
-    //     params: {
-    //         width: number,
-    //         height: number
-    //     }
-    // }
-
-    // export interface SetSimulatorMessage extends InMessage {
-    //     messageSource: 'user'
-    //     messageType: 'set'
-    //     userID: string,
-    //     dataType: 'simulator'
-    //     params: {
-    //         stepCount: number,
-    //         apiKey: string,
-    //         name: string,
-    //     }
-    // }
-
-    // export interface SetSimulatorInstanceMessage extends InMessage {
-    //     messageSource: 'user'
-    //     messageType: 'set'
-    //     userID: string,
-    //     dataType: 'simulatorInstance'
-    // }
 
     type ServerSimulator = {
         readonly apikey: string | null,
         username: string,
         params: SimulatorParam[],
         title: string,
-        state: 'disconnected' | 'idle' | 'generating' | 'connecting'
+        state: 'disconnected' | 'idle' | 'generating' | 'connecting',
+        valid: 'valid' | 'invalid' | 'unknown',
+        validator: boolean
     }
-
-    // export interface PanStateMessage extends OutMessage {
-    //     userID: string,
-    //     type: 'pan',
-    //     data: {
-    //         x: number,
-    //         y: number,
-    //         k: number
-    //     }
-    // }
-
-    // export interface SessionStateMessage extends OutMessage {
-    //     userID: string,
-    //     type: 'session',
-    //     data: {
-
-    //     }
-    // }
-
-    // export interface DataStateMessage extends OutMessage {
-    //     type: 'data',
-    //     data: BasicGraph
-    // }
-
-    // export interface HeadsetConnectedMessage extends OutMessage {
-    //     type: 'headset'
-    // }
-
-    // export interface SimulatorSetMessage extends OutMessage {
-    //     type: 'data',
-    //     data: {
-    //         // nodes: any
-    //         // edges: any
-    //         // globals: {[key: string]: any}
-    //         // params: SimulatorParam[]
-    //     }
-    // }
-
-    // export interface UIDMessage extends OutMessage {
-    //     type: 'uid',
-    //     data: string,
-    //     keys: (string | null)[]
-    // }
 }
 
 type AvailableLayout =
@@ -1642,7 +1505,9 @@ export class Session {
                             })[0],
                             params: sim.params,
                             state: sim.state,
-                            title: sim.title
+                            title: sim.title,
+                            valid: sim.valid,
+                            validator: sim.validator
                         }
                     }),
                     simState: {
@@ -1652,7 +1517,7 @@ export class Session {
                     },
                     sessionURL: this.localAddress,
                     layoutInfo: getAvailableLayouts(),
-                    expirationDate: `${dateDiff.getHours()} hours, ${dateDiff.getMinutes()} minutes`,
+                    expirationDate: dateDiff,
                     websocketPort: this.websocketPort,
                     playmode: this.playmode
                 }

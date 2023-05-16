@@ -6,7 +6,6 @@ import { GraphDataContext } from '../components/main.component'
 import { GraphDataReducerAction, GraphDataState } from '../reducers/graphdata.reducer'
 import { SelectionDataReducerAction } from '../reducers/selection.reducer'
 import { API } from '../services/api.service'
-import { VisGraph } from '../types'
 
 import { min, max, mean, median } from 'mathjs'
 import {

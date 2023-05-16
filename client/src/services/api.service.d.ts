@@ -1,6 +1,6 @@
 import { GraphDataState } from '../reducers/graphdata.reducer';
 import { LayoutState } from '../reducers/layoutsettings.reducer';
-import { SimulatorParam } from '../reducers/sessiondata.reducer';
+import { ParamType, SimulatorParam } from '../reducers/sessiondata.reducer';
 export declare module API {
     function getUID(): string | null;
     function setSID(newSID: string): void;
@@ -8,7 +8,7 @@ export declare module API {
     function addSim(): void;
     function addHeadset(): void;
     function validate(apiKey: string): void;
-    function step(stepCount: number, apiKey: string, params: SimulatorParam[], simName: string): void;
+    function step<T extends ParamType>(stepCount: number, apiKey: string, params: Array<SimulatorParam<T>>, simName: string): void;
     function stop(): void;
     function removeSim(simKey: string): void;
     function removeNode(nodeID: string, graphState: GraphDataState): void;

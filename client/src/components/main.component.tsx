@@ -100,7 +100,7 @@ export default function Main() {
             metadata: {}
         },
         directed: false,
-        metadata: {}
+        globals: {}
     })
 
     let [globalSettingsState, globalSettingsDispatch] = useReducer<Reducer<GlobalSettingsState, GlobalSettingsReducerAction>>(GlobalSettingsReducer, {

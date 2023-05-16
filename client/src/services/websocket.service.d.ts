@@ -27,11 +27,9 @@ export type Simulator = {
 declare class WebsocketService {
     ws: WebSocket | null;
     checkConnection(): void;
-    parseServerMessage(message: MessageTypes.OutMessage): void;
-    connect(sid: string, username: string | null, keys: number | null): void;
-    sendSetMessage(message: MessageTypes.SetMessage): void;
-    sendGetMessage(message: MessageTypes.GetMessage): void;
-    sendRemoveMessage(message: MessageTypes.RemoveMessage): void;
+    parseServerMessage<T extends keyof MessageTypes.MessageTypeMap>(message: MessageTypes.Message<T>): void;
+    connect<T extends keyof MessageTypes.MessageTypeMap>(sid: string, username: string | null, keys: number | null): void;
+    sendMessageToServer<T extends keyof MessageTypes.MessageTypeMap>(message: MessageTypes.Message<T>): void;
 }
 export declare const websocketService: WebsocketService;
 export {};

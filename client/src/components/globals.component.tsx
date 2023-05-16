@@ -2,7 +2,7 @@ import { Validator } from 'jsonschema'
 import { useContext, useEffect, useState } from 'react'
 
 import { Button, Container, Row, Col, Stack, Form } from 'react-bootstrap'
-import { GraphDataContext } from './main.component'
+import { GraphDataContext, UserDataContext } from './main.component'
 
 const globalsFormat = {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -33,11 +33,17 @@ const globalsFormat = {
     "required": [ "edgeType"]
 }
 
+type GlobalsType = {
+    [key: string]: {[key: string]: any}
+}
+
 export default function Globals() {
     const [hidden, setHidden] = useState(true)
+    const [showHidden, setShowHidden] = useState(false)
 
     // Get graph state context
     const { graphState } = useContext(GraphDataContext)
+    const { state } = useContext(UserDataContext)
 
     if (!graphState) {
         return <></>
@@ -60,21 +66,30 @@ export default function Globals() {
         )
     }
 
-    const testData = {
-        "edgeType": "directed",
-        "ABCD": "AS"
-    }
-
     // Validate globals
-    var validator = new Validator()
+    // var validator = new Validator()
 
-    var vr = validator.validate(testData, globalsFormat)
+    // var vr = validator.validate(testData, globalsFormat)
 
-    if (!vr.valid) {
-        console.log(vr.errors)
-        return (
-            <></>
-        )
+    // if (!vr.valid) {
+    //     console.log(vr.errors)
+    //     return (
+    //         <></>
+    //     )
+    // }
+
+    const testGlobals: GlobalsType = {
+        "general": {
+            "edgeType": "directed",
+        },
+        "Kingpin Simulator": {
+            "delta": 8,
+            "kingpin_threshold": 0.5,
+            "_iterator": 3
+        },
+        "Custom Layout Generator": {
+            "convergence": 0.01,
+        }
     }
 
     return (
@@ -93,7 +108,7 @@ export default function Globals() {
                 <Col md={{span: 9}}>
                     <h3>
                         {
-                            'Globals'
+                            'Graph Globals'
                         }
                     </h3>
                 </Col>
@@ -112,25 +127,62 @@ export default function Globals() {
                     <hr></hr>
                 </Col>
             </Row>
+            <Row>
+                <Col>
+                    {/* Show checkbox for hidden attributes */}
+                    <Form.Check
+                        style={{
+                            float: 'right',
+                        }}
+                        type="checkbox"
+                        label="Show hidden attributes"
+                        checked={showHidden}
+                        onChange={
+                            (e) => {
+                                setShowHidden(e.target.checked)
+                            }
+                        }
+                    />
+                </Col>
+            </Row>
             <Stack>
                 {
-                    Object.keys(graphState.metadata).map((global, index) => {
+                    Object.keys(testGlobals).map((global, index) => {
+                        const values = Object.keys(testGlobals[global.toString()]).map((key, index) => {
+                            if (key.charAt(0) === '_' && !showHidden) {
+                                return <></>
+                            }
+
+                            return (
+                                <Row key={index}>
+                                    <Col md={{span: 4}}>
+                                        <Form.Label>
+                                            {
+                                                key.charAt(0) === '_' ? <i>{key.slice(1)}</i> : key
+                                            }
+                                        </Form.Label>
+                                    </Col>
+                                    <Col md={{span: 8}}>
+                                        <Form.Control
+                                            type="text"
+                                            placeholder={testGlobals[global.toString()][key]}
+                                            onChange={(e) => {
+                                                testGlobals[global.toString()][key] = e.target.value
+                                            }}
+                                        />
+                                    </Col>
+                                </Row>
+                            )
+                        })
+
                         return (
-                            <Stack key={global}>
-                                <h6
-                                    style={{
-                                        maxWidth: '100%',
-                                        overflow: 'hidden',
-                                    }}
-                                >
-                                    {global}
-                                </h6>
-                                <Form.Control id={global}
-
-                                    type="text"
-                                    value={graphState.metadata[global] === (undefined || null) ? '' : graphState.metadata[global].toString()}
-
-                                    placeholder={graphState.metadata[global] === (undefined || null) ? '' : graphState.metadata[global].toString()}/>
+                            <Stack
+                                style={{
+                                    marginBottom: '10px'
+                                }}
+                            >
+                                <h6>{global}</h6>
+                                {values}
                             </Stack>
                         )
                     })
