@@ -1,3 +1,4 @@
+import datetime
 import websockets
 import ssl
 import pathlib
@@ -230,7 +231,7 @@ def process_response(connection: websockets.WebSocketClientProtocol, response,
 
         params = {}
 
-        for param in jsonObj['data']['params']:
+        for param in jsonObj['payload']['params']:
             if (param['type'] == 'integer'):
                 params[param['attribute']] = int(param['value'])
             elif (param['type'] == 'string'):
@@ -242,11 +243,11 @@ def process_response(connection: websockets.WebSocketClientProtocol, response,
 
         # fun = types.FunctionType(simulatefun.__code__, {})
 
-        res = simulatefun(connection, jsonObj['data']['nodes'],
-                  jsonObj['data']['edges'], params)
+        res = simulatefun(connection, jsonObj['payload']['nodes'],
+                  jsonObj['payload']['edges'], params, jsonObj['payload']['globals'])
 
         params = [res[2][param['attribute']]
-                  for param in jsonObj['data']['params']]
+                  for param in jsonObj['payload']['params']]
 
         return res
     except Exception as e:
@@ -323,13 +324,18 @@ async def connect(url: str,
 
         await websocket.send(json.dumps({
             'sessionID': sid,
+            'senderType': 'simulator',
+            'senderID': key,
+            'type': 'registerSimulator',
             'messageSource': 'simulator',
-            'messageType': 'set',
-            'dataType': 'register',
-            'apiKey': key,
-            'data': json.dumps(startParams),
-            'validator': has_schema,
-            'title': title,
+            'receiverType': 'server',
+            'receiverID': 'server',
+            'payload': {
+                'apikey': key,
+                'params': json.dumps(startParams),
+                'validator': has_schema,
+                'title': title,
+            }
         }))
 
         while (1):
@@ -339,13 +345,17 @@ async def connect(url: str,
 
             await websocket.send(json.dumps({
                 'sessionID': sid,
-                'messageSource': 'simulator',
-                'messageType': 'set',
-                'dataType': 'data',
-                'apiKey': key,
-                'params': {
+                'senderType': 'simulator',
+                'type': 'simulatorResponse',
+                'senderID': key,
+                'receiverType': 'server',
+                'receiverID': 'server',
+                'timestamp': datetime.datetime.now().timestamp(),
+                'payload': {
+                    'apiKey': key,
                     'nodes': result[0],
                     'edges': result[1],
-                    'params': result[2]
+                    'params': result[2],
+                    'globals': result[3],
                 },
             }))
