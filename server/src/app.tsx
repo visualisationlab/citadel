@@ -428,11 +428,27 @@ app.post('/urls', body('url').trim().unescape(),  (req, res) => {
                             return
                         }
 
-                        console.log(json.attributes)
+                        // Parse globals
+                        let globals: {[key: string]: {[key: string]: string}} = {general: {}}
+
+                        if (json.attributes !== undefined) {
+                            for (let key in json.attributes) {
+                                if (typeof json.attributes[key] === 'object') {
+                                    globals[key] = json.attributes[key]
+
+                                    for (let param in globals[key]) {
+                                        globals[key][param] = globals[key][param].toString()
+                                    }
+                                }
+                                else {
+                                    globals['general'][key] = json.attributes[key]
+                                }
+                            }
+                        }
 
                         const session = new Session(sid, ((sid) => {
                             sessions[sid] = null
-                        }), url, json.nodes, json.edges, json.attributes, localAddress,
+                        }), url, json.nodes, json.edges, globals, localAddress,
                             process.env.WSCLIENTPORT!, logger)
 
                         sessions[sid] = session
