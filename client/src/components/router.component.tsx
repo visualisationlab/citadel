@@ -31,6 +31,8 @@ export type BasicEdge = {
     [key: string]: any
 }
 
+export type GlobalsType = {[key: string]: {[key: string]: string}}
+
 export type BasicGraph = {
     nodes: BasicNode[],
     edges: BasicEdge[],
@@ -115,6 +117,8 @@ export module MessageTypes {
         'setSliceIndex': {index: number},
         'addHeadset': {},
         'userInitialization': UserInitializationPayload,
+        'setGlobal': {key: string, param: string, value: string},
+        'createTestSimulator': {},
     }
 
     type SimulatorDataPayload = {
@@ -170,6 +174,8 @@ export module MessageTypes {
     }
 
     export type SessionStatePayload = {
+        globals: GlobalsType,
+        globalsGeneratedOn: number,
         state: ServerState,
         currentLayout: AvailableLayout | null,
         /** Session URL for sharing. */
@@ -216,6 +222,7 @@ export module MessageTypes {
         validator: boolean
     }
 }
+
 let sessionDataDispatch: Dispatch<SessionReducer> | null = null
 let graphDataDispatch: Dispatch<GraphDataReducerAction> | null = null
 let selectionDataDispatch: Dispatch<SelectionDataReducerAction> | null = null
@@ -274,11 +281,11 @@ export module Router {
             case 'sendSessionState':
                 sessionDataDispatch({attribute: 'all', value: (message as MessageTypes.Message<'sendSessionState'>)})
                 break
-            case 'uid':
+            case 'userInitialization':
                 API.setUserID((message as MessageTypes.Message<'userInitialization'>).payload.uid)
 
                 break
-            case 'headset':
+            case 'headsetConnected':
                 QR.clearQR()
                 API.sendPan()
                 break

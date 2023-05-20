@@ -1,8 +1,10 @@
-import { MessageTypes } from "../components/router.component"
+import { GlobalsType, MessageTypes } from "../components/router.component"
 
 export type ServerState = 'disconnected' | 'idle' | 'generating layout' | 'simulating' | 'playing'
 
 export interface SessionState {
+    globals: GlobalsType,
+    globalsGeneratedOn: number,
     currentLayout: string | null,
     userName: string,
     users: {userName: string, headsetCount: number}[],
@@ -70,7 +72,7 @@ export interface Simulator {
     username: string,
     title: string,
     state: 'disconnected' | 'idle' | 'generating' | 'connecting',
-    options: Array<SimulatorParam<ParamType>>,
+    params: Array<SimulatorParam<ParamType>>,
     valid: 'valid' | 'invalid' | 'unknown',
     validator: boolean
 }
@@ -119,6 +121,8 @@ export function SessionDataReducer(state: SessionState, action: SessionReducer):
             const payload = message.payload
 
             return {
+                globals: payload.globals,
+                globalsGeneratedOn: payload.globalsGeneratedOn,
                 currentLayout: payload.currentLayout,
                 userName: payload.users.filter((userData: {
                     userID: string, username: string
@@ -147,6 +151,8 @@ export function SessionDataReducer(state: SessionState, action: SessionReducer):
                             || state.simulators[index].state === 'generating'
                             || sim.state === 'disconnected')) {
 
+                        console.log("HERE")
+                        console.log(sim.params)
                         return {
                             key: sim.apikey,
                             title: sim.title,
@@ -154,7 +160,7 @@ export function SessionDataReducer(state: SessionState, action: SessionReducer):
                             state: sim.state,
                             valid: 'unknown',
                             validator: sim.validator,
-                            options: sim.params.map((param) => {
+                            params: sim.params.map((param) => {
 
                                 return {
                                     ...param,
@@ -186,7 +192,7 @@ export function SessionDataReducer(state: SessionState, action: SessionReducer):
             console.log(action.params)
             state.simulators = state.simulators.map((sim) => {
                 if (sim.key === action.key)
-                    sim.options = action.params
+                    sim.params = action.params
 
                 return sim
                 })

@@ -558,7 +558,7 @@ export function SimulatorTab() {
                     setSimOptionsSelection={setSimOptionsSelection}
                     setShowSimulatorModal={setShowSimulatorModal}
                     setModalSimKey={setSimKey}
-                    options={sim.options}
+                    options={sim.params}
                     simName={sim.title}
                     generating={sim.state === 'generating'}
                     serverState={state.state}
@@ -681,22 +681,42 @@ export function SimulatorTab() {
                                 <Row>
                                     <Col>
                                         <Button
-                                                disabled={(state.simulators.filter((sim) => {
-                                                    return sim.state === 'disconnected'
-                                                }).length > 0)}
-                                                onClick={() => {
-                                            if (state.simulators.filter((sim) => {
+                                            disabled={
+                                                (state.simulators.filter((sim) => {
                                                 return sim.state === 'disconnected'
-                                            }).length > 0) {
-                                                return
-                                            }
-
-                                            API.addSim()
-                                            setSimKey('_waiting')
-                                        }}
+                                                }).length > 0
+                                                )}
+                                            onClick={() => {
+                                                if (state.simulators.filter((sim) => {
+                                                    return sim.state === 'disconnected'
+                                                }).length > 0) {
+                                                    return
+                                                }
+                                                API.addSim()
+                                                setSimKey('_waiting')
+                                            }}
                                             variant='outline-success'>
                                             Add
                                         </Button>
+                                    </Col>
+                                    <Col>
+                                        {/* <Button
+                                            disabled={state.simulators.filter((sim) => {
+                                                return sim.state === 'disconnected'
+                                            }).length > 0}
+                                            onClick={() => {
+                                                if (state.simulators.filter((sim) => {
+                                                    return sim.state === 'disconnected'
+                                                }).length > 0) {
+                                                    return
+                                                }
+                                                API.addTestSim()
+                                                setSimKey('test')
+                                            }}
+                                            variant='outline-success'>
+                                            Add Test
+                                        </Button> */}
+
                                     </Col>
                                 </Row>
                             </ListGroup.Item>
@@ -766,7 +786,7 @@ export function SimulatorTab() {
             {content}
         </>
     ) : renderSimulatorSettings(simOptionsSelection,
-            state.simulators.filter((sim) => {return sim.key === simOptionsSelection})[0].options,
+            state.simulators.filter((sim) => {return sim.key === simOptionsSelection})[0].params,
             setSimOptionsSelection)
 
     return res

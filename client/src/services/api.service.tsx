@@ -1,4 +1,4 @@
-import { MessageTypes } from '../components/router.component'
+import { GlobalsType, MessageTypes } from '../components/router.component'
 import { GraphDataState } from '../reducers/graphdata.reducer'
 import { LayoutState } from '../reducers/layoutsettings.reducer'
 import { ParamType, SimulatorParam } from '../reducers/sessiondata.reducer'
@@ -22,6 +22,7 @@ export module API {
     }
 
     export function setUserID(newUserID: string) {
+        console.log('setUserID', newUserID)
         userID = newUserID
 
         const newMessage: MessageTypes.Message<'changeWindowSize'> = {
@@ -29,6 +30,26 @@ export module API {
             payload: {
                 width: window.innerWidth,
                 height: window.innerHeight
+            },
+            sessionID: sid!,
+            receiverID: 'server',
+            receiverType: 'server',
+            senderID: userID!,
+            senderType: 'user',
+            timestamp: new Date()
+        }
+
+        websocketService.sendMessageToServer(newMessage)
+    }
+
+    export function addTestSim() {
+        if (sid === null || userID === null) {
+            return
+        }
+
+        const newMessage: MessageTypes.Message<'createTestSimulator'> = {
+            type: 'createTestSimulator',
+            payload: {
             },
             sessionID: sid!,
             receiverID: 'server',
@@ -201,6 +222,31 @@ export module API {
         updateGraph(newState)
     }
 
+    export function editGlobal(globalID: string, parameter: string,
+        value: string) {
+        if (sid === null || userID === null) {
+            return
+        }
+
+
+        const newMessage: MessageTypes.Message<'setGlobal'> = {
+            type: 'setGlobal',
+            payload: {
+                key: globalID,
+                param: parameter,
+                value: value
+            },
+            sessionID: sid!,
+            receiverID: 'server',
+            receiverType: 'server',
+            senderID: userID!,
+            senderType: 'user',
+            timestamp: new Date()
+        }
+
+        websocketService.sendMessageToServer(newMessage)
+    }
+
     export function updateGraph(graphState: GraphDataState) {
         if (sid === null || userID === null) {
             return
@@ -226,7 +272,8 @@ export module API {
 
     export function updateUsername(name: string) {
         if (sid === null || name === '' || userID === null) {
-            console.log(name)
+            console.log(userID)
+
             return
         }
 

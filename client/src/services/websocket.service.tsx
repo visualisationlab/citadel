@@ -121,12 +121,16 @@ class WebsocketService {
     // Sends messages to server.
     sendMessageToServer<T extends keyof MessageTypes.MessageTypeMap>(message: MessageTypes.Message<T>) {
         if (this.ws === null) {
+            console.log('Websocket not initialized')
             return
         }
 
         if (this.ws.readyState === WebSocket.CLOSED
             || this.ws.readyState === WebSocket.CLOSING
             || this.ws.readyState === WebSocket.CONNECTING) {
+
+            console.log('Websocket not ready')
+
             return
         }
 

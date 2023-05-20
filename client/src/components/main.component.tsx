@@ -68,6 +68,8 @@ export default function Main() {
     })
 
     let [sessionData, sessionDataDispatch] = useReducer(SessionDataReducer, {
+        globals: {},
+        globalsGeneratedOn: 0,
         currentLayout: null,
         userName: '',
         users: [],

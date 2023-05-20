@@ -33,8 +33,8 @@ export interface GraphDataState {
     edges: {
         data: BasicEdge[],
         metadata: {[key: string]: MetadataType}
-    }
-    globals: {[key: string]: any},
+    },
+    globals: {[key: string]: {[key: string]: string}},
     directed: boolean
 }
 

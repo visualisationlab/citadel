@@ -252,7 +252,7 @@ function ClusterTab(
                     width: '100%'
                 }}>
                 <Col>
-                    <Button variant='outline-danger'
+                    <Button variant='outline-secondary'
                         onClick={() => {
                         console.log('here');
                         selectionDispatch({

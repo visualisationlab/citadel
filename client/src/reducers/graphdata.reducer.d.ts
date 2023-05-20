@@ -31,7 +31,9 @@ export interface GraphDataState {
         };
     };
     globals: {
-        [key: string]: any;
+        [key: string]: {
+            [key: string]: string;
+        };
     };
     directed: boolean;
 }

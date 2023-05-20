@@ -22,6 +22,11 @@ export type BasicEdge = {
     target: string;
     [key: string]: any;
 };
+export type GlobalsType = {
+    [key: string]: {
+        [key: string]: string;
+    };
+};
 export type BasicGraph = {
     nodes: BasicNode[];
     edges: BasicEdge[];
@@ -113,6 +118,12 @@ export declare module MessageTypes {
         };
         'addHeadset': {};
         'userInitialization': UserInitializationPayload;
+        'setGlobal': {
+            key: string;
+            param: string;
+            value: string;
+        };
+        'createTestSimulator': {};
     };
     type SimulatorDataPayload = {
         nodes: any;
@@ -161,6 +172,8 @@ export declare module MessageTypes {
         sessionState: SessionState;
     };
     export type SessionStatePayload = {
+        globals: GlobalsType;
+        globalsGeneratedOn: number;
         state: ServerState;
         currentLayout: AvailableLayout | null;
         /** Session URL for sharing. */

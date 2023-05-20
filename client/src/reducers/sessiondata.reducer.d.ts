@@ -1,6 +1,8 @@
-import { MessageTypes } from "../components/router.component";
+import { GlobalsType, MessageTypes } from "../components/router.component";
 export type ServerState = 'disconnected' | 'idle' | 'generating layout' | 'simulating' | 'playing';
 export interface SessionState {
+    globals: GlobalsType;
+    globalsGeneratedOn: number;
     currentLayout: string | null;
     userName: string;
     users: {
@@ -49,7 +51,7 @@ export interface Simulator {
     username: string;
     title: string;
     state: 'disconnected' | 'idle' | 'generating' | 'connecting';
-    options: Array<SimulatorParam<ParamType>>;
+    params: Array<SimulatorParam<ParamType>>;
     valid: 'valid' | 'invalid' | 'unknown';
     validator: boolean;
 }

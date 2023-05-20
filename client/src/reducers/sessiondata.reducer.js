@@ -4,6 +4,8 @@ export function SessionDataReducer(state, action) {
             const message = action.value;
             const payload = message.payload;
             return {
+                globals: payload.globals,
+                globalsGeneratedOn: payload.globalsGeneratedOn,
                 currentLayout: payload.currentLayout,
                 userName: payload.users.filter((userData) => {
                     return userData.userID === message.receiverID;
@@ -27,6 +29,8 @@ export function SessionDataReducer(state, action) {
                             || state.simulators[index].state === 'connecting'
                             || state.simulators[index].state === 'generating'
                             || sim.state === 'disconnected')) {
+                        console.log("HERE");
+                        console.log(sim.params);
                         return {
                             key: sim.apikey,
                             title: sim.title,
@@ -34,7 +38,7 @@ export function SessionDataReducer(state, action) {
                             state: sim.state,
                             valid: 'unknown',
                             validator: sim.validator,
-                            options: sim.params.map((param) => {
+                            params: sim.params.map((param) => {
                                 return Object.assign(Object.assign({}, param), { value: param.defaultValue });
                             })
                         };
@@ -58,7 +62,7 @@ export function SessionDataReducer(state, action) {
             console.log(action.params);
             state.simulators = state.simulators.map((sim) => {
                 if (sim.key === action.key)
-                    sim.options = action.params;
+                    sim.params = action.params;
                 return sim;
             });
             console.log(state.simulators);
