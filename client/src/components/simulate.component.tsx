@@ -13,24 +13,30 @@ import { Row, Col, Button, ListGroup, Dropdown, ProgressBar,
 import { UserDataContext } from '../components/main.component'
 import { API } from '../services/api.service'
 import './home.component.css'
-import { ServerState, SimulatorParam } from '../reducers/sessiondata.reducer'
+import { ParamType, ServerState, SimulatorParam } from '../reducers/sessiondata.reducer'
 import { Router } from './router.component'
 import { SimulatorState } from '../services/websocket.service'
 
 import './simulate.component.scss'
 
 // Renders sim item in simulator list.
-function renderSimItem(param: SimulatorParam, index: number, key: string, params: SimulatorParam[]) {
+function renderSimItem<T extends ParamType>(param: SimulatorParam<T>, index: number, key: string,
+    params: Array<SimulatorParam<T>>) {
     let inputField = <></>
 
     switch (param.type) {
         case 'boolean':
+            const boolParam = param as SimulatorParam<'boolean'>
+
             // Booleans are rendered as a dropdown menu.
             inputField = (
                 <Dropdown onSelect={(item) => {
                     Router.setSimulatorSettings(key, params.map((paramIter) => {
-                        if (paramIter.attribute === param.attribute) {
-                            paramIter.value = item === 'true'
+                        let newParam = paramIter as SimulatorParam<'boolean'>
+                        if (newParam.attribute === boolParam.attribute) {
+                            newParam.value = item === 'true'
+
+                            return newParam
                         }
 
                         return paramIter
@@ -38,18 +44,19 @@ function renderSimItem(param: SimulatorParam, index: number, key: string, params
                 }}>
                     <Dropdown.Toggle>{param.value === true ? 'True' : 'False'}</Dropdown.Toggle>
                     <Dropdown.Menu>
-                        <Dropdown.Item key='true' eventKey={'true'} active={param.value}>True</Dropdown.Item>
-                        <Dropdown.Item key='false' eventKey={'false'} active={!param.value}>False</Dropdown.Item>
+                        <Dropdown.Item key='true' eventKey={'true'} active={boolParam.value}>True</Dropdown.Item>
+                        <Dropdown.Item key='false' eventKey={'false'} active={!boolParam.value}>False</Dropdown.Item>
                     </Dropdown.Menu>
                 </Dropdown>
             )
             break
         case 'integer':
+            const integerParam = param as SimulatorParam<'integer'>
             // Integers are rendered as a number input field.
             inputField = (
                 <Form.Control
                     type='number'
-                    value={param.value}
+                    value={integerParam.value}
                     onChange={(e) => {
                         let num = Number(e.target.value)
 
@@ -59,7 +66,7 @@ function renderSimItem(param: SimulatorParam, index: number, key: string, params
 
                         Router.setSimulatorSettings(key, params.map((paramIter) => {
                             if (paramIter.attribute === param.attribute) {
-                                paramIter.value = num
+                                (paramIter as SimulatorParam<'integer'>).value = num
                             }
 
                             return paramIter
@@ -71,12 +78,13 @@ function renderSimItem(param: SimulatorParam, index: number, key: string, params
             )
             break
         case 'float':
+            const floatParam = param as SimulatorParam<'float'>
             // Floats are rendered as a number input field.
             inputField = (
                 <Form.Control
                     type='number'
                     step={0.1}
-                    value={param.value}
+                    value={floatParam.value}
                     onChange={(e) => {
                         let num = parseFloat(e.target.value)
 
@@ -86,7 +94,7 @@ function renderSimItem(param: SimulatorParam, index: number, key: string, params
 
                         Router.setSimulatorSettings(key, params.map((paramIter) => {
                             if (paramIter.attribute === param.attribute) {
-                                paramIter.value = num
+                                (paramIter as SimulatorParam<'float'>).value = num
                             }
 
                             return paramIter
@@ -98,11 +106,12 @@ function renderSimItem(param: SimulatorParam, index: number, key: string, params
             )
             break
         case 'string':
+            const stringParam = param as SimulatorParam<'string'>
             // Strings are rendered as a text input field.
             inputField = (
                 <Form.Control
                     type='string'
-                    value={param.value}
+                    value={stringParam.value}
                     onChange={(e) => {
                         if (e.target.value === '') {
                             return
@@ -110,7 +119,7 @@ function renderSimItem(param: SimulatorParam, index: number, key: string, params
 
                         Router.setSimulatorSettings(key, params.map((paramIter) => {
                             if (paramIter.attribute === param.attribute) {
-                                paramIter.value = e.target.value
+                                (paramIter as SimulatorParam<'string'>).value = e.target.value
                             }
 
                             return paramIter
@@ -159,7 +168,7 @@ function renderSimItem(param: SimulatorParam, index: number, key: string, params
 }
 
 // Renders the simulator settings.
-function renderSimulatorSettings(key: string, params: SimulatorParam[],
+function renderSimulatorSettings(key: string, params: Array<SimulatorParam<ParamType>>,
     setSimOptionsSelection: React.Dispatch<React.SetStateAction<string | null>>) {
 
     const closeButton = (
@@ -354,12 +363,12 @@ function ModalContent(props: {simKey: string, sid: string, sessionURL: string,
     )
 }
 
-function SimulatorRow(props: {generating: boolean,
+function SimulatorRow<T extends ParamType>(props: {generating: boolean,
     simKey: string, setSimKey: React.Dispatch<React.SetStateAction<string>>,
     simState: SimulatorState, setSimOptionsSelection: React.Dispatch<React.SetStateAction<string | null>>,
     setShowSimulatorModal: React.Dispatch<React.SetStateAction<boolean>>,
     setModalSimKey: React.Dispatch<React.SetStateAction<string>>,
-    options: SimulatorParam[],
+    options: Array<SimulatorParam<T>>,
     simName: string,
     serverState: ServerState,
     }) {
@@ -549,7 +558,7 @@ export function SimulatorTab() {
                     setSimOptionsSelection={setSimOptionsSelection}
                     setShowSimulatorModal={setShowSimulatorModal}
                     setModalSimKey={setSimKey}
-                    options={sim.options}
+                    options={sim.params}
                     simName={sim.title}
                     generating={sim.state === 'generating'}
                     serverState={state.state}
@@ -672,22 +681,42 @@ export function SimulatorTab() {
                                 <Row>
                                     <Col>
                                         <Button
-                                                disabled={(state.simulators.filter((sim) => {
-                                                    return sim.state === 'disconnected'
-                                                }).length > 0)}
-                                                onClick={() => {
-                                            if (state.simulators.filter((sim) => {
+                                            disabled={
+                                                (state.simulators.filter((sim) => {
                                                 return sim.state === 'disconnected'
-                                            }).length > 0) {
-                                                return
-                                            }
-
-                                            API.addSim()
-                                            setSimKey('_waiting')
-                                        }}
+                                                }).length > 0
+                                                )}
+                                            onClick={() => {
+                                                if (state.simulators.filter((sim) => {
+                                                    return sim.state === 'disconnected'
+                                                }).length > 0) {
+                                                    return
+                                                }
+                                                API.addSim()
+                                                setSimKey('_waiting')
+                                            }}
                                             variant='outline-success'>
                                             Add
                                         </Button>
+                                    </Col>
+                                    <Col>
+                                        {/* <Button
+                                            disabled={state.simulators.filter((sim) => {
+                                                return sim.state === 'disconnected'
+                                            }).length > 0}
+                                            onClick={() => {
+                                                if (state.simulators.filter((sim) => {
+                                                    return sim.state === 'disconnected'
+                                                }).length > 0) {
+                                                    return
+                                                }
+                                                API.addTestSim()
+                                                setSimKey('test')
+                                            }}
+                                            variant='outline-success'>
+                                            Add Test
+                                        </Button> */}
+
                                     </Col>
                                 </Row>
                             </ListGroup.Item>
@@ -757,7 +786,7 @@ export function SimulatorTab() {
             {content}
         </>
     ) : renderSimulatorSettings(simOptionsSelection,
-            state.simulators.filter((sim) => {return sim.key === simOptionsSelection})[0].options,
+            state.simulators.filter((sim) => {return sim.key === simOptionsSelection})[0].params,
             setSimOptionsSelection)
 
     return res

@@ -1,9 +1,4 @@
-/**
- * @author Miles van der Lely <m.vanderlely@uva.nl>
- *
- * This file contains the graph data reducer, which is used to store the graph data.
- */
-import { VisGraph } from '../types';
+import { BasicEdge, BasicNode } from '../components/router.component';
 export type MetadataType = {
     type: 'ordered';
     dataType: 'number';
@@ -24,15 +19,20 @@ export type MetadataType = {
 };
 export interface GraphDataState {
     nodes: {
-        data: VisGraph.GraphNode[];
+        data: BasicNode[];
         metadata: {
             [key: string]: MetadataType;
         };
     };
     edges: {
-        data: VisGraph.Edge[];
+        data: BasicEdge[];
         metadata: {
             [key: string]: MetadataType;
+        };
+    };
+    globals: {
+        [key: string]: {
+            [key: string]: string;
         };
     };
     directed: boolean;
@@ -41,9 +41,11 @@ export type GraphDataReducerAction = {
     type: 'set';
     property: 'data';
     value: {
-        nodes: VisGraph.GraphNode[];
-        edges: VisGraph.Edge[];
-        directed: boolean;
+        nodes: BasicNode[];
+        edges: BasicEdge[];
+        globals: {
+            [key: string]: any;
+        };
     };
 } | {
     type: 'set';

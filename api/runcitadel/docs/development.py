@@ -10,17 +10,24 @@ import time
 step = 1 # would be nice to get this from the params
 
 # Functions
-def sim_step(connection, nodes, edges, params):
+def sim_step(connection, nodes, edges, params, globals):
     """Performs one simulation step of the Replacement model"""
 
     # print(validation_json, len(nodes), len(edges), len(params))
+
+    if (globals['step'] is not None):
+        step = globals['step']['step']
 
     # add 1
     # step += 1
     print("step", step)
     time.sleep(2)
 
-    return [nodes, edges, params] # TODO: change this to the correct format
+    globals['step'] = {
+        'step': step + 1,
+    }
+
+    return [nodes, edges, params, globals] # TODO: change this to the correct format
 
 # Parameters that can be set by the user
 startParams = [{

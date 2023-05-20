@@ -1,10 +1,11 @@
-import { quantumOfCirculationDependencies } from 'mathjs'
+import { GlobalsType, MessageTypes } from '../components/router.component'
 import { GraphDataState } from '../reducers/graphdata.reducer'
 import { LayoutState } from '../reducers/layoutsettings.reducer'
-import { SimulatorParam } from '../reducers/sessiondata.reducer'
+import { ParamType, SimulatorParam } from '../reducers/sessiondata.reducer'
 import { VisGraph } from '../types'
 import { websocketService } from './websocket.service'
 import {QR} from '../services/qrcode.service'
+import { BasicEdge, BasicNode, CytoEdge, CytoNode } from '../components/router.component'
 export module API {
     let sid: null | string = null
     let userID: null | string = null
@@ -21,20 +22,44 @@ export module API {
     }
 
     export function setUserID(newUserID: string) {
+        console.log('setUserID', newUserID)
         userID = newUserID
 
-
-        websocketService.sendSetMessage({
-            messageType: 'set',
-            dataType: 'windowSize',
-            params: {
+        const newMessage: MessageTypes.Message<'changeWindowSize'> = {
+            type: 'changeWindowSize',
+            payload: {
                 width: window.innerWidth,
                 height: window.innerHeight
             },
             sessionID: sid!,
-            userID: userID,
-            messageSource: 'user'
-        })
+            receiverID: 'server',
+            receiverType: 'server',
+            senderID: userID!,
+            senderType: 'user',
+            timestamp: new Date()
+        }
+
+        websocketService.sendMessageToServer(newMessage)
+    }
+
+    export function addTestSim() {
+        if (sid === null || userID === null) {
+            return
+        }
+
+        const newMessage: MessageTypes.Message<'createTestSimulator'> = {
+            type: 'createTestSimulator',
+            payload: {
+            },
+            sessionID: sid!,
+            receiverID: 'server',
+            receiverType: 'server',
+            senderID: userID!,
+            senderType: 'user',
+            timestamp: new Date()
+        }
+
+        websocketService.sendMessageToServer(newMessage)
     }
 
     export function addSim() {
@@ -42,30 +67,39 @@ export module API {
             return
         }
 
-        websocketService.sendSetMessage({
-            userID: userID,
-            sessionID: sid,
-            messageType: 'set',
-            dataType: 'simulatorInstance',
-            messageSource: 'user',
-            params: null
-        })
+        const newMessage: MessageTypes.Message<'createSimulator'> = {
+            type: 'createSimulator',
+            payload: {
+            },
+            sessionID: sid!,
+            receiverID: 'server',
+            receiverType: 'server',
+            senderID: userID!,
+            senderType: 'user',
+            timestamp: new Date()
+        }
+
+        websocketService.sendMessageToServer(newMessage)
     }
 
     export function addHeadset() {
-
         if (sid === null || userID === null) {
             return
         }
 
-        websocketService.sendSetMessage({
-            userID: userID,
-            sessionID: sid,
-            messageType: 'set',
-            dataType: 'headset',
-            messageSource: 'user',
-            params: null
-        })
+        const newMessage: MessageTypes.Message<'addHeadset'> = {
+            type: 'addHeadset',
+            payload: {
+            },
+            sessionID: sid!,
+            receiverID: 'server',
+            receiverType: 'server',
+            senderID: userID!,
+            senderType: 'user',
+            timestamp: new Date()
+        }
+
+        websocketService.sendMessageToServer(newMessage)
     }
 
     export function validate(apiKey: string) {
@@ -73,37 +107,41 @@ export module API {
             return
         }
 
-        websocketService.sendSetMessage({
-            userID: userID,
-            sessionID: sid,
-            messageType: 'set',
-            dataType: 'validate',
-            messageSource: 'user',
-            params: {
-                apiKey: apiKey
-            }
-        })
+        // websocketService.sendSetMessage({
+        //     userID: userID,
+        //     sessionID: sid,
+        //     messageType: 'set',
+        //     dataType: 'validate',
+        //     messageSource: 'user',
+        //     params: {
+        //         apiKey: apiKey
+        //     }
+        // })
     }
 
-    export function step(stepCount: number, apiKey: string,
-        params: SimulatorParam[], simName: string) {
+    export function step<T extends ParamType>(stepCount: number, apiKey: string,
+        params: Array<SimulatorParam<T>>, simName: string) {
         if (sid === null || userID === null) {
             return
         }
 
-        websocketService.sendSetMessage({
-            userID: userID,
-            sessionID: sid,
-            messageType: 'set',
-            dataType: 'simulator',
-            messageSource: 'user',
-            params: {
+        const newMessage: MessageTypes.Message<'startSimulator'> = {
+            type: 'startSimulator',
+            payload: {
                 stepCount: stepCount,
                 params: params,
                 apiKey: apiKey,
                 name: simName
-            }
-        })
+            },
+            sessionID: sid!,
+            receiverID: 'server',
+            receiverType: 'server',
+            senderID: userID!,
+            senderType: 'user',
+            timestamp: new Date()
+        }
+
+        websocketService.sendMessageToServer(newMessage)
     }
 
     export function stop() {
@@ -111,16 +149,20 @@ export module API {
             return
         }
 
-        websocketService.sendSetMessage({
-            userID: userID,
-            sessionID: sid,
-            messageType: 'set',
-            dataType: 'stopSimulator',
-            messageSource: 'user',
-            params: {
-                state: false,
+        const newMessage: MessageTypes.Message<'stopSimulator'> = {
+            type: 'stopSimulator',
+            payload: {
+
             },
-        })
+            sessionID: sid!,
+            receiverID: 'server',
+            receiverType: 'server',
+            senderID: userID!,
+            senderType: 'user',
+            timestamp: new Date()
+        }
+
+        websocketService.sendMessageToServer(newMessage)
     }
 
     export function removeSim(simKey: string) {
@@ -128,16 +170,20 @@ export module API {
             return
         }
 
-        websocketService.sendRemoveMessage({
-            userID: userID,
-            sessionID: sid,
-            messageType: 'remove',
-            dataType: 'simulator',
-            messageSource: 'user',
-            params: {
+        const newMessage: MessageTypes.Message<'removeSimulator'> = {
+            type: 'removeSimulator',
+            payload: {
                 apikey: simKey
             },
-        })
+            sessionID: sid!,
+            receiverID: 'server',
+            receiverType: 'server',
+            senderID: userID!,
+            senderType: 'user',
+            timestamp: new Date()
+        }
+
+        websocketService.sendMessageToServer(newMessage)
     }
 
     export function removeNode(nodeID: string, graphState: GraphDataState) {
@@ -176,68 +222,78 @@ export module API {
         updateGraph(newState)
     }
 
+    export function editGlobal(globalID: string, parameter: string,
+        value: string) {
+        if (sid === null || userID === null) {
+            return
+        }
+
+
+        const newMessage: MessageTypes.Message<'setGlobal'> = {
+            type: 'setGlobal',
+            payload: {
+                key: globalID,
+                param: parameter,
+                value: value
+            },
+            sessionID: sid!,
+            receiverID: 'server',
+            receiverType: 'server',
+            senderID: userID!,
+            senderType: 'user',
+            timestamp: new Date()
+        }
+
+        websocketService.sendMessageToServer(newMessage)
+    }
+
     export function updateGraph(graphState: GraphDataState) {
         if (sid === null || userID === null) {
             return
         }
 
-        const nodes: VisGraph.CytoNode[] = graphState.nodes.data.map((node: VisGraph.GraphNode) => {
-            return {
-                position: {
-                    x: node.x,
-                    y: node.y,
-                },
-                data: {
-                    ...node.attributes,
-                    id: node.id
-                },
-            }
-        })
-
-
-        const edges: VisGraph.CytoEdge[] = graphState.edges.data.map((edge: VisGraph.Edge) => {
-            return {
-                data: {
-                    attributes: {...edge.attributes},
-                    source: edge.source,
-                    target: edge.target,
-                    id: edge.id
-                }
-            }
-        })
-
-        websocketService.sendSetMessage({
-            messageType: 'set',
-            dataType: 'graphState',
-            params: {
-                nodes: nodes,
-                edges: edges
+        const newMessage: MessageTypes.Message<'setGraphState'> = {
+            type: 'setGraphState',
+            payload: {
+                edges: graphState.edges.data,
+                nodes: graphState.nodes.data,
+                globals: graphState.globals
             },
-            sessionID: sid,
-            userID: userID,
-            messageSource: 'user'
-        })
+            sessionID: sid!,
+            receiverID: 'server',
+            receiverType: 'server',
+            senderID: userID!,
+            senderType: 'user',
+            timestamp: new Date()
+        }
+
+        websocketService.sendMessageToServer(newMessage)
     }
 
     export function updateUsername(name: string) {
         if (sid === null || name === '' || userID === null) {
-            console.log(name)
+            console.log(userID)
+
             return
         }
 
         // Store in localStorage
         localStorage.setItem('username', name)
 
-        websocketService.sendSetMessage({
-            messageType: 'set',
-            dataType: 'username',
-            params: {
+        const newMessage: MessageTypes.Message<'changeUsername'> = {
+            type: 'changeUsername',
+            payload: {
                 username: name
             },
-            sessionID: sid,
-            userID: userID,
-            messageSource: 'user'
-        })
+            sessionID: sid!,
+            receiverID: 'server',
+            receiverType: 'server',
+            senderID: userID!,
+            senderType: 'user',
+            timestamp: new Date()
+        }
+
+        websocketService.sendMessageToServer(newMessage)
     }
 
     export function getInfo() {
@@ -245,13 +301,18 @@ export module API {
             return
         }
 
-        websocketService.sendGetMessage({
-            userID: userID,
-            sessionID: sid,
-            messageType: 'get',
-            dataType: 'sessionState',
-            messageSource: 'user',
-        })
+        const newMessage: MessageTypes.Message<'getData'> = {
+            type: 'getData',
+            payload: 'sessionState',
+            sessionID: sid!,
+            receiverID: 'server',
+            receiverType: 'server',
+            senderID: userID!,
+            senderType: 'user',
+            timestamp: new Date()
+        }
+
+        websocketService.sendMessageToServer(newMessage)
     }
 
     export function getLayouts() {
@@ -259,15 +320,18 @@ export module API {
             return
         }
 
-        console.log(`Getting layout`)
+        const newMessage: MessageTypes.Message<'getData'> = {
+            type: 'getData',
+            payload: 'layouts',
+            sessionID: sid!,
+            receiverID: 'server',
+            receiverType: 'server',
+            senderID: userID!,
+            senderType: 'user',
+            timestamp: new Date()
+        }
 
-        websocketService.sendGetMessage({
-            userID: userID,
-            sessionID: sid,
-            messageType: 'get',
-            dataType: 'layouts',
-            messageSource: 'user',
-        })
+        websocketService.sendMessageToServer(newMessage)
     }
 
     export function setLayout(layout: LayoutState) {
@@ -290,20 +354,24 @@ export module API {
             messageSource: 'user'
         })
 
-        websocketService.sendSetMessage({
-            messageType: 'set',
-            dataType: 'layout',
-            params: {
+        const newMessage: MessageTypes.Message<'generateLayout'> = {
+            type: 'generateLayout',
+            payload: {
                 layout: {...layout,
-                    settings: layout.settings.filter((setting) => {
-                        return (setting.type === 'boolean') || !setting.auto
-                    })
-                }
+                            settings: layout.settings.filter((setting) => {
+                                return (setting.type === 'boolean') || !setting.auto
+                            })
+                        }
             },
-            sessionID: sid,
-            userID: userID,
-            messageSource: 'user'
-        })
+            sessionID: sid!,
+            receiverID: 'server',
+            receiverType: 'server',
+            senderID: userID!,
+            senderType: 'user',
+            timestamp: new Date()
+        }
+
+        websocketService.sendMessageToServer(newMessage)
     }
 
     export function setGraphIndex(index: number) {
@@ -311,18 +379,20 @@ export module API {
             return
         }
 
-        console.log(`Setting index to ${index}`)
-
-        websocketService.sendSetMessage({
-            messageType: 'set',
-            dataType: 'graphIndex',
-            params: {
+        const newMessage: MessageTypes.Message<'setSliceIndex'> = {
+            type: 'setSliceIndex',
+            payload: {
                 index: index
             },
-            sessionID: sid,
-            userID: userID,
-            messageSource: 'user'
-        })
+            sessionID: sid!,
+            receiverID: 'server',
+            receiverType: 'server',
+            senderID: userID!,
+            senderType: 'user',
+            timestamp: new Date()
+        }
+
+        websocketService.sendMessageToServer(newMessage)
     }
 
     export function setWindowSize(width: number, height: number) {
@@ -330,17 +400,21 @@ export module API {
             return
         }
 
-        websocketService.sendSetMessage({
-            messageType: 'set',
-            dataType: 'windowSize',
-            params: {
+        const newMessage: MessageTypes.Message<'changeWindowSize'> = {
+            type: 'changeWindowSize',
+            payload: {
                 width: width,
                 height: height
             },
-            sessionID: sid,
-            userID: userID,
-            messageSource: 'user'
-        })
+            sessionID: sid!,
+            receiverID: 'server',
+            receiverType: 'server',
+            senderID: userID!,
+            senderType: 'user',
+            timestamp: new Date()
+        }
+
+        websocketService.sendMessageToServer(newMessage)
     }
 
     export function setPan(x: number, y: number, k: number) {
@@ -352,18 +426,22 @@ export module API {
         panY = y
         panK = k
 
-        websocketService.sendSetMessage({
-            messageType: 'set',
-            dataType: 'pan',
-            params: {
+        const newMessage: MessageTypes.Message<'pan'> = {
+            type: 'pan',
+            payload: {
                 x: x,
                 y: y,
                 k: k
             },
-            sessionID: sid,
-            userID: userID,
-            messageSource: 'user'
-        })
+            sessionID: sid!,
+            receiverID: 'server',
+            receiverType: 'server',
+            senderID: userID!,
+            senderType: 'user',
+            timestamp: new Date()
+        }
+
+        websocketService.sendMessageToServer(newMessage)
     }
 
     export function play() {
@@ -371,16 +449,20 @@ export module API {
             return
         }
 
-        websocketService.sendSetMessage({
-            messageType: 'set',
-            dataType: 'playstate',
-            params: {
-                state: true
+        const newMessage: MessageTypes.Message<'setPlayState'> = {
+            type: 'setPlayState',
+            payload: {
+                playState: true
             },
-            sessionID: sid,
-            userID: userID,
-            messageSource: 'user'
-        })
+            sessionID: sid!,
+            receiverID: 'server',
+            receiverType: 'server',
+            senderID: userID!,
+            senderType: 'user',
+            timestamp: new Date()
+        }
+
+        websocketService.sendMessageToServer(newMessage)
     }
 
     export function pause() {
@@ -388,16 +470,20 @@ export module API {
             return
         }
 
-        websocketService.sendSetMessage({
-            messageType: 'set',
-            dataType: 'playstate',
-            params: {
-                state: false
+        const newMessage: MessageTypes.Message<'setPlayState'> = {
+            type: 'setPlayState',
+            payload: {
+                playState: false
             },
-            sessionID: sid,
-            userID: userID,
-            messageSource: 'user'
-        })
+            sessionID: sid!,
+            receiverID: 'server',
+            receiverType: 'server',
+            senderID: userID!,
+            senderType: 'user',
+            timestamp: new Date()
+        }
+
+        websocketService.sendMessageToServer(newMessage)
     }
 
     export function sendPan() {
@@ -405,17 +491,21 @@ export module API {
             return
         }
 
-        websocketService.sendSetMessage({
-            messageType: 'set',
-            dataType: 'pan',
-            params: {
+        const newMessage: MessageTypes.Message<'pan'> = {
+            type: 'pan',
+            payload: {
                 x: panX,
                 y: panY,
                 k: panK
             },
-            sessionID: sid,
-            userID: userID,
-            messageSource: 'user'
-        })
+            sessionID: sid!,
+            receiverID: 'server',
+            receiverType: 'server',
+            senderID: userID!,
+            senderType: 'user',
+            timestamp: new Date()
+        }
+
+        websocketService.sendMessageToServer(newMessage)
     }
 }

@@ -6,6 +6,7 @@
 import { VisGraph } from '../types'
 
 import { API } from '../services/api.service'
+import { BasicEdge, BasicNode } from '../components/router.component'
 
 // Metadata is used for mappings.
 export type MetadataType = {
@@ -26,22 +27,22 @@ export type MetadataType = {
 // The graph data state is a set of nodes and edges.
 export interface GraphDataState {
     nodes: {
-        data: VisGraph.GraphNode[]
+        data: BasicNode[],
         metadata: {[key: string]: MetadataType}
     },
     edges: {
-        data: VisGraph.Edge[],
+        data: BasicEdge[],
         metadata: {[key: string]: MetadataType}
-    }
-
+    },
+    globals: {[key: string]: {[key: string]: string}},
     directed: boolean
 }
 
 export type GraphDataReducerAction =
     | { type: 'set', property: 'data', value: {
-        nodes: VisGraph.GraphNode[],
-        edges: VisGraph.Edge[]
-        directed: boolean
+        nodes: BasicNode[],
+        edges: BasicEdge[],
+        globals: {[key: string]: any},
     }}
     | { type: 'set', property: 'directed', value: boolean}
     | { type: 'update', object: 'node' | 'edge', value: {
@@ -55,14 +56,15 @@ function updateData(state: GraphDataState, action: GraphDataReducerAction): Grap
         return state
     }
 
-    let newState: VisGraph.GraphNode[] | VisGraph.Edge[] = []
+    let newState: BasicNode[] | BasicEdge[] = []
 
     if (action.object === 'node') {
         newState = state.nodes.data.map((node) => {
             if (node.id !== action.value.id)
                 return node
 
-            node.attributes = action.value.attributes
+            node = {...node,
+                ...action.value.attributes}
 
             return node
 
@@ -72,20 +74,20 @@ function updateData(state: GraphDataState, action: GraphDataReducerAction): Grap
             if (edge.id !== action.value.id)
                 return edge
 
-            edge.attributes = action.value.attributes
+            edge = {...edge, ...action.value.attributes}
 
             return edge
         })
     }
 
     if (action.object === 'node') {
-        state.nodes.data = newState as VisGraph.GraphNode[]
+        state.nodes.data = newState as BasicNode[]
 
         state.nodes.metadata = calculateMetadata(state.nodes.data)
 
         API.updateGraph(state)
     } else if (action.object === 'edge') {
-        state.edges.data = newState as VisGraph.Edge[]
+        state.edges.data = newState as BasicEdge[]
 
         state.edges.metadata = calculateMetadata(state.edges.data)
 
@@ -95,13 +97,13 @@ function updateData(state: GraphDataState, action: GraphDataReducerAction): Grap
     return {...state}
 }
 
-function calculateMetadata(data: VisGraph.GraphNode[] | VisGraph.Edge[])
+function calculateMetadata(data: BasicNode[] | BasicEdge[])
     : {[key: string]: MetadataType} {
 
     let nodeMetadata: {[key: string]: MetadataType} = {}
 
     for (const node of data) {
-        for (const attribute of Object.keys(node.attributes)) {
+        for (const attribute of Object.keys(node)) {
             let metadata = nodeMetadata[attribute]
 
             if (metadata === undefined) {
@@ -119,7 +121,7 @@ function calculateMetadata(data: VisGraph.GraphNode[] | VisGraph.Edge[])
                 metadata = nodeMetadata[attribute]
             }
 
-            const value = node.attributes[attribute]
+            const value = node[attribute]
 
             if (metadata.type === 'ordered' && isNaN(Number(value))) {
                 nodeMetadata[attribute].type = 'categorical'
@@ -181,7 +183,9 @@ function setData(state: GraphDataState, action: GraphDataReducerAction): GraphDa
 
             state.nodes.data = action.value.nodes
 
-            state.directed = action.value.directed
+            state.directed = false
+
+            state.globals = action.value.globals
 
             return {...state}
         case 'directed':

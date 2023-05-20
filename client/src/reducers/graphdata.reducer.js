@@ -9,7 +9,7 @@ function updateData(state, action) {
         newState = state.nodes.data.map((node) => {
             if (node.id !== action.value.id)
                 return node;
-            node.attributes = action.value.attributes;
+            node = Object.assign(Object.assign({}, node), action.value.attributes);
             return node;
         });
     }
@@ -17,7 +17,7 @@ function updateData(state, action) {
         newState = state.edges.data.map((edge) => {
             if (edge.id !== action.value.id)
                 return edge;
-            edge.attributes = action.value.attributes;
+            edge = Object.assign(Object.assign({}, edge), action.value.attributes);
             return edge;
         });
     }
@@ -36,7 +36,7 @@ function updateData(state, action) {
 function calculateMetadata(data) {
     let nodeMetadata = {};
     for (const node of data) {
-        for (const attribute of Object.keys(node.attributes)) {
+        for (const attribute of Object.keys(node)) {
             let metadata = nodeMetadata[attribute];
             if (metadata === undefined) {
                 nodeMetadata[attribute] = {
@@ -51,7 +51,7 @@ function calculateMetadata(data) {
                 };
                 metadata = nodeMetadata[attribute];
             }
-            const value = node.attributes[attribute];
+            const value = node[attribute];
             if (metadata.type === 'ordered' && isNaN(Number(value))) {
                 nodeMetadata[attribute].type = 'categorical';
             }
@@ -99,7 +99,8 @@ function setData(state, action) {
         case 'data':
             state.edges.data = action.value.edges;
             state.nodes.data = action.value.nodes;
-            state.directed = action.value.directed;
+            state.directed = false;
+            state.globals = action.value.globals;
             return Object.assign({}, state);
         case 'directed':
             state.directed = action.value;

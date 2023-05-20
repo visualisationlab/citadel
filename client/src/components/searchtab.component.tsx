@@ -248,11 +248,11 @@ export default function SearchTab() {
         // Collect all attributes from the nodes
         data.forEach((node) => {
             if (searchType === 'node') {
-                Object.keys(node.attributes).forEach((attribute) => {
+                Object.keys(node).forEach((attribute) => {
                     attributes.add(attribute)
                 })
             } else {
-                Object.keys(node.attributes).forEach((attribute) => {
+                Object.keys(node).forEach((attribute) => {
                     attributes.add(attribute)
                 })
             }

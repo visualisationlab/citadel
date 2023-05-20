@@ -4,6 +4,8 @@ import { VisGraph } from '../types'
 import { Router } from '../components/router.component'
 import { API } from '../services/api.service'
 
+import { MessageTypes } from '../components/router.component'
+
 export type LayoutSetting =
     |   {
             name: string,
@@ -27,124 +29,12 @@ export interface LayoutInfo {
 
 export type SimulatorState = 'disconnected' | 'idle' | 'generating' | 'connecting'
 
-
 export type Simulator = {
     readonly apikey: string | null,
     readonly userID: string,
     socket: WebSocket,
     params: any,
     state: SimulatorState,
-}
-
-export module MessageTypes {
-    type SessionState = 'idle' | 'busy'
-
-    export type CloseReason =
-        | {code: 1001, reason: 'Session end'}
-        | {code: 1002, reason: 'Protocol error'}
-        | {code: 1003, reason: 'Unsupported data'}
-        | {code: 1004, reason: 'Session timeout'}
-
-    export interface OutMessage {
-        sessionID: string,
-        sessionState: SessionState,
-        type: 'data' | 'session' | 'uid' | 'headset'
-    }
-
-    export interface InMessage {
-        sessionID: string,
-        userID: string,
-        messageSource: 'simulator' | 'user'
-        messageType: 'get' | 'set' | 'remove'
-        apiKey?: string
-        data?: any
-        dataType?: any
-    }
-
-    export interface SimulatorMessage {
-        sessionID: string,
-        apiKey: string,
-        messageSource: 'simulator',
-        data: {
-            nodes: any,
-            edges: any,
-            params: any
-        }
-    }
-
-    export type GetType = 'graphState' | 'sessionState' | 'layouts' | 'apiKey' | 'QR'
-    export type SetType = 'graphState' | 'simulator' | 'simulatorInstance' | 'playstate' | 'stopSimulator'
-        | 'layout' | 'username' | 'graphIndex' | 'headset' | 'windowSize' | 'pan' | 'validate'
-
-    export interface GetMessage extends InMessage {
-        messageSource: 'user'
-        messageType: 'get'
-        userID: string,
-        dataType: GetType
-    }
-
-    export interface SetMessage extends InMessage {
-        messageSource: 'user'
-        messageType: 'set'
-        userID: string,
-        dataType: SetType
-        params: any
-    }
-
-    export interface RemoveMessage extends InMessage {
-        messageSource: 'user'
-        messageType: 'remove'
-        userID: string,
-        dataType: 'simulator'
-        params: {
-            apikey: string
-        }
-    }
-
-    export interface SetSimulatorMessage extends InMessage {
-        messageSource: 'user'
-        messageType: 'set'
-        userID: string,
-        dataType: 'simulator'
-        params: {
-            stepCount: number,
-            apikey: string
-        }
-    }
-
-    export interface SetSimulatorInstanceMessage extends InMessage {
-        messageSource: 'user'
-        messageType: 'set'
-        userID: string,
-        dataType: 'simulatorInstance'
-    }
-
-    export interface SessionStateMessage extends OutMessage {
-        userID: string,
-        type: 'session',
-        data: {
-            url: string,
-            users: {
-
-            },
-            simulators: Simulator[],
-            layoutInfo: LayoutInfo[]
-        }
-    }
-
-    export interface DataStateMessage extends OutMessage {
-        type: 'data',
-        data: {
-            nodes: any
-            edges: any
-        }
-    }
-
-    export interface UIDMessage extends OutMessage {
-        type: 'uid',
-        data: string,
-        keys: (string | null)[]
-    }
 }
 
 // Websocket WSURL.
@@ -193,11 +83,11 @@ class WebsocketService {
         this.connect(splitString[2], username, keys)
     }
 
-    parseServerMessage(message: MessageTypes.OutMessage) {
+    parseServerMessage<T  extends keyof MessageTypes.MessageTypeMap>(message: MessageTypes.Message<T>) {
         Router.route(message)
     }
 
-    connect(sid: string, username: string | null, keys: number | null) {
+    connect<T  extends keyof MessageTypes.MessageTypeMap>(sid: string, username: string | null, keys: number | null) {
         if (this.ws !== null) {
             this.ws.close()
         }
@@ -209,7 +99,7 @@ class WebsocketService {
         // Handles incoming messages from server.
         this.ws.onmessage = (msg) => {
             try {
-                const messageData: MessageTypes.OutMessage = JSON.parse(msg.data)
+                const messageData: MessageTypes.Message<T> = JSON.parse(msg.data)
 
                 API.setSID(sid)
 
@@ -229,42 +119,18 @@ class WebsocketService {
     }
 
     // Sends messages to server.
-    sendSetMessage(message: MessageTypes.SetMessage) {
+    sendMessageToServer<T extends keyof MessageTypes.MessageTypeMap>(message: MessageTypes.Message<T>) {
         if (this.ws === null) {
+            console.log('Websocket not initialized')
             return
         }
 
         if (this.ws.readyState === WebSocket.CLOSED
             || this.ws.readyState === WebSocket.CLOSING
             || this.ws.readyState === WebSocket.CONNECTING) {
-            return
-        }
 
-        this.ws.send(JSON.stringify(message))
-    }
+            console.log('Websocket not ready')
 
-    sendGetMessage(message: MessageTypes.GetMessage) {
-        if (this.ws === null) {
-            return
-        }
-
-        if (this.ws.readyState === WebSocket.CLOSED
-            || this.ws.readyState === WebSocket.CLOSING
-            || this.ws.readyState === WebSocket.CONNECTING) {
-            return
-        }
-
-        this.ws.send(JSON.stringify(message))
-    }
-
-    sendRemoveMessage(message: MessageTypes.RemoveMessage) {
-        if (this.ws === null) {
-            return
-        }
-
-        if (this.ws.readyState === WebSocket.CLOSED
-            || this.ws.readyState === WebSocket.CLOSING
-            || this.ws.readyState === WebSocket.CONNECTING) {
             return
         }
 

@@ -6,7 +6,6 @@ import { GraphDataContext } from '../components/main.component'
 import { GraphDataReducerAction, GraphDataState } from '../reducers/graphdata.reducer'
 import { SelectionDataReducerAction } from '../reducers/selection.reducer'
 import { API } from '../services/api.service'
-import { VisGraph } from '../types'
 
 import { min, max, mean, median } from 'mathjs'
 import {
@@ -26,6 +25,7 @@ import { Bar } from 'react-chartjs-2'
 
 import './home.component.css'
 import './inspection.stylesheet.scss'
+import { BasicNode, BasicEdge } from './router.component'
 
 ChartJS.register(
     CategoryScale,
@@ -252,7 +252,7 @@ function ClusterTab(
                     width: '100%'
                 }}>
                 <Col>
-                    <Button variant='outline-danger'
+                    <Button variant='outline-secondary'
                         onClick={() => {
                         console.log('here');
                         selectionDispatch({
@@ -274,9 +274,11 @@ function ObjectTab(
     attributes: {[id: string] : any},
     setAttributes: React.Dispatch<React.SetStateAction<{[id: string]: any}>>,
     graphDispatch: React.Dispatch<GraphDataReducerAction>,
-    graphState: GraphDataState) : JSX.Element {
+    graphState: GraphDataState,
 
-    console.log(attributes)
+    showHidden: boolean,
+    setShowHidden: React.Dispatch<React.SetStateAction<boolean>>) : JSX.Element {
+
     return (
         <Stack>
             <h4>
@@ -285,18 +287,33 @@ function ObjectTab(
             <p>{id}</p>
 
             <h4>Attributes</h4>
+            {/* Show checkbox for hidden attributes */}
+            <Form.Check
+                type="checkbox"
+                label="Show hidden attributes"
+                checked={showHidden}
+                onChange={
+                    (e) => {
+                        setShowHidden(e.target.checked)
+                    }
+                }
+            />
             <Stack gap={3}>
                 <div
                     style={{
                         overflowY: 'auto',
                         // Height is set dynamically based on y dimension - button height - header
-                        height: `calc(100vh - 80px - 174px)`,
+                        height: `calc(100vh - 80px - 200px)`,
 
                     }}
                 >
                     <Stack gap={3}>
                         {
-                            Object.keys(attributes).map((key) => {
+                            Object.keys(attributes).filter(
+                                (key) => {
+                                    return key !== 'id' && key.charAt(0) !== '_'
+                                }
+                            ).map((key) => {
                                 return (
                                     <Stack key={key}>
                                         <h6
@@ -305,7 +322,9 @@ function ObjectTab(
                                                 overflow: 'hidden',
                                             }}
                                         >
-                                            {key}
+                                            {
+                                                key.charAt(0) === '_' ? <i>{key.slice(1)}</i> : key
+                                            }
                                         </h6>
                                         <Form.Control id={key}
                                             onChange={
@@ -325,7 +344,55 @@ function ObjectTab(
                                 )
                             })
                         }
+                        <hr></hr>
+                        {
+                            showHidden ? (
+                                Object.keys(attributes).filter(
+                                    (key) => {
+                                        return key.charAt(0) === '_'
+                                    }
+                                ).map((key) => {
+                                    return <Stack key={key}>
+                                    <h6
+                                        style={{
+                                            maxWidth: '100%',
+                                            overflow: 'hidden',
+                                        }}
+                                    >
+                                        {
+                                            key.charAt(0) === '_' ? <i>{key.slice(1)}</i> : key
+                                        }
+                                    </h6>
+                                    <Form.Control id={key}
+                                        onChange={
+                                            (e) => {
+                                                let newState = {...attributes}
+
+                                                newState[key] = e.target.value
+
+                                                setAttributes(newState)
+                                            }
+                                        }
+                                        type="text"
+                                        value={attributes[key] === (undefined || null) ? '' : attributes[key].toString()}
+
+                                        placeholder={attributes[key] === (undefined || null) ? '' : attributes[key].toString()}/>
+                                </Stack>
+                                })
+                            ) : (
+                                <p><i>Hidden {Object.keys(attributes).filter(
+                                (key) => {
+                                    return key.charAt(0) === '_'
+                                }
+                            ).length} attribute{Object.keys(attributes).filter(
+                                (key) => {
+                                    return key.charAt(0) === '_'
+                                }
+                            ).length > 1}</i></p>
+                            )
+                        }
                     </Stack>
+
                 </div>
                 <Row style={{
                     position: 'absolute',
@@ -465,6 +532,8 @@ export default function InspectionTab(): JSX.Element {
 
     const [ width, setWidth ] = useState(300)
 
+    const [ showHidden, setShowHidden ] = useState(false)
+
     useEffect(() => {
         if (selectionState === null || graphState === null) {
             return
@@ -479,7 +548,7 @@ export default function InspectionTab(): JSX.Element {
             return
         }
 
-        let data: (VisGraph.GraphNode | VisGraph.Edge)[] = []
+        let data: (BasicNode | BasicEdge)[] = []
 
         if (selectionState.objectType === 'node') {
             data = graphState.nodes.data
@@ -496,9 +565,9 @@ export default function InspectionTab(): JSX.Element {
                 return
             }
 
-            setAttributeSelectionList(Object.keys(filteredResult[0].attributes))
+            setAttributeSelectionList(Object.keys(filteredResult[0]))
 
-            const result = filteredResult.map((object) => { return object.attributes })
+            const result = filteredResult.map((object) => { return object })
 
             setClusterAttributes(result)
 
@@ -515,7 +584,7 @@ export default function InspectionTab(): JSX.Element {
             return
         }
 
-        setAttributes(result[0].attributes)
+        setAttributes(result[0])
     }, [graphState, selectionState])
 
     if (state === null || graphState == null || graphDispatch == null
@@ -560,7 +629,7 @@ export default function InspectionTab(): JSX.Element {
     } else {
         const id = selectionState.selectedIDs[0]
 
-        let result: VisGraph.GraphNode[] | VisGraph.Edge[] = []
+        let result: BasicNode[] | BasicEdge[] = []
 
         if (selectionState.objectType === 'node') {
             result = graphState.nodes.data.filter((node) => {return node.id === id})
@@ -574,7 +643,8 @@ export default function InspectionTab(): JSX.Element {
             return <></>
         }
 
-        tabContent = ObjectTab(result[0].id, selectionState.objectType, attributes, setAttributes, graphDispatch, graphState)
+        tabContent = ObjectTab(result[0].id, selectionState.objectType,
+            attributes, setAttributes, graphDispatch, graphState, showHidden, setShowHidden)
     }
 
     const header = selectionState.selectedIDs.length > 1 ?

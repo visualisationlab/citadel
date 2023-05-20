@@ -1,6 +1,10 @@
+import { GlobalsType, MessageTypes } from "../components/router.component"
+
 export type ServerState = 'disconnected' | 'idle' | 'generating layout' | 'simulating' | 'playing'
 
 export interface SessionState {
+    globals: GlobalsType,
+    globalsGeneratedOn: number,
     currentLayout: string | null,
     userName: string,
     users: {userName: string, headsetCount: number}[],
@@ -23,35 +27,44 @@ export interface SessionState {
         headsetID: string,
         connected: boolean
     }[],
-    playmode: false
+    playmode: boolean
 }
 
 type ServerSimulator = {
     readonly apikey: string | null,
     username: string,
+    params: Array<SimulatorParam<ParamType>>,
     title: string,
-    params: SimulatorParam[],
-    state: 'disconnected' | 'idle' | 'generating' | 'connecting'
+    state: 'disconnected' | 'idle' | 'generating' | 'connecting',
+    valid: 'valid' | 'invalid' | 'unknown',
+    validator: boolean
 }
 
-export type SimulatorParam =
+export type ParamType = 'boolean' | 'integer' | 'float' | 'string'
+
+// Default type for simulator param based on ParamType
+type ParamTypeToDefault<T extends ParamType> =
+    T extends 'boolean' ? boolean :
+    T extends 'integer' ? number :
+    T extends 'float' ? number :
+    T extends 'string' ? string :
+    never
+
+// Param type limits for simulator param based on ParamType
+type ParamTypeToLimits<T extends ParamType> =
+    T extends 'boolean' ? null :
+    T extends 'integer' ? {min: number, max: number} :
+    T extends 'float' ? {min: number, max: number} :
+    T extends 'string' ? null :
+    never
+
+export interface SimulatorParam<T extends ParamType>
     {
         attribute: string,
-        type: 'boolean'
-        defaultValue: boolean,
-        value: boolean
-    }
-    | {
-        attribute: string,
-        type: 'integer' | 'float',
-        defaultValue: number,
-        value: number
-    }
-    | {
-        attribute: string,
-        type: 'string',
-        defaultValue: string,
-        value: string
+        type: T,
+        defaultValue: ParamTypeToDefault<T>,
+        value: ParamTypeToDefault<T>,
+        limits: ParamTypeToLimits<T>
     }
 
 export interface Simulator {
@@ -59,7 +72,7 @@ export interface Simulator {
     username: string,
     title: string,
     state: 'disconnected' | 'idle' | 'generating' | 'connecting',
-    options: SimulatorParam[],
+    params: Array<SimulatorParam<ParamType>>,
     valid: 'valid' | 'invalid' | 'unknown',
     validator: boolean
 }
@@ -96,49 +109,59 @@ export interface LayoutInfo {
 }
 
 export type SessionReducer =
-    | { attribute: 'all', value: any}
+    | { attribute: 'all', value: MessageTypes.Message<'sendSessionState'>}
     | { attribute: 'username', value: string}
     | { attribute: 'state', value: ServerState}
-    | { attribute: 'simulatorSettings', key: string, params: SimulatorParam[]}
+    | { attribute: 'simulatorSettings', key: string, params: Array<SimulatorParam<ParamType>>}
 
 export function SessionDataReducer(state: SessionState, action: SessionReducer): SessionState {
     switch (action.attribute) {
         case 'all':
+            const message = action.value
+            const payload = message.payload
+
             return {
-                currentLayout: action.value.data.currentLayout,
-                userName: action.value.data.users.filter((userData: {
+                globals: payload.globals,
+                globalsGeneratedOn: payload.globalsGeneratedOn,
+                currentLayout: payload.currentLayout,
+                userName: payload.users.filter((userData: {
                     userID: string, username: string
                 }) => {
-                    return userData.userID === action.value.userID
+                    return userData.userID === message.receiverID
                 })[0].username,
-                users: action.value.data.users.map((userData: {
+                users: payload.users.map((userData: {
                     userID: string, username: string, headsetCount: number
                 }) => {
                     return {userName: userData.username, headsetCount: userData.headsetCount}
                 }),
-                expirationDate: action.value.data.expirationDate,
-                graphURL: action.value.data.url,
+                expirationDate: payload.expirationDate,
+                graphURL: payload.url,
                 sid: action.value.sessionID,
-                layouts: action.value.data.layoutInfo,
-                headsets: action.value.data.headsets,
-                websocketPort: action.value.data.websocketPort,
-                sessionURL: action.value.data.sessionURL,
-                state: action.value.sessionState,
-                graphIndex: action.value.data.graphIndex,
-                graphIndexCount: action.value.data.graphIndexCount,
-                simulators: action.value.data.simulators.map((sim: ServerSimulator, index: number) => {
+                layouts: payload.layoutInfo,
+                headsets: payload.headsets,
+                websocketPort: payload.websocketPort,
+                sessionURL: payload.sessionURL,
+                state: payload.state,
+                graphIndex: payload.graphIndex,
+                graphIndexCount: payload.graphIndexCount,
+                simulators: payload.simulators.map((sim: ServerSimulator, index: number) => {
                     if (index >= state.simulators.length ||
                         (state.simulators[index].state === 'disconnected'
                             || state.simulators[index].state === 'connecting'
                             || state.simulators[index].state === 'generating'
                             || sim.state === 'disconnected')) {
 
+                        console.log("HERE")
+                        console.log(sim.params)
                         return {
                             key: sim.apikey,
                             title: sim.title,
                             username: sim.username,
                             state: sim.state,
-                            options: sim.params.map((param) => {
+                            valid: 'unknown',
+                            validator: sim.validator,
+                            params: sim.params.map((param) => {
+
                                 return {
                                     ...param,
                                     value: param.defaultValue
@@ -150,11 +173,12 @@ export function SessionDataReducer(state: SessionState, action: SessionReducer):
                     return {...state.simulators[index], username: sim.username, state: sim.state}
                 }),
                 simState: {
-                    step: action.value.data.simState.step,
-                    stepMax: action.value.data.simState.stepMax,
-                    name: action.value.data.simState.name
+                    step: payload.simState.step,
+                    stepMax: payload.simState.stepMax,
+                    name: payload.simState.name,
+
                 },
-                playmode: action.value.data.playmode
+                playmode: payload.playmode
             }
         case 'state':
             state.state = action.value
@@ -168,7 +192,7 @@ export function SessionDataReducer(state: SessionState, action: SessionReducer):
             console.log(action.params)
             state.simulators = state.simulators.map((sim) => {
                 if (sim.key === action.key)
-                    sim.options = action.params
+                    sim.params = action.params
 
                 return sim
                 })

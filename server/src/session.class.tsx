@@ -18,6 +18,40 @@ import fs from 'fs'
 
 type SessionState = 'disconnected' | 'idle' | 'generating layout' | 'simulating' | 'playing'
 
+type BasicNode = {
+    id: string,
+    position: {
+        x: number,
+        y: number
+    },
+    [key: string]: any
+}
+
+type BasicEdge = {
+    id: string,
+    source: string,
+    target: string,
+    [key: string]: any
+}
+
+type BasicGraph = {
+    nodes: BasicNode[],
+    edges: BasicEdge[],
+    globals: {
+        [key: string]: any
+    }
+}
+
+type CytoGraph = {
+    elements: {
+        nodes: cytoscape.NodeDefinition[],
+        edges: cytoscape.EdgeDefinition[]
+    },
+    data: {
+        [key: string]: any
+    }
+}
+
 type User = {
     readonly userID: string,
     socket: WebSocket,
@@ -36,225 +70,177 @@ type Headset = {
     socket: WebSocket | null
 }
 
-// Starting parameters for the simulator.
-type SimulatorParam =
+export type ParamType = 'boolean' | 'integer' | 'float' | 'string'
+
+// Default type for simulator param based on ParamType
+type ParamTypeToDefault<T extends ParamType> =
+    T extends 'boolean' ? boolean :
+    T extends 'integer' ? number :
+    T extends 'float' ? number :
+    T extends 'string' ? string :
+    never
+
+// Param type limits for simulator param based on ParamType
+type ParamTypeToLimits<T extends ParamType> =
+    T extends 'boolean' ? null :
+    T extends 'integer' ? {min: number, max: number} :
+    T extends 'float' ? {min: number, max: number} :
+    T extends 'string' ? null :
+    never
+
+type GlobalsType = {[key: string]: {[key: string]: string}}
+
+export interface SimulatorParam<T extends ParamType>
     {
         attribute: string,
-        type: 'boolean'
-        defaultValue: boolean
-        value: boolean
-    }
-    | {
-        attribute: string,
-        type: 'integer' | 'float'
-        defaultValue: number
-        value: number
-    }
-    | {
-        attribute: string,
-        type: 'string'
-        defaultValue: string
-        value: string
+        type: T,
+        defaultValue: ParamTypeToDefault<T>,
+        value: ParamTypeToDefault<T>,
+        limits: ParamTypeToLimits<T>
     }
 
-// Simulator instance.
-type Simulator = {
-    readonly apikey: string | null,
-    readonly userID: string,
+export interface Simulator {
+    key: string | null,
+    userID: string,
     socket: WebSocket | null,
-    params: SimulatorParam[],
-    validator: boolean,
-    valid: 'valid' | 'invalid' | 'unknown',
     title: string,
-    state: 'disconnected' | 'idle' | 'generating' | 'connecting'
+    state: 'disconnected' | 'idle' | 'generating' | 'connecting',
+    params: Array<SimulatorParam<ParamType>>,
+    valid: 'valid' | 'invalid' | 'unknown',
+    validator: boolean
 }
 
 export module MessageTypes {
-    export type GetType = 'graphState' | 'sessionState' | 'layouts' | 'apiKey' | 'QR'
+    type ServerDataType = 'graphState' | 'sessionState' | 'layouts' | 'apiKey' | 'QR'
     export type SetType = 'playstate' | 'graphState' | 'simulator' | 'stopSimulator'
                                       | 'simulatorInstance' | 'layout'
                                       | 'username' | 'graphIndex'
                                       | 'headset' | 'windowSize' | 'pan'
 
-    export interface OutMessage {
-        sessionID: string,
-        sessionState: SessionState,
-        type: 'data' | 'session' | 'uid' | 'headset' | 'pan'
+    export type MessageTypeMap = {
+        'registerSimulator': RegisterSimulatorPayload,
+        'simulatorResponse': SimulatorDataPayload,
+        'changeUsername': {username: string},
+        'pan': PanPayload,
+        'removeSimulator': {apikey: string},
+        'changeWindowSize': WindowSizePayload,
+        'getData': ServerDataType,
+        'startSimulator': StartSimulatorPayload,
+        'createSimulator': {},
+        'stopSimulator': {},
+        'sendSessionState': SessionStatePayload,
+        'sendGlobals': {globals: {[key: string]: any}},
+        'sendGraphState': BasicGraph,
+        'headsetConnected': {headsetID: string, connected: boolean},
+        'simulatorData': SimulatorDataPayload,
+        'setPlayState': {playState: boolean},
+        'generateLayout': {layout: LayoutSettings},
+        'setGraphState': BasicGraph,
+        'setSliceIndex': {index: number},
+        'addHeadset': {},
+        'userInitialization': UserInitializationPayload,
+        'setGlobal': {key: string, param: string, value: string},
+        'createTestSimulator': {},
     }
 
-    export interface InMessage {
-        sessionID: string,
-        userID: string,
-        messageSource: 'simulator' | 'user'
-        messageType: 'get' | 'set' | 'remove'
-        apiKey?: string
-        data?: any
-        dataType?: any
-        title?: string
-        validator?: boolean
+    type SimulatorDataPayload = {
+        nodes: any,
+        edges: any,
+        apikey: string,
+        globals: {[key: string]: any}
+        params: Array<SimulatorParam<ParamType>>
     }
 
-    export interface RegisterSimulatorMessage extends InMessage {
-        sessionID: string,
-        messageSource: 'simulator'
-        messageType: 'set'
-        dataType: 'register'
-        apiKey: string
-        params: SimulatorParam[]
-    }
-
-    export interface SimulatorDataMessage extends InMessage {
-        sessionID: string,
-        messageSource: 'simulator',
-        messageType: 'set',
-        dataType: 'data'
+    type StartSimulatorPayload = {
+        stepCount: number,
         apiKey: string,
-        params: {
-            nodes: any,
-            edges: any,
-            params: any
+        params: Array<SimulatorParam<ParamType>>,
+        name: string,
+    }
+
+    type WindowSizePayload = {
+        width: number,
+        height: number
+    }
+
+    type PanPayload = {
+        x: number,
+        y: number,
+        k: number
+    }
+
+    // Register a new simulator instance.
+    type RegisterSimulatorPayload = {
+        apikey: string,
+        params: string,
+        title: string,
+        validator: boolean,
+    }
+
+    export interface Message<T extends keyof MessageTypeMap> {
+        type: T,
+        payload: MessageTypeMap[T],
+        senderType: 'user' | 'simulator' | 'server' | 'headset'
+        senderID: string,
+        receiverType: 'user' | 'simulator' | 'server' | 'headset'
+        receiverID: string,
+        sessionID: string,
+        timestamp: Date
+    }
+
+    type UserInitializationPayload = {
+        uid: string,
+        data: string,
+        keys: (string | null)[],
+        sessionState: SessionState,
+    }
+
+    type SessionStatePayload = {
+        globals: GlobalsType,
+        globalsGeneratedOn: number,
+        state: SessionState,
+        currentLayout: AvailableLayout | null,
+        /** Session URL for sharing. */
+        url: string,
+        /** Session data origin. */
+        sessionURL: string,
+        /** Current index in dynamic graph. */
+        graphIndex: number,
+        /** Total number of graphs in dynamic graph. */
+        graphIndexCount: number,
+        users: {
+            username: string,
+            userID: string,
+            headsetCount: number
+        }[],
+        simulators: ServerSimulator[],
+        headsets: {
+            headsetID: string,
+            connected: boolean
+        }[]
+        simState: {
+            /** The current simulation step. */
+            step: number,
+            /** The number of steps to calculate. */
+            stepMax: number,
+            /** Running sim name. */
+            name: string
         }
-    }
-
-    export interface GetMessage extends InMessage {
-        messageSource: 'user'
-        messageType: 'get'
-        userID: string,
-        dataType: GetType
-    }
-
-    export interface SetMessage extends InMessage {
-        messageSource: 'user'
-        messageType: 'set'
-        userID: string,
-        dataType: SetType
-        params: any
-    }
-
-    export interface RemoveMessage extends InMessage {
-        messageSource: 'user'
-        messageType: 'remove'
-        userID: string,
-        dataType: 'simulator'
-        params: {
-            apikey: string
-        }
-    }
-
-    export interface SetUsernameMessage extends InMessage {
-        messageSource: 'user'
-        messageType: 'set'
-        userID: string
-        dataType: 'username'
-        params: {
-            username: string
-        }
-    }
-
-    export interface SetWindowSizeMessage extends InMessage {
-        messageSource: 'user'
-        messageType: 'set'
-        userID: string
-        dataType: 'windowSize'
-        params: {
-            width: number,
-            height: number
-        }
-    }
-
-    export interface SetSimulatorMessage extends InMessage {
-        messageSource: 'user'
-        messageType: 'set'
-        userID: string,
-        dataType: 'simulator'
-        params: {
-            stepCount: number,
-            apiKey: string,
-            name: string,
-        }
-    }
-
-    export interface SetSimulatorInstanceMessage extends InMessage {
-        messageSource: 'user'
-        messageType: 'set'
-        userID: string,
-        dataType: 'simulatorInstance'
+        /** Layout information for graph layout generation. */
+        layoutInfo: LayoutInfo[]
+        /** Time session expires. */
+        expirationDate: Date
+        websocketPort: string
+        playmode: boolean
     }
 
     type ServerSimulator = {
         readonly apikey: string | null,
-        username: string,
-        params: SimulatorParam[],
+        params: Array<SimulatorParam<ParamType>>,
         title: string,
-        state: 'disconnected' | 'idle' | 'generating' | 'connecting'
-    }
-
-    export interface PanStateMessage extends OutMessage {
-        userID: string,
-        type: 'pan',
-        data: {
-            x: number,
-            y: number,
-            k: number
-        }
-    }
-
-    export interface SessionStateMessage extends OutMessage {
-        userID: string,
-        type: 'session',
-        data: {
-            currentLayout: AvailableLayout | null,
-            url: string,
-            sessionURL: string,
-            graphIndex: number,
-            graphIndexCount: number,
-            users: {
-                username: string,
-                userID: string,
-                headsetCount: number
-            }[],
-            simulators: ServerSimulator[],
-            headsets: {
-                headsetID: string,
-                connected: boolean
-            }[]
-            simState: {
-                step: number,
-                stepMax: number,
-                name: string
-            }
-            layoutInfo: LayoutInfo[]
-            expirationDate: string
-            websocketPort: string
-            playmode: boolean
-        }
-    }
-
-    export interface DataStateMessage extends OutMessage {
-        type: 'data',
-        data: {
-            nodes: any
-            edges: any
-        }
-    }
-
-    export interface HeadsetConnectedMessage extends OutMessage {
-        type: 'headset'
-    }
-
-    export interface SimulatorSetMessage extends OutMessage {
-        type: 'data',
-        data: {
-            nodes: any
-            edges: any
-            params: SimulatorParam[]
-        }
-    }
-
-    export interface UIDMessage extends OutMessage {
-        type: 'uid',
-        data: string,
-        keys: (string | null)[]
+        state: 'disconnected' | 'idle' | 'generating' | 'connecting',
+        valid: 'valid' | 'invalid' | 'unknown',
+        validator: boolean
     }
 }
 
@@ -514,7 +500,7 @@ type SimState = {
     stepMax: number,
     name: string,
     apiKey: null | string,
-    params: SimulatorParam[]
+    params: Array<SimulatorParam<ParamType>>
 }
 
 export class Session {
@@ -537,10 +523,15 @@ export class Session {
     private users: User[]
     private simulators: Simulator[]
 
-    private messageQueue: MessageTypes.InMessage[]
+    private messageQueue: MessageTypes.Message<keyof MessageTypes.MessageTypeMap>[]
 
     /* Type dec for session destructor. */
     private readonly destroyFun: (sid: string) => void
+
+    /* Stores global variables for the session. */
+    private globals: {[key: string]: {[key: string]: any}}
+
+    private globalsGeneratedOn = 0
 
     /* Simulation state.
      * step: current step
@@ -578,6 +569,7 @@ export class Session {
                 sourceURL: string,
                 nodes: {[key: string]: any}[],
                 edges: {[key: string]: any}[],
+                globals: {[key: string]: {[key: string]: any}},
                 localAddress: string,
                 websocketPort: string,
                 logger: Logger) {
@@ -624,6 +616,8 @@ export class Session {
         this.playmode = false
 
         this.currentLayout = null
+
+        this.globals = globals
     }
 
     /* Sets session state. */
@@ -635,17 +629,14 @@ export class Session {
                 if (sim.state !== 'idle') {
                     this.logger.log({
                         level: 'error',
-                        message: `Session state changed to idle but simulator ${sim.apikey} is not idle.`,
+                        message: `Session state changed to idle but simulator ${sim.key} is not idle.`,
                         sid: this.sessionID
                     })
                 }
             })
         }
 
-
         this.sessionState = state
-
-
 
         this.logger.log({
             level: 'info',
@@ -713,7 +704,7 @@ export class Session {
     private async loadGraphState(index: number) {
         return new Promise((resolve) => {gunzip(Buffer.from(this.graphHistory[index][0], 'base64'), (err, buffer) => {
             if (err) {
-                console.log(`Error while zipping current instance: ${err.message}`)
+                this.logger.log('error', `Error while zipping current instance: ${err.message}`)
                 resolve('Error')
                 return
             }
@@ -750,47 +741,122 @@ export class Session {
         })})
     }
 
-    /* Parse message sent by simulator. */
-    private parseSimulatorMessage(message: MessageTypes.InMessage,
+    private handleRegisterSimulatorMessage(message: MessageTypes.Message<'registerSimulator'>,
         resolve: (value: () => void | PromiseLike<() => void>) => void,
         reject: (reason?: any) => void) {
 
-        switch (message.dataType) {
-            case 'register':
-                /* Register new simulator. */
-                this.simulators.forEach((sim) => {
-                    if (sim.apikey === message.apiKey) {
-                        this.logger.log({
-                            level: 'info',
-                            message: 'Registered API',
-                            title: message.title,
-                            params: JSON.parse(message.data),
-                        })
+        const payload = message.payload
 
-                        sim.title = message.title!
-                        sim.validator = message.validator!
-                        sim.params = JSON.parse(message.data)
-                        sim.state = 'idle'
-                    }
-                })
+        // /* Check if simulator is already registered. */
+        // for (const sim of this.simulators) {
+        //     if (sim.key === payload.apikey) {
+        //         this.logger.log({
+        //             level: 'error',
+        //             message: 'Simulator already registered',
+        //             title: payload.title,
+        //             params: payload.params,
+        //         })
 
-                resolve(() => {
-                    this.sendSessionState()
-                })
-                break
-            case 'data':
+        //         reject('Simulator already registered')
+        //     }
+        // }
+
+        /* Register new simulator. */
+        this.simulators.forEach((sim) => {
+            if (sim.key === payload.apikey) {
                 this.logger.log({
-                    level: 'verbose',
-                    message: 'Received data from API',
+                    level: 'info',
+                    message: 'Registered API',
+                    title: payload.title,
+                    params: payload.params,
                 })
-                const msg = (message as MessageTypes.SimulatorDataMessage)
 
-                const data = this.parseJson(msg.params.nodes, msg.params.edges)
+                sim.title = payload.title
+                sim.validator = payload.validator
 
-                // If cancel message is received, reset state.
-                if (this.cancelSim) {
+                sim.state = 'idle'
+            }
+        })
+
+        this.logger.log({
+            level: 'info',
+            message: 'Registered Simulator Instance',
+            title: payload.title,
+            params: payload.params,
+            validator: payload.validator,
+        })
+
+        resolve(() => {
+            this.sendSessionState()
+        })
+    }
+
+    private handleSimulatorDataMessage(message: MessageTypes.Message<'simulatorResponse'>,
+        resolve: (value: () => void | PromiseLike<() => void>) => void,
+        reject: (reason?: any) => void) {
+
+        const payload = message.payload
+
+        const data = this.parseJson(payload.nodes,
+            payload.edges)
+
+        // If cancel message is received, reset state.
+        if (this.cancelSim) {
+            this.simulators.forEach((sim) => {
+                if (sim.key === this.simState.apiKey) {
+                    sim.state = 'idle'
+                }
+            })
+
+            this.simState = {
+                step: 0,
+                stepMax: 0,
+                name: '',
+                apiKey: null,
+                params: payload.params,
+            }
+
+            this.setState('idle')
+
+            this.cancelSim = false
+
+            resolve(() => {
+                this.sendSessionState()
+                this.sendGraphState()
+            })
+
+            return
+        }
+
+        /* Process new data message. */
+        this.storeCurrentGraphState().then(() => {
+            const runID = this.simRunID[this.sessionID]
+
+            // Save current graph state to fs file with filename simRunID + sessionID.
+            fs.writeFileSync(`./logs/graphs/${this.sessionID}_${this.graphHistory.length}_${runID}.json`,
+                JSON.stringify(this.cy.json()))
+
+            // Append new slice.
+            this.appendGraphState(JSON.stringify(data), this.currentLayout).then(() => {
+                this.graphIndex = this.graphHistory.length - 1
+
+
+                this.globals = payload.globals
+
+                this.globalsGeneratedOn = this.graphIndex
+
+                this.changeGraphState(data)
+
+                // Update sim state.
+                this.simState = {
+                    ...this.simState,
+                    step: this.simState.step + 1,
+                }
+
+                // If simulation is done, reset state.
+                if (this.simState.step >= this.simState.stepMax) {
                     this.simulators.forEach((sim) => {
-                        if (sim.apikey === this.simState.apiKey) {
+                        if (sim.key === this.simState.apiKey) {
                             sim.state = 'idle'
                         }
                     })
@@ -798,88 +864,53 @@ export class Session {
                     this.simState = {
                         step: 0,
                         stepMax: 0,
-                        name: '',
                         apiKey: null,
-                        params: msg.params.params
+                        name: '',
+                        params: payload.params
                     }
 
-                    this.setState('idle')
-
-                    this.cancelSim = false
-
-                    resolve(() => {
-                        this.sendSessionState()
-                        this.sendGraphState()
-                    })
-
-                    return
-                }
-
-
-                /* Process new data message. */
-                this.storeCurrentGraphState().then(() => {
                     const runID = this.simRunID[this.sessionID]
 
                     // Save current graph state to fs file with filename simRunID + sessionID.
-                    fs.writeFileSync(`./logs/graphs/${this.sessionID}_${this.graphHistory.length}_${runID}.json`,
+                    fs.writeFileSync(`./logs/graphs/${this.sessionID}_${this.graphHistory.length - 1}_${runID}.json`,
                         JSON.stringify(this.cy.json()))
 
-                    // Append new slice.
-                    this.appendGraphState(JSON.stringify(data), this.currentLayout).then(() => {
-                        this.graphIndex = this.graphHistory.length - 1
 
-                        this.changeGraphState(data)
+                    this.setState('idle')
+                } else {
+                    // Otherwise send new message to sim.
+                    this.sendSimulatorMessage()
+                }
 
-                        // Update sim state.
-                        this.simState = {
-                            ...this.simState,
-                            step: this.simState.step + 1,
-                        }
-
-                        // If simulation is done, reset state.
-                        if (this.simState.step >= this.simState.stepMax) {
-                            this.simulators.forEach((sim) => {
-                                if (sim.apikey === this.simState.apiKey) {
-                                    sim.state = 'idle'
-                                }
-                            })
-
-                            this.simState = {
-                                step: 0,
-                                stepMax: 0,
-                                apiKey: null,
-                                name: '',
-                                params: msg.params.params
-                            }
-
-                            const runID = this.simRunID[this.sessionID]
-
-                            // Save current graph state to fs file with filename simRunID + sessionID.
-                            fs.writeFileSync(`./logs/graphs/${this.sessionID}_${this.graphHistory.length - 1}_${runID}.json`,
-                                JSON.stringify(this.cy.json()))
-
-
-                            this.setState('idle')
-                        } else {
-                            // Otherwise send new message to sim.
-                            this.sendSimulatorMessage()
-                        }
-
-                        resolve(() => {
-                            this.sendSessionState()
-                            this.sendGraphState()
-                        })
-                    })
+                resolve(() => {
+                    this.sendSessionState()
+                    this.sendGraphState()
                 })
+            })
+        })
+    }
+
+    /* Parse message sent by simulator. */
+    private parseSimulatorMessage<Type extends keyof MessageTypes.MessageTypeMap>(message: MessageTypes.Message<Type>,
+        resolve: (value: () => void | PromiseLike<() => void>) => void,
+        reject: (reason?: any) => void) {
+
+        switch (message.type) {
+            case 'registerSimulator':
+                this.handleRegisterSimulatorMessage(message as MessageTypes.Message<'registerSimulator'>, resolve, reject)
+
+                break
+            case 'data':
+                this.handleSimulatorDataMessage(message as MessageTypes.Message<'simulatorResponse'>, resolve, reject)
         }
     }
 
     /* Parse get message from client. */
-    private parseGetMessage(message: MessageTypes.GetMessage,
+    private parseGetMessage(message: MessageTypes.Message<'getData'>,
         resolve: (value: () => void | PromiseLike<() => void>) => void,
         reject: (reason?: any) => void) {
 
-        switch (message.dataType) {
+        switch (message.payload) {
             case 'QR':
                 break
             case 'graphState':
@@ -903,252 +934,109 @@ export class Session {
         }
     }
 
-    /* Parse set message from client. */
-    private parseSetMessage(message: MessageTypes.SetMessage,
+    private handlePlayStateMessage(message: MessageTypes.Message<'setPlayState'>,
         resolve: (value: () => void | PromiseLike<() => void>) => void,
         reject: (reason?: any) => void) {
 
-        switch (message.dataType) {
-            case 'playstate':
-                const newPlayState = message.params.state
+        const newPlayState = message.payload.playState
 
-                this.logger.log('info', `Play state: ${newPlayState}`)
+        this.logger.log('info', `Play state: ${newPlayState}`)
 
-                if (newPlayState && !this.playmode) {
-                    // Set new timeline index.
+        if (newPlayState && !this.playmode) {
+            // Set new timeline index.
 
-                    this.setState('playing')
+            this.setState('playing')
 
-                    var newIndex = this.graphIndex
-                    if (newIndex  == this.graphHistory.length) {
-                        newIndex = 0
+            var newIndex = this.graphIndex
+            if (newIndex  == this.graphHistory.length) {
+                newIndex = 0
 
-                        this.setState('idle')
-                    }
+                this.setState('idle')
+            }
 
-                    this.storeCurrentGraphState().then(() => {
-                        this.loadGraphState(newIndex).then(() => {
-                            resolve(() => {
-                                this.sendGraphState()
-                            })
-                        })
-                    })
-                }
-
-                this.playmode = newPlayState
-                break
-
-            case 'username':
-                this.users = this.users.map((user) => {
-                    if (user.userID === message.userID) {
-                        // Sanitize username
-                        message.params.username = message.params.username.replace(/[^a-zA-Z0-9]/g, '')
-
-                        if (message.params.username.length > 10) {
-                            message.params.username = message.params.username.substring(0, 10)
-                        }
-
-                        if (message.params.username.length === 0) {
-                            return user
-                        }
-
-                        user.username = message.params.username
-                    }
-
-                    return user
-                })
-
-                resolve(() => {
-                    this.sendSessionState()
-                })
-
-                break
-            case 'layout':
-                this.setState('generating layout')
-
-                this.setLayout(message.params.layout).then(() => {
+            this.storeCurrentGraphState().then(() => {
+                this.loadGraphState(newIndex).then(() => {
                     resolve(() => {
-                        this.setState('idle')
                         this.sendGraphState()
                     })
                 })
-
-                break
-            case 'simulatorInstance':
-                // Request new simulator instance.
-                this.simulators.push({
-                    apikey: uid.sync(4),
-                    userID: message.userID,
-                    socket: null,
-                    params: [],
-                    title: '',
-                    validator: true,
-                    valid: 'unknown',
-                    state: 'disconnected'
-                })
-
-                resolve(() => {
-                    this.sendSessionState()
-                })
-
-                break
-            case 'stopSimulator':
-                // Stop simulator instance.
-                if (this.sessionState !== 'simulating') {
-                    reject('Session is not simulating')
-                    return
-                }
-
-                this.logger.log('warn', 'Stopping simulator')
-
-                this.cancelSim = true
-
-                break
-            case 'simulator':
-                // Start new simulation on existing sim.
-                if (this.sessionState !== 'idle') {
-                    reject('Session is currently busy')
-                    return
-                }
-
-                this.simState = {
-                    step: 0,
-                    stepMax: message.params.stepCount,
-                    apiKey: message.params.apiKey,
-                    params: message.params.params,
-                    name: message.params.name
-                }
-
-                this.setState('simulating')
-
-                if (this.simRunID[this.sessionID] == undefined) {
-                    this.simRunID[this.sessionID] = 0
-                } else {
-                    this.simRunID[this.sessionID]++
-                }
-
-                const runID = this.simRunID[this.sessionID]
-
-                // Save current graph state to fs file with filename simRunID + sessionID.
-                fs.writeFileSync(`./logs/graphs/${this.sessionID}_${this.graphIndex + 1}_${runID}.json`,
-                    JSON.stringify(this.cy.json()))
-
-                // Discard timeline slices after current index pos.
-                this.graphHistory.splice(this.graphIndex + 1, this.graphHistory.length - (this.graphIndex + 1))
-
-                resolve(() => {
-                    this.sendSessionState()
-                    this.sendSimulatorMessage()
-                })
-                break
-            case 'graphState':
-                // Update server graph state.
-                this.changeGraphState(this.parseJson(message.params.nodes, message.params.edges))
-
-                resolve(() => {
-                    this.sendGraphState()
-                })
-                break
-            case 'graphIndex':
-                // Set new timeline index.
-                if (message.params.index < 0 || message.params.index >= this.graphHistory.length) {
-                    reject(`Graph index ${message.params.index} out of bounds`)
-
-                    return
-                }
-
-                this.setState('generating layout')
-
-                this.sendSessionState()
-
-                this.storeCurrentGraphState().then(() => {
-                    this.loadGraphState(message.params.index).then(() => {
-                        resolve(() => {
-                            this.setState('idle')
-                            this.sendGraphState()
-                        })
-                    })
-                })
-                break
-            case 'headset':
-                this.users.forEach((user) => {
-                    if (user.userID === message.userID) {
-                        const headsetID = uid.sync(4)
-
-                        user.headsets.push({
-                            headsetID: headsetID,
-                            socket: null
-                        })
-                    }
-                })
-
-                resolve(() => {this.sendSessionState()})
-                break
-            case 'windowSize':
-                this.users.forEach((user) => {
-                    if (user.userID === message.userID) {
-                        user.width = message.params.width
-                        user.height = message.params.height
-                    }
-                })
-
-                resolve(() => {this.sendSessionState()})
-                break;
-            case 'pan':
-                this.users.forEach((user) => {
-                    if (user.userID === message.userID) {
-                        user.panX = message.params.x
-                        user.panY = message.params.y
-                        user.panK = message.params.k
-                    }
-                })
-
-                resolve(() => {this.sendPanState(message.userID)})
+            })
         }
+
+        this.playmode = newPlayState
     }
 
-    private parseRemoveMessage(message: MessageTypes.RemoveMessage,
+    private handleChangeUsernameMessage(message: MessageTypes.Message<'changeUsername'>,
         resolve: (value: () => void | PromiseLike<() => void>) => void,
         reject: (reason?: any) => void) {
 
-        switch (message.dataType) {
-            case 'simulator':
-                this.simulators = this.simulators.filter((sim) => {
-                    const match = sim.apikey === message.params.apikey
+        const payload = message.payload
 
-                    if (match) {
-                        if (sim.socket !== null) {
-                            sim.socket.close()
-                        }
-                    }
+        this.users = this.users.map((user) => {
+            if (user.userID === message.senderID) {
+                // Sanitize username
+                payload.username = payload.username.replace(/[^a-zA-Z0-9]/g, '')
 
-                    return !match
-                })
+                if (payload.username.length > 10) {
+                    payload.username = payload.username.substring(0, 10)
+                }
 
-                console.log(this.simulators)
+                if (payload.username.length === 0) {
+                    return user
+                }
 
-                resolve(() => {this.sendSessionState()} )
+                user.username = payload.username
+            }
 
-                break
+            return user
+        })
 
-        }
+        resolve(() => {
+            this.sendSessionState()
+        })
     }
 
-    private parseUserMessage(message: MessageTypes.InMessage,
+    private handleStartSimulator(message: MessageTypes.Message<'startSimulator'>,
         resolve: (value: () => void | PromiseLike<() => void>) => void,
         reject: (reason?: any) => void) {
 
-        switch (message.messageType) {
-            case 'get':
-                this.parseGetMessage(message as MessageTypes.GetMessage, resolve, reject)
-                break
-            case 'set':
-                this.parseSetMessage(message as MessageTypes.SetMessage, resolve, reject)
-                break
-            case 'remove':
-                this.parseRemoveMessage(message as MessageTypes.RemoveMessage, resolve, reject)
-                break
+        const payload = message.payload
+
+        // Start new simulation on existing sim.
+        if (this.sessionState !== 'idle') {
+            reject('Session is currently busy')
+            return
         }
+
+        this.simState = {
+            step: 0,
+            stepMax: payload.stepCount,
+            apiKey: payload.apiKey,
+            params: payload.params,
+            name: payload.name
+        }
+
+        this.setState('simulating')
+
+        if (this.simRunID[this.sessionID] == undefined) {
+            this.simRunID[this.sessionID] = 0
+        } else {
+            this.simRunID[this.sessionID]++
+        }
+
+        const runID = this.simRunID[this.sessionID]
+
+        // Save current graph state to fs file with filename simRunID + sessionID.
+        fs.writeFileSync(`./logs/graphs/${this.sessionID}_${this.graphIndex + 1}_${runID}.json`,
+            JSON.stringify(this.cy.json()))
+
+        // Discard timeline slices after current index pos.
+        this.graphHistory.splice(this.graphIndex + 1, this.graphHistory.length - (this.graphIndex + 1))
+
+        resolve(() => {
+            this.sendSessionState()
+            this.sendSimulatorMessage()
+        })
     }
 
     async layoutTimer(resolve: any, worker: Worker, signal: AbortSignal ) {
@@ -1199,17 +1087,217 @@ export class Session {
         })
     }
 
-    private async processMessage(message: MessageTypes.InMessage) {
+    private async processMessage<Type extends keyof MessageTypes.MessageTypeMap>(message: MessageTypes.Message<Type>) {
         return await new Promise<() => void>((resolve, reject) => {
-            switch (message.messageSource) {
-                case 'simulator':
-                    this.parseSimulatorMessage(message, resolve, reject)
+            switch (message.type) {
+                case 'registerSimulator':
+                    this.handleRegisterSimulatorMessage(message as MessageTypes.Message<'registerSimulator'>, resolve, reject)
+
                     break
-                case 'user':
-                    this.parseUserMessage(message, resolve, reject)
+                case 'data':
+                    this.handleSimulatorDataMessage(message as MessageTypes.Message<'simulatorResponse'>, resolve, reject)
+                    break
+                case 'setPlayState':
+                    this.handlePlayStateMessage(message as MessageTypes.Message<'setPlayState'>, resolve, reject)
+                    break
+                case 'changeUsername':
+                    this.handleChangeUsernameMessage(message as MessageTypes.Message<'changeUsername'>, resolve, reject)
+
+                    break
+                case 'generateLayout':
+                    this.setState('generating layout')
+
+                    let layoutMessage = message as MessageTypes.Message<'generateLayout'>
+
+                    this.setLayout(layoutMessage.payload.layout).then(() => {
+                        resolve(() => {
+                            this.setState('idle')
+                            this.sendGraphState()
+                        })
+                    })
+
+                    break
+                case 'createSimulator':
+                    this.logger.log('warn', 'Creating simulator')
+                    // Request new simulator instance.
+                    this.simulators.push({
+                        key: uid.sync(4),
+                        userID: message.senderID,
+                        socket: null,
+                        params: [],
+                        title: '',
+                        validator: true,
+                        valid: 'unknown',
+                        state: 'disconnected'
+                    })
+
+                    resolve(() => {
+                        this.sendSessionState()
+                    })
+
+                    break
+                case 'stopSimulator':
+                    // Stop simulator instance.
+                    if (this.sessionState !== 'simulating') {
+                        reject('Session is not simulating')
+                        return
+                    }
+
+                    this.logger.log('warn', 'Stopping simulator')
+
+                    this.cancelSim = true
+
+                    break
+                case 'startSimulator':
+                    this.handleStartSimulator(message as MessageTypes.Message<'startSimulator'>, resolve, reject)
+
+                    break
+                case 'createTestSimulator':
+                    this.logger.log('warn', 'Creating test simulator')
+
+                    if (this.simulators.filter((simulator) => {
+                        return simulator.userID === message.senderID
+                    }).length > 0) {
+                        reject('User already has a simulator')
+
+                        return
+                    }
+
+                    // Request new simulator instance.
+                    this.simulators.push({
+                        key: 'test',
+                        userID: message.senderID,
+                        // Set socket to non null placeholder
+                        socket: null,
+                        params: [],
+                        title: 'TEST SIMULATOR',
+                        validator: true,
+                        valid: 'unknown',
+                        state: 'idle'
+                    })
+
+                    resolve(() => {
+                        this.sendSessionState()
+                    })
+
+                    break
+                case 'setGlobal':
+                    let globalMessage = message as MessageTypes.Message<'setGlobal'>
+
+                    if (this.globals[globalMessage.payload.key] == undefined) {
+                        this.globals[globalMessage.payload.key] = {}
+                    }
+
+                    this.globals[globalMessage.payload.key][globalMessage.payload.param] = globalMessage.payload.value
+
+                    this.sendSessionState()
+                    break
+                case 'setGraphState':
+                    let graphMessage = message as MessageTypes.Message<'setGraphState'>
+
+                    console.log(graphMessage.payload.nodes)
+                    // Update server graph state.
+                    this.changeGraphState(
+                        this.parseJson(graphMessage.payload.nodes,
+                            graphMessage.payload.edges))
+
+                    resolve(() => {
+                        this.sendGraphState()
+                    })
+                    break
+                case 'setSliceIndex':
+                    const indexMessage = message as MessageTypes.Message<'setSliceIndex'>
+
+                    // Set new timeline index.
+                    if (indexMessage.payload.index < 0
+                        || indexMessage.payload.index >= this.graphHistory.length) {
+                        reject(`Graph index ${indexMessage.payload.index} out of bounds`)
+
+                        return
+                    }
+
+                    this.setState('generating layout')
+
+                    this.sendSessionState()
+
+                    this.storeCurrentGraphState().then(() => {
+                        this.loadGraphState(indexMessage.payload.index).then(() => {
+                            resolve(() => {
+                                this.setState('idle')
+                                this.sendGraphState()
+                            })
+                        })
+                    })
+                    break
+                case 'addHeadset':
+                    this.users.forEach((user) => {
+                        if (user.userID === message.senderID) {
+                            const headsetID = uid.sync(4)
+
+                            user.headsets.push({
+                                headsetID: headsetID,
+                                socket: null
+                            })
+                        }
+                    })
+
+                    resolve(() => {this.sendSessionState()})
+                    break
+                case 'changeWindowSize':
+                    const windowMessage = message as MessageTypes.Message<'changeWindowSize'>
+
+                    this.users.forEach((user) => {
+                        if (user.userID === windowMessage.senderID) {
+                            user.width = windowMessage.payload.width
+                            user.height = windowMessage.payload.height
+                        }
+                    })
+
+                    resolve(() => {this.sendSessionState()})
+                    break;
+                case 'pan':
+                    const panMessage = message as MessageTypes.Message<'pan'>
+
+                    this.users.forEach((user) => {
+                        if (user.userID === message.senderID) {
+                            user.panX = panMessage.payload.x
+                            user.panY = panMessage.payload.y
+                            user.panK = panMessage.payload.k
+                        }
+                    })
+
+                    resolve(() => {this.sendPanState(message.senderID)})
+                    break
+                case 'removeSimulator':
+                    const removeMessage = message as MessageTypes.Message<'removeSimulator'>
+
+                    this.simulators = this.simulators.filter((sim) => {
+                        const match = sim.key === removeMessage.payload.apikey
+
+                        if (match) {
+                            if (sim.socket !== null) {
+                                sim.socket.close()
+                            }
+                        }
+
+                        return !match
+                    })
+
+                    resolve(() => {this.sendSessionState()} )
+
+                    break
+                case 'getData':
+                    const dataMessage = message as MessageTypes.Message<'getData'>
+
+                    this.parseGetMessage(dataMessage, resolve, reject)
+                    break
+                case 'simulatorResponse':
+                    const responseMessage = message as MessageTypes.Message<'simulatorResponse'>
+
+                    this.handleSimulatorDataMessage(responseMessage, resolve, reject)
                     break
                 default:
-                    reject('Unknown source')
+                    reject('Unknown message type ' + message.type)
             }
         })
     }
@@ -1230,7 +1318,7 @@ export class Session {
                 // TODO: ERROR TYPES
                 (error) => {
                     // Log an error and close the session.
-                    console.log(error)
+                    this.logger.log('error', error)
 
                     // this.destroy()
                 }
@@ -1238,7 +1326,7 @@ export class Session {
     }
 
     // Adds a message to the queue, and tries to process it.
-    addMessage(message: MessageTypes.InMessage) {
+    addMessage<Type extends keyof MessageTypes.MessageTypeMap>(message: MessageTypes.Message<Type>) {
         this.messageQueue.push(message)
 
         this.getMessage()
@@ -1288,34 +1376,141 @@ export class Session {
         this.sendSessionState()
     }
 
+    private sendMessage<Type extends keyof MessageTypes.MessageTypeMap>(
+        socket: WebSocket,
+        message: MessageTypes.Message<Type>) {
+
+        socket.send(JSON.stringify(message))
+    }
+
     // Sends graph data to all users.
     private sendGraphState() {
         this.pruneSessions()
 
-        const graphData = (this.cy.json() as any).elements
+        const graphData = this.cy.json() as CytoGraph
 
+        const payload = {
+            nodes: graphData.elements.nodes.map((node) => {
+                return {
+                    id: node.data.id!,
+                    position: node.position!,
+                    ...node.data,
+                }}),
+            edges: graphData.elements.edges.map((edge) => {
+                return {
+                    id: edge.data.id!,
+                    ...edge.data,
+                }}
+            ),
+            globals: this.globals,
+        }
+
+        // TODO: id and position checks
         this.users.forEach((user) => {
-            const msg: MessageTypes.DataStateMessage = {
+            const message: MessageTypes.Message<'sendGraphState'> = {
+                type: 'sendGraphState',
+                payload: payload,
+                senderType: 'server',
+                senderID: 'server',
+                receiverType: 'user',
+                receiverID: user.userID,
                 sessionID: this.sessionID,
-                sessionState: this.sessionState,
-                type: 'data',
-                data: graphData
+                timestamp: new Date,
             }
 
-            user.socket.send(JSON.stringify(msg))
+            this.sendMessage(user.socket, message)
 
             user.headsets.forEach((headset) => {
                 if (headset.socket) {
-                    headset.socket.send(JSON.stringify(msg))
+                    message.receiverID = headset.headsetID
+                    message.receiverType = 'headset'
+
+                    this.sendMessage(headset.socket, message)
                 }
             })
         })
     }
 
+    runDummySimulator(message: MessageTypes.Message<'simulatorData'>) {
+        // Perform a dummy simulation, then add a response to the message queue
+
+        const sim = this.simulators.filter((sim) => {
+            return sim.key === message.payload.apikey
+        })
+
+        if (sim.length === 0) {
+            this.logger.log('error', 'Simulator not found')
+            return
+        }
+
+        // Add a random node
+        const node = {
+            data: {
+                id: 'test' + Math.random(),
+                label: 'test',
+                type: 'test',
+                position: {
+                    x: Math.random() * 1000,
+                    y: Math.random() * 1000,
+                },
+            },
+        }
+
+        message.payload.nodes.push(node)
+
+        message.payload.globals = {
+            ...message.payload.globals,
+            test: {
+                value: Math.random(),
+            }
+        }
+
+        // Create a response message
+        const response: MessageTypes.Message<'simulatorResponse'> = {
+            type: 'simulatorResponse',
+            sessionID: this.sessionID,
+            senderID: 'test',
+            senderType: 'simulator',
+            receiverID: 'server',
+            receiverType: 'server',
+            timestamp: new Date,
+            payload: {
+                apikey: 'test',
+                nodes: message.payload.nodes,
+                edges: message.payload.edges,
+                globals: message.payload.globals,
+                params: message.payload.params,
+            },
+        }
+
+        this.addMessage(response)
+    }
+
     sendSimulatorMessage() {
         const sim = this.simulators.filter((sim) => {
-            return sim.apikey === this.simState.apiKey
+            return sim.key === this.simState.apiKey
         })
+
+        if (sim[0].key === 'test') {
+            const message: MessageTypes.Message<'simulatorData'> = {
+                type: 'simulatorData',
+                sessionID: this.sessionID,
+                senderID: 'server',
+                senderType: 'server',
+                receiverID: 'test',
+                receiverType: 'simulator',
+                timestamp: new Date,
+                payload: {
+                    apikey: 'test',
+                    nodes: (this.cy.json() as any).elements.nodes,
+                    edges: (this.cy.json() as any).elements.edges,
+                    globals: this.globals,
+                    params: this.simState.params
+                }
+            }
+
+            this.runDummySimulator(message)
+        }
 
         if (sim.length === 0 || this.simState.apiKey === null || sim[0].socket === null) {
             this.simState = {
@@ -1332,25 +1527,31 @@ export class Session {
         }
 
         this.simulators.forEach((sim) => {
-            if (sim.apikey === this.simState.apiKey) {
+            if (sim.key === this.simState.apiKey) {
                 sim.state = 'generating'
             }
         })
 
         this.setState('simulating')
 
-        const msg: MessageTypes.SimulatorSetMessage = {
+        const message: MessageTypes.Message<'simulatorData'> = {
+            type: 'simulatorData',
             sessionID: this.sessionID,
-            sessionState: this.sessionState,
-            type: 'data',
-            data: {
+            senderID: 'server',
+            senderType: 'server',
+            receiverID: this.simState.apiKey,
+            receiverType: 'simulator',
+            timestamp: new Date,
+            payload: {
+                apikey: this.simState.apiKey,
                 nodes: (this.cy.json() as any).elements.nodes,
                 edges: (this.cy.json() as any).elements.edges,
+                globals: this.globals,
                 params: this.simState.params
             }
         }
 
-        sim[0].socket?.send(JSON.stringify(msg))
+        this.sendMessage(sim[0].socket!, message)
     }
 
     private getSimulatorInfo(userID: string): Simulator[] {
@@ -1363,21 +1564,21 @@ export class Session {
         })
     }
 
-    private sendHeadsetConnectedMessage(userID: string) {
-        this.pruneSessions()
+    // private sendHeadsetState(headsetID: string, connected: boolean) {
+    //     this.pruneSessions()
 
-        this.users.forEach((user) => {
-            if (user.userID === userID) {
-                const msg: MessageTypes.HeadsetConnectedMessage = {
-                    sessionID: this.sessionID,
-                    sessionState: this.sessionState,
-                    type: 'headset'
-                }
+    //     this.users.forEach((user) => {
+    //         if (user.userID === userID) {
+    //             const msg: MessageTypes.Message<'headsetConnected'> = {
+    //                 type: 'headsetConnected'
+    //                 sessionID: this.sessionID,
+    //                 sessionState: this.sessionState,
+    //             }
 
-                user.socket.send(JSON.stringify(msg))
-            }
-        })
-    }
+    //             user.socket.send(JSON.stringify(msg))
+    //         }
+    //     })
+    // }
 
     // Sends session info to all users.
     private sendSessionState() {
@@ -1386,12 +1587,18 @@ export class Session {
         const dateDiff = new Date(this.expirationDate.getTime() - new Date().getTime())
 
         this.users.forEach((user) => {
-            const msg: MessageTypes.SessionStateMessage = {
+            const message: MessageTypes.Message<'sendSessionState'> = {
+                type: 'sendSessionState',
                 sessionID: this.sessionID,
-                sessionState: this.sessionState,
-                userID: user.userID,
-                type: 'session',
-                data: {
+                senderType: 'server',
+                senderID: 'server',
+                receiverType: 'user',
+                receiverID: user.userID,
+                timestamp: new Date,
+                payload: {
+                    globals: this.globals,
+                    globalsGeneratedOn: this.globalsGeneratedOn,
+                    state: this.sessionState,
                     currentLayout: this.currentLayout,
                     url: this.sourceURL,
                     users: this.users.map((user) => {
@@ -1416,7 +1623,7 @@ export class Session {
                     graphIndexCount: this.graphHistory.length,
                     simulators: this.getSimulatorInfo(user.userID).map((sim) => {
                         return {
-                            apikey: sim.apikey,
+                            apikey: sim.key,
                             username: this.users.filter((user) => {
                                 return (user.userID === sim.userID)
                             }).map((user) => {
@@ -1424,7 +1631,9 @@ export class Session {
                             })[0],
                             params: sim.params,
                             state: sim.state,
-                            title: sim.title
+                            title: sim.title,
+                            valid: sim.valid,
+                            validator: sim.validator
                         }
                     }),
                     simState: {
@@ -1434,17 +1643,20 @@ export class Session {
                     },
                     sessionURL: this.localAddress,
                     layoutInfo: getAvailableLayouts(),
-                    expirationDate: `${dateDiff.getHours()} hours, ${dateDiff.getMinutes()} minutes`,
+                    expirationDate: dateDiff,
                     websocketPort: this.websocketPort,
                     playmode: this.playmode
                 }
             }
 
-            user.socket.send(JSON.stringify(msg))
+            this.sendMessage(user.socket, message)
 
             user.headsets.forEach((headset) => {
                 if (headset.socket) {
-                    headset.socket.send(JSON.stringify(msg))
+                    message.receiverID = headset.headsetID
+                    message.receiverType = 'headset'
+
+                    this.sendMessage(headset.socket, message)
                 }
             })
         })
@@ -1457,21 +1669,24 @@ export class Session {
             if (user.userID !== userID)
                 return
 
-            const msg: MessageTypes.PanStateMessage = {
-                userID: userID,
-                type: 'pan',
-                sessionID: this.sessionID,
-                sessionState: this.sessionState,
-                data: {
-                    x: user.panX,
-                    y: user.panY,
-                    k: user.panK,
-                }
-            }
-
             user.headsets.forEach((headset) => {
+                const message: MessageTypes.Message<'pan'> = {
+                    receiverID: headset.headsetID,
+                    receiverType: 'headset',
+                    senderID: 'server',
+                    senderType: 'server',
+                    type: 'pan',
+                    sessionID: this.sessionID,
+                    timestamp: new Date,
+                    payload: {
+                        x: user.panX,
+                        y: user.panY,
+                        k: user.panK,
+                    }
+                }
+
                 if (headset.socket) {
-                    headset.socket.send(JSON.stringify(msg))
+                    this.sendMessage(headset.socket, message)
                 }
             })
         })
@@ -1479,7 +1694,7 @@ export class Session {
 
     registerSimulator(apiKey: string, socket: WebSocket) {
         this.simulators.forEach((sim) => {
-            if (sim.apikey === apiKey && sim.state === 'disconnected') {
+            if (sim.key === apiKey && sim.state === 'disconnected') {
                 sim.socket = socket
                 sim.state = 'connecting'
             }
@@ -1501,7 +1716,7 @@ export class Session {
             }
         })
 
-        this.sendHeadsetConnectedMessage(userID)
+        // this.sendHeadsetState(userID)
         this.sendGraphState()
         this.sendSessionState()
     }
@@ -1509,7 +1724,7 @@ export class Session {
     deRegisterSimulator(apiKey: string) {
         // If the simulator was running, stop it.
         this.simulators.forEach((sim) => {
-            if (sim.apikey === apiKey) {
+            if (sim.key === apiKey) {
                 if (sim.state === 'generating') {
                     this.simState = {
                         step: 0,
@@ -1559,7 +1774,7 @@ export class Session {
         if (keys !== undefined) {
             for (let i = 0; i < keys; i++) {
                 this.simulators.push({
-                    apikey: uid.sync(4),
+                    key: uid.sync(4),
                     userID: userID,
                     socket: null,
                     params: [],
@@ -1584,19 +1799,27 @@ export class Session {
             panK: 1
         })
 
-        const msg: MessageTypes.UIDMessage = {
+        const initMessage: MessageTypes.Message<'userInitialization'> = {
             sessionID: this.sessionID,
-            type: 'uid',
-            sessionState: this.sessionState,
-            data: userID,
-            keys: this.simulators.filter((sim) => {
-                return ((sim.userID === userID) && sim.apikey)
-            }).map((sim) => {
-                return sim.apikey
-            })
+            type: 'userInitialization',
+            senderID: 'server',
+            senderType: 'server',
+            receiverID: userID,
+            receiverType: 'user',
+            timestamp: new Date,
+            payload: {
+                uid: userID,
+                data: userID,
+                keys: this.simulators.filter((sim) => {
+                    return ((sim.userID === userID) && sim.key)
+                }).map((sim) => {
+                    return sim.key
+                }),
+                sessionState: this.sessionState,
+            }
         }
 
-        socket.send(JSON.stringify(msg))
+        this.sendMessage(socket, initMessage)
 
         this.sendGraphState()
         this.sendSessionState()
@@ -1606,9 +1829,9 @@ export class Session {
 
     public getKeys(userID: string) {
         return this.simulators.filter((sim) => {
-            return ((sim.userID === userID) && sim.apikey)
+            return ((sim.userID === userID) && sim.key)
         }).map((sim) => {
-            return sim.apikey
+            return sim.key
         })
     }
 
@@ -1653,10 +1876,16 @@ export class Session {
     }
 
     // Parses JSON for use by cytoscape.
-    private parseJson(nodes: {[key: string]: any}[], edges: {[key: string]: any}[]) {
+    private parseJson(
+        nodes: {[key: string]: any}[],
+        edges: {[key: string]: any}[]) {
         return {
             elements: {
                 nodes: nodes.map((node) => {
+                    if (!Object.keys(node).includes('data')) {
+                        node['data'] = {}
+                    }
+
                     if (Object.keys(node).includes('attributes')) {
                         node['data'] = node.attributes
                     }
@@ -1671,6 +1900,10 @@ export class Session {
                     // IF edge contains data, edgekeys is data, otherwise just edgekeys
                     const edgeData = (edge['data']) ? {...edge['data']} : {...edge}
                     const edgeKeys = Object.keys(edgeData)
+
+                    if (!Object.keys(edge).includes('data')) {
+                        edge['data'] = {}
+                    }
 
                     if (edgeKeys.includes('attributes')) {
                         edge['data'] = edgeData.attributes

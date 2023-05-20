@@ -6,6 +6,7 @@ import { VisGraph } from '../types'
 import { SelectionDataReducerAction, SelectionDataState } from "../reducers/selection.reducer"
 
 import { API } from '../services/api.service'
+import { ExtendedNode, ExtendedEdge, Shape } from "./preprocess.component"
 
 // Create and load bitmap font.
 PIXI.BitmapFont.from('font', {
@@ -19,21 +20,29 @@ PIXI.BitmapFont.from('font', {
     breakWords: true
 })
 
-interface RenderedNode extends VisGraph.HashedGraphNode {
+interface RenderedNode extends ExtendedNode {
     nodesprite: PIXI.Sprite,
     textsprite: PIXI.BitmapText,
     currentX: number,
     currentY: number,
 }
 
+export interface RenderedEdge extends ExtendedEdge  {
+    sourceNode: ExtendedNode,
+    targetNode: ExtendedNode,
+    gfx: PIXI.Sprite | null,
+}
+
 interface RendererProps {
     container: Node,
-    nodes: VisGraph.HashedGraphNode[],
-    edges: VisGraph.HashedEdge[],
+    nodes: ExtendedNode[],
+    edges: ExtendedEdge[],
     directed: boolean,
     selectionState: SelectionDataState | null,
     selectionDispatch: React.Dispatch<SelectionDataReducerAction> | null
 }
+
+export type EdgeCallback = (edge: ExtendedEdge, selectionState: SelectionDataState) => number
 
 // PIXI.settings.GC_MAX_IDLE = 100000;
 PIXI.settings.PREFER_ENV = PIXI.ENV.WEBGL2
@@ -50,9 +59,9 @@ const app = new PIXI.Application({
 
 const SPRITESCALE = 2.5
 
-let nodeDict: {[key: string]: VisGraph.GraphNode} = {}
+let nodeDict: {[key: string]: ExtendedNode} = {}
 
-let renderedEdges: VisGraph.RenderedEdge[] = []
+let renderedEdges: RenderedEdge[] = []
 
 let renderedNodes: RenderedNode[] = []
 let panEnabled = true
@@ -86,7 +95,7 @@ let previousTimestep : DOMHighResTimeStamp | null = null
 class SpriteCache {
     static cache: {[key: string]: PIXI.Sprite[]} = {}
 
-    static pushSprite(sprite: PIXI.Sprite, shape: VisGraph.Shape) {
+    static pushSprite(sprite: PIXI.Sprite, shape: Shape) {
         if (this.cache[shape.toString()] === undefined) {
             this.cache[shape.toString()] = []
         }
@@ -102,7 +111,7 @@ class SpriteCache {
         this.cache[shape.toString()].unshift(sprite)
     }
 
-    static getSprite(shape: VisGraph.Shape) {
+    static getSprite(shape: Shape) {
         let shapeString = shape.toString()
 
         if (this.cache[shapeString] === undefined) {
@@ -110,7 +119,6 @@ class SpriteCache {
         }
 
         if (this.cache[shapeString].length === 0) {
-            console.log('Cache empty, creating new sprite.')
             if (shape === 'line') {
                 return new PIXI.Sprite(PIXI.Texture.WHITE)
             }
@@ -199,7 +207,7 @@ function setTransformCallback(transformUpdate: () => void) {
     )
 }
 
-function getSprite(shape: VisGraph.Shape) {
+function getSprite(shape: Shape) {
     const edgeZ = 2
     const nodeZ = 3
 
@@ -228,7 +236,6 @@ function setupRendering() {
 
     let onKeyDown = (event: KeyboardEvent) => {
         if (event.key === 'f') {
-            console.log("Resetting view")
             // Center view
             const render = d3.select('.render')
 
@@ -474,8 +481,8 @@ function cleanMemory() {
     window.onpopstate = null
 }
 
-function updateNodePositions(nodes: VisGraph.HashedGraphNode[]) {
-    let nodeDict: {[key: string]: VisGraph.GraphNode} = {}
+function updateNodePositions(nodes: ExtendedNode[]) {
+    let nodeDict: {[key: string]: ExtendedNode} = {}
 
     renderedNodes.forEach((renderedNode, index) => {
         renderedNode.x = nodes[index].x
@@ -569,7 +576,6 @@ function animator(timestamp: DOMHighResTimeStamp) {
     if (start === null) {
         start = timestamp
     }
-
 
     const elapsed = timestamp - start
     let done = true
@@ -838,7 +844,6 @@ export function Renderer({
         })
 
         nodeSprite.on(('pointerup'), (event: PIXI.InteractionEvent) => {
-            console.log(event)
             if (selectionDispatch === null) {
                 return
             }
@@ -898,11 +903,10 @@ export function Renderer({
             y: node.visualAttributes.y,
             currentX: currentX,
             currentY: currentY,
-            attributes: {...node.attributes},
-            hash: node.hash,
             visualAttributes: {...node.visualAttributes},
             nodesprite: nodeSprite,
-            textsprite: text
+            textsprite: text,
+            position: node.position
         }
     })
 

@@ -11,188 +11,199 @@ import { Worker } from 'worker_threads';
 import { Logger } from 'winston';
 import { IncomingMessage } from 'http';
 type SessionState = 'disconnected' | 'idle' | 'generating layout' | 'simulating' | 'playing';
-type SimulatorParam = {
-    attribute: string;
-    type: 'boolean';
-    defaultValue: boolean;
-    value: boolean;
-} | {
-    attribute: string;
-    type: 'integer' | 'float';
-    defaultValue: number;
-    value: number;
-} | {
-    attribute: string;
-    type: 'string';
-    defaultValue: string;
-    value: string;
+type BasicNode = {
+    id: string;
+    position: {
+        x: number;
+        y: number;
+    };
+    [key: string]: any;
 };
+type BasicEdge = {
+    id: string;
+    source: string;
+    target: string;
+    [key: string]: any;
+};
+type BasicGraph = {
+    nodes: BasicNode[];
+    edges: BasicEdge[];
+    globals: {
+        [key: string]: any;
+    };
+};
+export type ParamType = 'boolean' | 'integer' | 'float' | 'string';
+type ParamTypeToDefault<T extends ParamType> = T extends 'boolean' ? boolean : T extends 'integer' ? number : T extends 'float' ? number : T extends 'string' ? string : never;
+type ParamTypeToLimits<T extends ParamType> = T extends 'boolean' ? null : T extends 'integer' ? {
+    min: number;
+    max: number;
+} : T extends 'float' ? {
+    min: number;
+    max: number;
+} : T extends 'string' ? null : never;
+type GlobalsType = {
+    [key: string]: {
+        [key: string]: string;
+    };
+};
+export interface SimulatorParam<T extends ParamType> {
+    attribute: string;
+    type: T;
+    defaultValue: ParamTypeToDefault<T>;
+    value: ParamTypeToDefault<T>;
+    limits: ParamTypeToLimits<T>;
+}
+export interface Simulator {
+    key: string | null;
+    userID: string;
+    socket: WebSocket | null;
+    title: string;
+    state: 'disconnected' | 'idle' | 'generating' | 'connecting';
+    params: Array<SimulatorParam<ParamType>>;
+    valid: 'valid' | 'invalid' | 'unknown';
+    validator: boolean;
+}
 export declare module MessageTypes {
-    export type GetType = 'graphState' | 'sessionState' | 'layouts' | 'apiKey' | 'QR';
+    type ServerDataType = 'graphState' | 'sessionState' | 'layouts' | 'apiKey' | 'QR';
     export type SetType = 'playstate' | 'graphState' | 'simulator' | 'stopSimulator' | 'simulatorInstance' | 'layout' | 'username' | 'graphIndex' | 'headset' | 'windowSize' | 'pan';
-    export interface OutMessage {
-        sessionID: string;
-        sessionState: SessionState;
-        type: 'data' | 'session' | 'uid' | 'headset' | 'pan';
-    }
-    export interface InMessage {
-        sessionID: string;
-        userID: string;
-        messageSource: 'simulator' | 'user';
-        messageType: 'get' | 'set' | 'remove';
-        apiKey?: string;
-        data?: any;
-        dataType?: any;
-        title?: string;
-        validator?: boolean;
-    }
-    export interface RegisterSimulatorMessage extends InMessage {
-        sessionID: string;
-        messageSource: 'simulator';
-        messageType: 'set';
-        dataType: 'register';
-        apiKey: string;
-        params: SimulatorParam[];
-    }
-    export interface SimulatorDataMessage extends InMessage {
-        sessionID: string;
-        messageSource: 'simulator';
-        messageType: 'set';
-        dataType: 'data';
-        apiKey: string;
-        params: {
-            nodes: any;
-            edges: any;
-            params: any;
-        };
-    }
-    export interface GetMessage extends InMessage {
-        messageSource: 'user';
-        messageType: 'get';
-        userID: string;
-        dataType: GetType;
-    }
-    export interface SetMessage extends InMessage {
-        messageSource: 'user';
-        messageType: 'set';
-        userID: string;
-        dataType: SetType;
-        params: any;
-    }
-    export interface RemoveMessage extends InMessage {
-        messageSource: 'user';
-        messageType: 'remove';
-        userID: string;
-        dataType: 'simulator';
-        params: {
-            apikey: string;
-        };
-    }
-    export interface SetUsernameMessage extends InMessage {
-        messageSource: 'user';
-        messageType: 'set';
-        userID: string;
-        dataType: 'username';
-        params: {
+    export type MessageTypeMap = {
+        'registerSimulator': RegisterSimulatorPayload;
+        'simulatorResponse': SimulatorDataPayload;
+        'changeUsername': {
             username: string;
         };
-    }
-    export interface SetWindowSizeMessage extends InMessage {
-        messageSource: 'user';
-        messageType: 'set';
-        userID: string;
-        dataType: 'windowSize';
-        params: {
-            width: number;
-            height: number;
+        'pan': PanPayload;
+        'removeSimulator': {
+            apikey: string;
         };
-    }
-    export interface SetSimulatorMessage extends InMessage {
-        messageSource: 'user';
-        messageType: 'set';
-        userID: string;
-        dataType: 'simulator';
-        params: {
-            stepCount: number;
-            apiKey: string;
-            name: string;
-        };
-    }
-    export interface SetSimulatorInstanceMessage extends InMessage {
-        messageSource: 'user';
-        messageType: 'set';
-        userID: string;
-        dataType: 'simulatorInstance';
-    }
-    type ServerSimulator = {
-        readonly apikey: string | null;
-        username: string;
-        params: SimulatorParam[];
-        title: string;
-        state: 'disconnected' | 'idle' | 'generating' | 'connecting';
-    };
-    export interface PanStateMessage extends OutMessage {
-        userID: string;
-        type: 'pan';
-        data: {
-            x: number;
-            y: number;
-            k: number;
-        };
-    }
-    export interface SessionStateMessage extends OutMessage {
-        userID: string;
-        type: 'session';
-        data: {
-            currentLayout: AvailableLayout | null;
-            url: string;
-            sessionURL: string;
-            graphIndex: number;
-            graphIndexCount: number;
-            users: {
-                username: string;
-                userID: string;
-                headsetCount: number;
-            }[];
-            simulators: ServerSimulator[];
-            headsets: {
-                headsetID: string;
-                connected: boolean;
-            }[];
-            simState: {
-                step: number;
-                stepMax: number;
-                name: string;
+        'changeWindowSize': WindowSizePayload;
+        'getData': ServerDataType;
+        'startSimulator': StartSimulatorPayload;
+        'createSimulator': {};
+        'stopSimulator': {};
+        'sendSessionState': SessionStatePayload;
+        'sendGlobals': {
+            globals: {
+                [key: string]: any;
             };
-            layoutInfo: LayoutInfo[];
-            expirationDate: string;
-            websocketPort: string;
-            playmode: boolean;
         };
-    }
-    export interface DataStateMessage extends OutMessage {
-        type: 'data';
-        data: {
-            nodes: any;
-            edges: any;
+        'sendGraphState': BasicGraph;
+        'headsetConnected': {
+            headsetID: string;
+            connected: boolean;
         };
-    }
-    export interface HeadsetConnectedMessage extends OutMessage {
-        type: 'headset';
-    }
-    export interface SimulatorSetMessage extends OutMessage {
-        type: 'data';
-        data: {
-            nodes: any;
-            edges: any;
-            params: SimulatorParam[];
+        'simulatorData': SimulatorDataPayload;
+        'setPlayState': {
+            playState: boolean;
         };
+        'generateLayout': {
+            layout: LayoutSettings;
+        };
+        'setGraphState': BasicGraph;
+        'setSliceIndex': {
+            index: number;
+        };
+        'addHeadset': {};
+        'userInitialization': UserInitializationPayload;
+        'setGlobal': {
+            key: string;
+            param: string;
+            value: string;
+        };
+        'createTestSimulator': {};
+    };
+    type SimulatorDataPayload = {
+        nodes: any;
+        edges: any;
+        apikey: string;
+        globals: {
+            [key: string]: any;
+        };
+        params: Array<SimulatorParam<ParamType>>;
+    };
+    type StartSimulatorPayload = {
+        stepCount: number;
+        apiKey: string;
+        params: Array<SimulatorParam<ParamType>>;
+        name: string;
+    };
+    type WindowSizePayload = {
+        width: number;
+        height: number;
+    };
+    type PanPayload = {
+        x: number;
+        y: number;
+        k: number;
+    };
+    type RegisterSimulatorPayload = {
+        apikey: string;
+        params: string;
+        title: string;
+        validator: boolean;
+    };
+    export interface Message<T extends keyof MessageTypeMap> {
+        type: T;
+        payload: MessageTypeMap[T];
+        senderType: 'user' | 'simulator' | 'server' | 'headset';
+        senderID: string;
+        receiverType: 'user' | 'simulator' | 'server' | 'headset';
+        receiverID: string;
+        sessionID: string;
+        timestamp: Date;
     }
-    export interface UIDMessage extends OutMessage {
-        type: 'uid';
+    type UserInitializationPayload = {
+        uid: string;
         data: string;
         keys: (string | null)[];
-    }
+        sessionState: SessionState;
+    };
+    type SessionStatePayload = {
+        globals: GlobalsType;
+        globalsGeneratedOn: number;
+        state: SessionState;
+        currentLayout: AvailableLayout | null;
+        /** Session URL for sharing. */
+        url: string;
+        /** Session data origin. */
+        sessionURL: string;
+        /** Current index in dynamic graph. */
+        graphIndex: number;
+        /** Total number of graphs in dynamic graph. */
+        graphIndexCount: number;
+        users: {
+            username: string;
+            userID: string;
+            headsetCount: number;
+        }[];
+        simulators: ServerSimulator[];
+        headsets: {
+            headsetID: string;
+            connected: boolean;
+        }[];
+        simState: {
+            /** The current simulation step. */
+            step: number;
+            /** The number of steps to calculate. */
+            stepMax: number;
+            /** Running sim name. */
+            name: string;
+        };
+        /** Layout information for graph layout generation. */
+        layoutInfo: LayoutInfo[];
+        /** Time session expires. */
+        expirationDate: Date;
+        websocketPort: string;
+        playmode: boolean;
+    };
+    type ServerSimulator = {
+        readonly apikey: string | null;
+        params: Array<SimulatorParam<ParamType>>;
+        title: string;
+        state: 'disconnected' | 'idle' | 'generating' | 'connecting';
+        valid: 'valid' | 'invalid' | 'unknown';
+        validator: boolean;
+    };
     export {};
 }
 type AvailableLayout = 'null' | 'random' | 'cose' | 'grid' | 'circle' | 'breadthfirst' | 'cose' | 'fcose' | 'cise' | 'spread' | 'd3-force';
@@ -234,6 +245,8 @@ export declare class Session {
     private simulators;
     private messageQueue;
     private readonly destroyFun;
+    private globals;
+    private globalsGeneratedOn;
     private simState;
     private graphHistory;
     private graphIndex;
@@ -246,29 +259,36 @@ export declare class Session {
         [key: string]: any;
     }[], edges: {
         [key: string]: any;
-    }[], localAddress: string, websocketPort: string, logger: Logger);
+    }[], globals: {
+        [key: string]: {
+            [key: string]: any;
+        };
+    }, localAddress: string, websocketPort: string, logger: Logger);
     private setState;
     private changeGraphState;
     private storeCurrentGraphState;
     private appendGraphState;
     private time;
     private loadGraphState;
+    private handleRegisterSimulatorMessage;
+    private handleSimulatorDataMessage;
     private parseSimulatorMessage;
     private parseGetMessage;
-    private parseSetMessage;
-    private parseRemoveMessage;
-    private parseUserMessage;
+    private handlePlayStateMessage;
+    private handleChangeUsernameMessage;
+    private handleStartSimulator;
     layoutTimer(resolve: any, worker: Worker, signal: AbortSignal): Promise<void>;
     setLayout(settings: LayoutSettings): Promise<unknown>;
     private processMessage;
     private getMessage;
-    addMessage(message: MessageTypes.InMessage): void;
+    addMessage<Type extends keyof MessageTypes.MessageTypeMap>(message: MessageTypes.Message<Type>): void;
     private pruneSessions;
     removeHeadset(headsetKey: string): void;
+    private sendMessage;
     private sendGraphState;
+    runDummySimulator(message: MessageTypes.Message<'simulatorData'>): void;
     sendSimulatorMessage(): void;
     private getSimulatorInfo;
-    private sendHeadsetConnectedMessage;
     private sendSessionState;
     private sendPanState;
     registerSimulator(apiKey: string, socket: WebSocket): void;
