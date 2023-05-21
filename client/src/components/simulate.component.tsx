@@ -30,104 +30,224 @@ function renderSimItem<T extends ParamType>(param: SimulatorParam<T>, index: num
 
             // Booleans are rendered as a dropdown menu.
             inputField = (
-                <Dropdown onSelect={(item) => {
-                    Router.setSimulatorSettings(key, params.map((paramIter) => {
-                        let newParam = paramIter as SimulatorParam<'boolean'>
-                        if (newParam.attribute === boolParam.attribute) {
-                            newParam.value = item === 'true'
+                <Col>
+                    <Dropdown onSelect={(item) => {
+                        Router.setSimulatorSettings(key, params.map((paramIter) => {
+                            let newParam = paramIter as SimulatorParam<'boolean'>
+                            if (newParam.attribute === boolParam.attribute) {
+                                newParam.value = item === 'true'
 
-                            return newParam
-                        }
+                                return newParam
+                            }
 
-                        return paramIter
-                    }))
-                }}>
-                    <Dropdown.Toggle>{param.value === true ? 'True' : 'False'}</Dropdown.Toggle>
-                    <Dropdown.Menu>
-                        <Dropdown.Item key='true' eventKey={'true'} active={boolParam.value}>True</Dropdown.Item>
-                        <Dropdown.Item key='false' eventKey={'false'} active={!boolParam.value}>False</Dropdown.Item>
-                    </Dropdown.Menu>
-                </Dropdown>
+                            return paramIter
+                        }))
+                    }}>
+                        <Dropdown.Toggle>{param.value === true ? 'True' : 'False'}</Dropdown.Toggle>
+                        <Dropdown.Menu>
+                            <Dropdown.Item key='true' eventKey={'true'} active={boolParam.value}>True</Dropdown.Item>
+                            <Dropdown.Item key='false' eventKey={'false'} active={!boolParam.value}>False</Dropdown.Item>
+                        </Dropdown.Menu>
+                    </Dropdown>
+                </Col>
             )
             break
         case 'integer':
             const integerParam = param as SimulatorParam<'integer'>
-            // Integers are rendered as a number input field.
-            inputField = (
-                <Form.Control
-                    type='number'
-                    value={integerParam.value}
-                    onChange={(e) => {
-                        let num = Number(e.target.value)
 
-                        if (!Number.isInteger(num)) {
-                            return
-                        }
+            if (integerParam.limits.min === 0 && integerParam.limits.max === 0) {
+                // Integers are rendered as a number input field.
+                inputField = (
+                    <Col>
+                        <Form.Control
+                            type='number'
+                            value={integerParam.value}
+                            onChange={(e) => {
+                                let num = Number(e.target.value)
 
-                        Router.setSimulatorSettings(key, params.map((paramIter) => {
-                            if (paramIter.attribute === param.attribute) {
-                                (paramIter as SimulatorParam<'integer'>).value = num
-                            }
+                                if (!Number.isInteger(num)) {
+                                    return
+                                }
 
-                            return paramIter
-                        }))
-                    }}
-                >
+                                Router.setSimulatorSettings(key, params.map((paramIter) => {
+                                    if (paramIter.attribute === param.attribute) {
+                                        (paramIter as SimulatorParam<'integer'>).value = num
+                                    }
 
-                </Form.Control>
-            )
+                                    return paramIter
+                                }))
+                            }}
+                        >
+
+                        </Form.Control>
+                    </Col>
+                )
+            } else {
+                // Integers are rendered as a slider.
+                inputField = (
+                    <>
+                        <Col xs={2} md={{span: 1}}>
+                            {/* Min */}
+                            {integerParam.limits.min}
+                        </Col>
+                        <Col>
+                            <Row>
+                                <Col>
+                                    <Form.Range
+                                        min={integerParam.limits.min}
+                                        max={integerParam.limits.max}
+                                        value={integerParam.value}
+                                        onChange={(e) => {
+                                            let num = Number(e.target.value)
+
+                                            if (!Number.isInteger(num)) {
+                                                return
+                                            }
+
+                                            Router.setSimulatorSettings(key, params.map((paramIter) => {
+                                                if (paramIter.attribute === param.attribute) {
+                                                    (paramIter as SimulatorParam<'integer'>).value = num
+                                                }
+
+                                                return paramIter
+                                            }))
+                                        }}
+                                    />
+                                </Col>
+                            </Row>
+                            <Row>
+                                <Col>
+                                    {/* Value */}
+                                    <div style={{
+                                        float: 'right',
+                                    }}>
+                                        {integerParam.value}
+                                    </div>
+                                </Col>
+                            </Row>
+
+                        </Col>
+                        <Col xs={2}>
+                            {/* Max */}
+                            {integerParam.limits.max}
+                        </Col>
+                    </>
+                )
+            }
+
             break
         case 'float':
             const floatParam = param as SimulatorParam<'float'>
-            // Floats are rendered as a number input field.
-            inputField = (
-                <Form.Control
-                    type='number'
-                    step={0.1}
-                    value={floatParam.value}
-                    onChange={(e) => {
-                        let num = parseFloat(e.target.value)
+            if (floatParam.limits.min === 0 && floatParam.limits.max === 0) {
 
-                        if (isNaN(num)) {
-                            return
-                        }
+                // Floats are rendered as a number input field.
+                inputField = (
+                    <Col>
+                        <Form.Control
+                            type='number'
+                            step={0.1}
+                            value={floatParam.value}
+                            onChange={(e) => {
+                                let num = parseFloat(e.target.value)
 
-                        Router.setSimulatorSettings(key, params.map((paramIter) => {
-                            if (paramIter.attribute === param.attribute) {
-                                (paramIter as SimulatorParam<'float'>).value = num
-                            }
+                                if (isNaN(num)) {
+                                    return
+                                }
 
-                            return paramIter
-                        }))
-                    }}
-                >
+                                Router.setSimulatorSettings(key, params.map((paramIter) => {
+                                    if (paramIter.attribute === param.attribute) {
+                                        (paramIter as SimulatorParam<'float'>).value = num
+                                    }
 
-                </Form.Control>
-            )
+                                    return paramIter
+                                }))
+                            }}
+                        >
+
+                        </Form.Control>
+                    </Col>
+                )
+            } else {
+                // Floats are rendered as a slider.
+                // Integers are rendered as a slider.
+                inputField = (
+                    <>
+                        <Col xs={2} md={{span: 1}}>
+                            {/* Min */}
+                            {floatParam.limits.min}
+                        </Col>
+                        <Col>
+                            <Row>
+                                <Col>
+                                    <Form.Range
+                                        // No step
+                                        step={0.05}
+                                        min={floatParam.limits.min}
+                                        max={floatParam.limits.max}
+                                        value={floatParam.value}
+                                        onChange={(e) => {
+                                            let num = Number(e.target.value)
+
+                                            if (isNaN(num)) {
+                                                return
+                                            }
+
+                                            Router.setSimulatorSettings(key, params.map((paramIter) => {
+                                                if (paramIter.attribute === param.attribute) {
+                                                    (paramIter as SimulatorParam<'float'>).value = num
+                                                }
+
+                                                return paramIter
+                                            }))
+                                        }}
+                                    />
+                                </Col>
+                            </Row>
+                            <Row>
+                                <Col>
+                                    {/* Value */}
+                                    <div style={{
+                                        float: 'right',
+                                    }}>
+                                        {floatParam.value}
+                                    </div>
+                                </Col>
+                            </Row>
+
+                        </Col>
+                        <Col xs={2}>
+                            {/* Max */}
+                            {floatParam.limits.max}
+                        </Col>
+                    </>
+                )
+            }
             break
         case 'string':
             const stringParam = param as SimulatorParam<'string'>
             // Strings are rendered as a text input field.
             inputField = (
-                <Form.Control
-                    type='string'
-                    value={stringParam.value}
-                    onChange={(e) => {
-                        if (e.target.value === '') {
-                            return
-                        }
-
-                        Router.setSimulatorSettings(key, params.map((paramIter) => {
-                            if (paramIter.attribute === param.attribute) {
-                                (paramIter as SimulatorParam<'string'>).value = e.target.value
+                <Col>
+                    <Form.Control
+                        type='string'
+                        value={stringParam.value}
+                        onChange={(e) => {
+                            if (e.target.value === '') {
+                                return
                             }
 
-                            return paramIter
-                        }))
-                    }}
-                >
+                            Router.setSimulatorSettings(key, params.map((paramIter) => {
+                                if (paramIter.attribute === param.attribute) {
+                                    (paramIter as SimulatorParam<'string'>).value = e.target.value
+                                }
 
-                </Form.Control>
+                                return paramIter
+                            }))
+                        }}
+                    >
+
+                    </Form.Control>
+                </Col>
             )
             break
 
@@ -144,9 +264,8 @@ function renderSimItem<T extends ParamType>(param: SimulatorParam<T>, index: num
                 <Col>
                     {param.type}
                 </Col>
-                <Col>
-                    {inputField}
-                </Col>
+                {inputField}
+
                 <Col>
                     {param.value !== param.defaultValue &&
                         <Button variant='primary' onClick={() => {
@@ -699,8 +818,8 @@ export function SimulatorTab() {
                                             Add
                                         </Button>
                                     </Col>
-                                    <Col>
-                                        {/* <Button
+                                    {/* <Col>
+                                        <Button
                                             disabled={state.simulators.filter((sim) => {
                                                 return sim.state === 'disconnected'
                                             }).length > 0}
@@ -715,9 +834,9 @@ export function SimulatorTab() {
                                             }}
                                             variant='outline-success'>
                                             Add Test
-                                        </Button> */}
+                                        </Button>
 
-                                    </Col>
+                                    </Col> */}
                                 </Row>
                             </ListGroup.Item>
                         </div>

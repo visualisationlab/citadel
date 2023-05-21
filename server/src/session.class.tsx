@@ -1169,7 +1169,40 @@ export class Session {
                         userID: message.senderID,
                         // Set socket to non null placeholder
                         socket: null,
-                        params: [],
+                        params: [{
+                            'attribute': 'Number of Steps',
+                            'type': 'integer',
+                            'defaultValue': 365,
+                            'value': 365,
+                            "limits": {
+                                "min": 1,
+                                "max": 1000
+                            }
+                        },
+                        {
+                            'attribute': 'Float',
+                            'type': 'float',
+                            'defaultValue': 0.5,
+                            'value': 0.5,
+                            "limits": {
+                                "min": 0.1,
+                                "max": 1.0
+                            }
+                        },
+                        {
+                            'attribute': 'Bool',
+                            'type': 'boolean',
+                            'defaultValue': true,
+                            'value': true,
+                            "limits": null
+                        },
+                        {
+                            'attribute': 'String',
+                            'type': 'string',
+                            'defaultValue': 'test',
+                            'value': 'test',
+                            "limits": null
+                        }],
                         title: 'TEST SIMULATOR',
                         validator: true,
                         valid: 'unknown',
