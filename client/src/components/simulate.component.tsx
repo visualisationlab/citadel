@@ -868,8 +868,6 @@ export function SimulatorTab() {
         </>
     )
 
-    console.log(state)
-
     const res = simOptionsSelection === null ? (
         <>
             <Modal show={showSimulatorModal} onHide={() => {setShowSimulatorModal(false)}}>
