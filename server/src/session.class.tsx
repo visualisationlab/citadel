@@ -1228,7 +1228,6 @@ export class Session {
                 case 'setGraphState':
                     let graphMessage = message as MessageTypes.Message<'setGraphState'>
 
-                    console.log(graphMessage.payload.nodes)
                     // Update server graph state.
                     this.changeGraphState(
                         this.parseJson(graphMessage.payload.nodes,
@@ -1620,8 +1619,6 @@ export class Session {
         const dateDiff = new Date(this.expirationDate.getTime() - new Date().getTime())
 
         this.users.forEach((user) => {
-            this.logger.log('info', 'Sending simulators', {
-                sims: this.getSimulatorInfo(user.userID)})
             const message: MessageTypes.Message<'sendSessionState'> = {
                 type: 'sendSessionState',
                 sessionID: this.sessionID,

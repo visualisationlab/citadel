@@ -323,7 +323,12 @@ function renderSimulatorSettings(key: string, params: Array<SimulatorParam<Param
                 </Col>
             </Row>
             <Row>
-                <Col>
+                <Col
+                    style={{
+                        maxHeight: '80vh',
+                        overflowY: 'auto',
+                    }}
+                >
                     {simList}
                 </Col>
             </Row>
@@ -818,7 +823,7 @@ export function SimulatorTab() {
                                             Add
                                         </Button>
                                     </Col>
-                                    {/* <Col>
+                                    <Col>
                                         <Button
                                             disabled={state.simulators.filter((sim) => {
                                                 return sim.state === 'disconnected'
@@ -836,7 +841,7 @@ export function SimulatorTab() {
                                             Add Test
                                         </Button>
 
-                                    </Col> */}
+                                    </Col>
                                 </Row>
                             </ListGroup.Item>
                         </div>
