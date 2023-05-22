@@ -260,7 +260,7 @@ export default function SearchTab() {
 
         if (query.length > 0) {
             const options = {
-                keys: ['id', 'attributes.id', ...Array.from(attributes).map((attribute) => {return ('attributes.' + attribute)})],
+                keys: ['id', 'attributes.id', ...Array.from(attributes).map((attribute) => {return (attribute)})],
                 shouldSort: false,
                 threshold: searchType === 'node' ? 0.3 : 0.1,
                 useExtendedSearch: true
