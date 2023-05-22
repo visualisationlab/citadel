@@ -172,7 +172,7 @@ export module MessageTypes {
     // Register a new simulator instance.
     type RegisterSimulatorPayload = {
         apikey: string,
-        params: string,
+        params: Array<SimulatorParam<ParamType>>,
         title: string,
         validator: boolean,
     }
@@ -773,7 +773,7 @@ export class Session {
 
                 sim.title = payload.title
                 sim.validator = payload.validator
-
+                sim.params = payload.params
                 sim.state = 'idle'
             }
         })
@@ -1620,6 +1620,8 @@ export class Session {
         const dateDiff = new Date(this.expirationDate.getTime() - new Date().getTime())
 
         this.users.forEach((user) => {
+            this.logger.log('info', 'Sending simulators', {
+                sims: this.getSimulatorInfo(user.userID)})
             const message: MessageTypes.Message<'sendSessionState'> = {
                 type: 'sendSessionState',
                 sessionID: this.sessionID,

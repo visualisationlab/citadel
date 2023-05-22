@@ -151,8 +151,8 @@ export function SessionDataReducer(state: SessionState, action: SessionReducer):
                             || state.simulators[index].state === 'generating'
                             || sim.state === 'disconnected')) {
 
-                        console.log("HERE")
-                        console.log(sim.params)
+                        console.log("HERE2")
+                        console.log(typeof(sim.params))
                         return {
                             key: sim.apikey,
                             title: sim.title,
