@@ -44,7 +44,7 @@
     "localdev": "npx tsc; HTTPS=true PORT=3000; react-scripts start",
     "local": "docker run -u=1000:1000 -v $(pwd):/app -w=/app -d -p 3000:3000 --rm --name=nodedev node bash -c \"npm install && npm run dev\"",
     "build": "react-scripts build",
-    "test": "react-scripts test",
+    "test": "jest",
     "eject": "react-scripts eject",
     "prod": "serve -s build --ssl-cert \"../certs/dev.visgraph.pem\" --ssl-key \"../certs/dev.visgraph-key.pem\""
   },
@@ -79,6 +79,8 @@
   "devDependencies": {
     "@babel/core": "^7.20.5",
     "@babel/preset-env": "^7.20.2",
+    "@babel/preset-typescript": "^7.22.5",
+    "@jest/globals": "^29.5.0",
     "@types/cytoscape": "^3.19.4",
     "@types/d3": "^7.1.0",
     "@types/deep-equal": "^1.0.1",
@@ -89,7 +91,9 @@
     "@types/tinycolor2": "^1.4.3",
     "babel-loader": "^9.1.0",
     "babel-plugin-named-exports-order": "^0.0.2",
+    "devcert": "^1.2.2",
     "prop-types": "^15.8.1",
+    "react-test-renderer": "^18.2.0",
     "webpack": "^5.75.0"
   },
   "overrides": {
