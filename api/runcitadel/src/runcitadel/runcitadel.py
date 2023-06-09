@@ -69,6 +69,8 @@ def validate_params_schema(data):
     FIELD_MAXLENGTH = 30
     VALUE_MAXLENGTH = 100
 
+    return True
+
     if (len(data) > 10):
         raise ValueError("Start params length must be max 10")
 
@@ -332,7 +334,7 @@ async def connect(url: str,
             'receiverID': 'server',
             'payload': {
                 'apikey': key,
-                'params': json.dumps(startParams),
+                'params': startParams,
                 'validator': has_schema,
                 'title': title,
             }

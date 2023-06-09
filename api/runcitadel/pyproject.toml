@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "runcitadel"
-version = "1.0.0a0"
+version = "2.0.0"
 description = "A package for developing and running citadel simulations."
 authors = ["Miles van der Lely"]
 license = "MIT"

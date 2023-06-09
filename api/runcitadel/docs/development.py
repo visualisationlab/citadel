@@ -7,25 +7,11 @@ import time
 
 
 # Global variables
-step = 1 # would be nice to get this from the params
+step = 1
 
 # Functions
 def sim_step(connection, nodes, edges, params, globals):
     """Performs one simulation step of the Replacement model"""
-
-    # print(validation_json, len(nodes), len(edges), len(params))
-
-    if (globals['step'] is not None):
-        step = globals['step']['step']
-
-    # add 1
-    # step += 1
-    print("step", step)
-    time.sleep(2)
-
-    globals['step'] = {
-        'step': step + 1,
-    }
 
     return [nodes, edges, params, globals] # TODO: change this to the correct format
 
@@ -34,9 +20,37 @@ startParams = [{
                 'attribute': 'Number of Steps',
                 'type': 'integer',
                 'defaultValue': 365,
+                'value': 365,
+                "limits": {
+                    "min": 1,
+                    "max": 1000
+                }
+            },
+            {
+                'attribute': 'Float',
+                'type': 'float',
+                'defaultValue': 0.5,
+                'value': 0.5,
+                "limits": {
+                    "min": 0.1,
+                    "max": 1.0
+                }
+            },
+            {
+                'attribute': 'Bool',
+                'type': 'boolean',
+                'defaultValue': True,
+                'value': True,
+                "limits": None
+            },
+            {
+                'attribute': 'String',
+                'type': 'string',
+                'defaultValue': 'test',
+                'value': 'test',
+                "limits": None
             }]
 
-# Main
 if __name__ == "__main__":
     # Assert required information is provided
     if (len(sys.argv) != 3):
