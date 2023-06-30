@@ -1,57 +1,55 @@
-# Visgraph
+# Citadel
 
-Git repo for visgraph, an application for rendering interactive networks.
+This repository contains software for rendering graph networks in-browser.
+
+- [`api`](api): Contains Python code for connecting and running simulations on a session.
+- [`client`](client): Contains the React frontend code.
+- [`server`](server): Contains the NodeJS and Cytoscape backend server code.
+- [`shared`](shared): Contains shared Typescript definitions for the client and server.
+- [`ar-unity`](ar-unity): Contains code for the AR Unity application.
+
+For the full documentation consult the [`Citadel Documentation`](https://visualisationlab.github.io/visualisationlab) section of the Visualisation Lab documentation site.
 
 ## Description
-Visgraph allows users to analyze and edit graphs through the web browser. It offers an API through which users can run code on the graph, by adding or removing nodes or edges, or changing attributes. Visual properties of nodes and edges are able to be mapped to their attributes. The tool is designed for explorative analysis of graphs.
-
-## Visuals
-
+Citadel allows users to analyze and edit graphs through the web browser. It offers an API through which users can run code on the graph, by adding or removing nodes or edges, or changing attributes. Visual properties of nodes and edges are able to be mapped to their attributes. The tool is designed for explorative analysis of graphs.
 
 ## Installation
-Pull the repo.
 
-Run npm install in root directory.
+Install [yarn](https://yarnpkg.com/getting-started/install) and clone the repository:
 
-Run npm install in server directory, add .env file in server directory containing definitions for:
-- CLIENTPORT
-- SERVERPORT
-- WSCLIENTPORT
+```bash
+git clone git@github.com:visualisationlab/citadel.git
+```
 
-Change line 10: self to this in /node_modules/cytoscape_fcose/cytoscape-fcose.js
+Go into the root directory and run:
+```bash
+yarn install
+```
 
-Start server with npm start.
+To create local SSL certificates run:
+```bash
+yarn run cert
+```
 
-Run npm install in client directory.
+Create `.env` files for the server and the client.
 
-Add .env file in client directory containing definitions for:
-REACT_APP_SERVERPORT
-REACT_APP_CLIENTPORT
-REACT_APP_WEBSOCKETPORT
-REACT_APP_URL (ex. "http://localhost")
-REACT_APP_WSURL (ex. "ws://192.168.0.199")
+### Client
+The client `.env` should contain the following definitions:
 
-Update node_modules for port you want to run on. E.g. 3000, 8064, etc.
-
-## Usage
 TODO
-## Support
-Miles van der Lely, milesvanderlely@uva.nl
-## Roadmap
-Functional frontend implementation.
 
-Timeline system.
+### Server
+The server `.env` should contain these definitions:
 
-AR functionality.
+TODO
 
-## Contributing
-
+To start the server and client on a local machine run:
+```bash
+yarn run start
+```
 
 ## Authors and acknowledgment
-Miles van der Lely, Bsc.
+Miles van der Lely, Bsc. <milesvanderlely@uva.nl>
 Dr. Rob Belleman
 ## License
-TODO
-
-## Project status
-Work In Progress
+MIT
