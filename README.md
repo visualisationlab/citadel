@@ -28,7 +28,7 @@ yarn install
 
 To create local SSL certificates run:
 ```bash
-yarn run cert
+npm run cert
 ```
 
 Create `.env` files for the server and the client.
@@ -39,14 +39,24 @@ The client `.env` should contain the following definitions:
 TODO
 
 ### Server
-The server `.env` should contain these definitions:
+The server `.env` should be placed in the root `server` directory and contain these definitions:
 
-TODO
+- `CHECK_INTERVAL`: The interval to check whether a session has 'expired' (ms).
+- `NODE_ENV`: If this is not set to 'production' TLS is disabled.
+- `HOST`: HOST IP address used for CORS.
+- `WSCLIENTPORT`: Port for websocket connections.
+- `DEFAULT_GRAPH_URL`: Optional, points to default graph repository for quick access.
+- `CLIENTPORT`: React frontend port.
+- `SERVERPORT`: Backend port.
+- `KEY`: TLS key path.
+- `CERT`: TLS certificate path.
 
 To start the server and client on a local machine run:
 ```bash
-yarn run start
+npm run start
 ```
+
+in the root repository path.
 
 ## Authors and acknowledgment
 Miles van der Lely, Bsc. <milesvanderlely@uva.nl>
