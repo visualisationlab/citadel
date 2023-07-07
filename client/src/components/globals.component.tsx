@@ -1,43 +1,9 @@
 import Fuse from 'fuse.js'
-import { Validator } from 'jsonschema'
 import { useContext, useEffect, useState } from 'react'
 
 import { Button, Container, Row, Col, Stack, Form } from 'react-bootstrap'
 import { API } from '../services/api.service'
-import { GraphDataContext, UserDataContext } from './main.component'
-
-const globalsFormat = {
-    "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "type": "object",
-    "description": "Network data",
-    "anyOf": [{
-        "type": "object",
-        "properties": {
-            "edgeType": {
-                "enum": ["directed", "undirected"]
-            }
-        },
-    },
-    // {
-    //         "type": "object",
-    //         "properties": {
-    //             "value": {
-    //                 "type": "number",
-    //             },
-    //         },
-    // },
-    {
-        "type": "string",
-        "minLength": 1,
-        "maxLength": 50
-        },
-    ],
-    "required": [ "edgeType"]
-}
-
-type GlobalsType = {
-    [key: string]: {[key: string]: any}
-}
+import { UserDataContext } from './main.component'
 
 export default function Globals() {
     const [hidden, setHidden] = useState(true)

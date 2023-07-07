@@ -1,6 +1,9 @@
 /**
  * @author Miles van der Lely <m.vanderlely@uva.nl>
  *
+ * This file is the main entry point for the server. It sets up the express app,
+ * the websocket server and the routes.
+ * The websocket events are handled by the Session class.
  */
 
 require('dotenv').config({path:__dirname + '/../.env'})
