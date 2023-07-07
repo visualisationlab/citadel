@@ -1,5 +1,5 @@
 {
-  "name": "visgraph-client",
+  "name": "citadel-client",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -30,7 +30,6 @@
     "react-icons": "^4.4.0",
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
-    "react-scripts": "^5.0.1",
     "react-validation": "^3.0.7",
     "sass": "^1.59.3",
     "tinycolor": "^0.0.1",
@@ -40,13 +39,12 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "server": "npx tsc --build; PORT=8060 react-scripts start",
     "localdev": "npx tsc; HTTPS=true PORT=3000; react-scripts start",
     "local": "docker run -u=1000:1000 -v $(pwd):/app -w=/app -d -p 3000:3000 --rm --name=nodedev node bash -c \"npm install && npm run dev\"",
+    "compile": "npm run clean && npx tsc",
     "build": "react-scripts build",
-    "test": "jest",
-    "eject": "react-scripts eject",
-    "prod": "serve -s build --ssl-cert \"../certs/dev.visgraph.pem\" --ssl-key \"../certs/dev.visgraph-key.pem\""
+    "clean": "find ./src/ -type f -name '*.d.ts' -delete && find ./src/ -type f -name '*.js' -delete && find ./src/ -type f -name '*.jsx' -delete && rm -rf ./lib/ && rm -rf ./build/ && rm tsconfig.tsbuildinfo",
+    "production": "serve -s build --ssl-cert \"../certs/dev.visgraph.pem\" --ssl-key \"../certs/dev.visgraph-key.pem\""
   },
   "eslintConfig": {
     "extends": [
@@ -78,6 +76,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.5",
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@babel/preset-env": "^7.20.2",
     "@babel/preset-typescript": "^7.22.5",
     "@jest/globals": "^29.5.0",
@@ -94,9 +93,17 @@
     "devcert": "^1.2.2",
     "prop-types": "^15.8.1",
     "react-test-renderer": "^18.2.0",
-    "webpack": "^5.75.0"
+    "webpack": "^5.75.0",
+    "react-scripts": "^5.0.1"
   },
   "overrides": {
     "react-refresh": "0.11.0"
-  }
+  },
+  "description": "The Visgraph allows the user to interface with the backend, startup new sessions, and edit graphs collaboratively.",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "author": "Miles van der Lely",
+  "license": "MIT"
 }
