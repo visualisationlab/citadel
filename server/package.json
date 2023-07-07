@@ -6,7 +6,8 @@
   "main": "app.js",
   "scripts": {
     "start": "npm run compile; cross-env NODE_EXTRA_CA_CERTS='../certs/intermediate.pem' node lib/app.js",
-    "compile": "npx tsc",
+    "compile": "npm run lint && npx tsc",
+    "lint": "eslint .",
     "clean": "find ./src/ -type f -name '*.d.ts' -delete && find ./src/ -type f -name '*.js' -delete && rm -rf ./lib/ "
   },
   "dependencies": {
@@ -53,6 +54,7 @@
     "ws": "^8.5.0"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.13",
     "@types/cytoscape": "^3.19.5",
     "@types/msgpack-lite": "^0.1.8",
     "@types/qrcode": "^1.4.3",
