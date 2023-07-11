@@ -15,7 +15,7 @@ interface RendererProps {
     selectionState: SelectionDataState | null;
     selectionDispatch: React.Dispatch<SelectionDataReducerAction> | null;
 }
-export type EdgeCallback = (edge: ExtendedEdge, selectionState: SelectionDataState) => number;
+export declare type EdgeCallback = (edge: ExtendedEdge, selectionState: SelectionDataState) => number;
 export declare function Renderer({ container, nodes, edges, directed, selectionState, selectionDispatch }: RendererProps): {
     destroy: () => void;
 };

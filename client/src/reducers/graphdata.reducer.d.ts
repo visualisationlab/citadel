@@ -1,5 +1,5 @@
 import { BasicEdge, BasicNode } from '../components/router.component';
-export type MetadataType = {
+export declare type MetadataType = {
     type: 'ordered';
     dataType: 'number';
     min: number;
@@ -37,7 +37,7 @@ export interface GraphDataState {
     };
     directed: boolean;
 }
-export type GraphDataReducerAction = {
+export declare type GraphDataReducerAction = {
     type: 'set';
     property: 'data';
     value: {

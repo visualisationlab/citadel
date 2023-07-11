@@ -10,8 +10,8 @@ import { WebSocket } from 'ws';
 import { Worker } from 'worker_threads';
 import { Logger } from 'winston';
 import { IncomingMessage } from 'http';
-type SessionState = 'disconnected' | 'idle' | 'generating layout' | 'simulating' | 'playing';
-type BasicNode = {
+declare type SessionState = 'disconnected' | 'idle' | 'generating layout' | 'simulating' | 'playing';
+declare type BasicNode = {
     id: string;
     position: {
         x: number;
@@ -19,29 +19,29 @@ type BasicNode = {
     };
     [key: string]: any;
 };
-type BasicEdge = {
+declare type BasicEdge = {
     id: string;
     source: string;
     target: string;
     [key: string]: any;
 };
-type BasicGraph = {
+declare type BasicGraph = {
     nodes: BasicNode[];
     edges: BasicEdge[];
     globals: {
         [key: string]: any;
     };
 };
-export type ParamType = 'boolean' | 'integer' | 'float' | 'string';
-type ParamTypeToDefault<T extends ParamType> = T extends 'boolean' ? boolean : T extends 'integer' ? number : T extends 'float' ? number : T extends 'string' ? string : never;
-type ParamTypeToLimits<T extends ParamType> = T extends 'boolean' ? null : T extends 'integer' ? {
+export declare type ParamType = 'boolean' | 'integer' | 'float' | 'string';
+declare type ParamTypeToDefault<T extends ParamType> = T extends 'boolean' ? boolean : T extends 'integer' ? number : T extends 'float' ? number : T extends 'string' ? string : never;
+declare type ParamTypeToLimits<T extends ParamType> = T extends 'boolean' ? null : T extends 'integer' ? {
     min: number;
     max: number;
 } : T extends 'float' ? {
     min: number;
     max: number;
 } : T extends 'string' ? null : never;
-type GlobalsType = {
+declare type GlobalsType = {
     [key: string]: {
         [key: string]: string;
     };
@@ -138,7 +138,7 @@ export declare module MessageTypes {
     };
     type RegisterSimulatorPayload = {
         apikey: string;
-        params: string;
+        params: Array<SimulatorParam<ParamType>>;
         title: string;
         validator: boolean;
     };
@@ -206,8 +206,8 @@ export declare module MessageTypes {
     };
     export {};
 }
-type AvailableLayout = 'null' | 'random' | 'cose' | 'grid' | 'circle' | 'breadthfirst' | 'cose' | 'fcose' | 'cise' | 'spread' | 'd3-force';
-export type LayoutSetting = {
+declare type AvailableLayout = 'null' | 'random' | 'cose' | 'grid' | 'circle' | 'breadthfirst' | 'cose' | 'fcose' | 'cise' | 'spread' | 'd3-force';
+export declare type LayoutSetting = {
     name: string;
     description: string;
     type: 'number';
@@ -225,7 +225,7 @@ export interface LayoutInfo {
     link: string;
     settings: LayoutSetting[];
 }
-type LayoutSettings = {
+declare type LayoutSettings = {
     name: AvailableLayout;
     randomize: boolean;
     settings: {

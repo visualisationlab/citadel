@@ -8,7 +8,7 @@ interface RouterProps {
     graphDataDispatch: Dispatch<GraphDataReducerAction>;
     selectionDataDispatch: Dispatch<SelectionDataReducerAction>;
 }
-export type BasicNode = {
+export declare type BasicNode = {
     id: string;
     position: {
         x: number;
@@ -16,25 +16,25 @@ export type BasicNode = {
     };
     [key: string]: any;
 };
-export type BasicEdge = {
+export declare type BasicEdge = {
     id: string;
     source: string;
     target: string;
     [key: string]: any;
 };
-export type GlobalsType = {
+export declare type GlobalsType = {
     [key: string]: {
         [key: string]: string;
     };
 };
-export type BasicGraph = {
+export declare type BasicGraph = {
     nodes: BasicNode[];
     edges: BasicEdge[];
     globals: {
         [key: string]: any;
     };
 };
-export type CytoNode = {
+export declare type CytoNode = {
     data: {
         id: string;
         [key: string]: any;
@@ -44,7 +44,7 @@ export type CytoNode = {
         y: number;
     };
 };
-export type LayoutSetting = {
+export declare type LayoutSetting = {
     name: string;
     description: string;
     type: 'number';
@@ -56,7 +56,7 @@ export type LayoutSetting = {
     type: 'boolean';
     defaultValue: boolean;
 };
-type LayoutSettings = {
+declare type LayoutSettings = {
     name: AvailableLayout;
     randomize: boolean;
     settings: {
@@ -64,7 +64,7 @@ type LayoutSettings = {
         value: number | boolean;
     }[];
 };
-export type CytoEdge = {
+export declare type CytoEdge = {
     data: {
         id: string;
         source: string;
@@ -72,7 +72,7 @@ export type CytoEdge = {
         [key: string]: any;
     };
 };
-export type CytoGraph = {
+export declare type CytoGraph = {
     elements: {
         nodes: CytoNode[];
         edges: CytoEdge[];

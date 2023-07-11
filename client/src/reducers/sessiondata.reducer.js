@@ -29,8 +29,6 @@ export function SessionDataReducer(state, action) {
                             || state.simulators[index].state === 'connecting'
                             || state.simulators[index].state === 'generating'
                             || sim.state === 'disconnected')) {
-                        console.log("HERE");
-                        console.log(sim.params);
                         return {
                             key: sim.apikey,
                             title: sim.title,

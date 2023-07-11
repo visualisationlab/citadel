@@ -1,5 +1,5 @@
 import { MessageTypes } from '../components/router.component';
-export type LayoutSetting = {
+export declare type LayoutSetting = {
     name: string;
     description: string;
     type: 'number';
@@ -16,8 +16,8 @@ export interface LayoutInfo {
     link: string;
     settings: LayoutSetting[];
 }
-export type SimulatorState = 'disconnected' | 'idle' | 'generating' | 'connecting';
-export type Simulator = {
+export declare type SimulatorState = 'disconnected' | 'idle' | 'generating' | 'connecting';
+export declare type Simulator = {
     readonly apikey: string | null;
     readonly userID: string;
     socket: WebSocket;

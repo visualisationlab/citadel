@@ -6,7 +6,7 @@
  */
 /// <reference types="react" />
 import { BasicEdge, BasicNode } from './router.component';
-export type Shape = 'circle' | 'square' | 'triangle' | 'star' | 'line';
+export declare type Shape = 'circle' | 'square' | 'triangle' | 'star' | 'line';
 export interface ExtendedNode extends BasicNode {
     visualAttributes: {
         hue: number;
