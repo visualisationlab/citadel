@@ -10,8 +10,8 @@ import { WebSocket } from 'ws';
 import { Worker } from 'worker_threads';
 import { Logger } from 'winston';
 import { IncomingMessage } from 'http';
-declare type SessionState = 'disconnected' | 'idle' | 'generating layout' | 'simulating' | 'playing';
-declare type BasicNode = {
+type SessionState = 'disconnected' | 'idle' | 'generating layout' | 'simulating' | 'playing';
+type BasicNode = {
     id: string;
     position: {
         x: number;
@@ -19,29 +19,29 @@ declare type BasicNode = {
     };
     [key: string]: any;
 };
-declare type BasicEdge = {
+type BasicEdge = {
     id: string;
     source: string;
     target: string;
     [key: string]: any;
 };
-declare type BasicGraph = {
+type BasicGraph = {
     nodes: BasicNode[];
     edges: BasicEdge[];
     globals: {
         [key: string]: any;
     };
 };
-export declare type ParamType = 'boolean' | 'integer' | 'float' | 'string';
-declare type ParamTypeToDefault<T extends ParamType> = T extends 'boolean' ? boolean : T extends 'integer' ? number : T extends 'float' ? number : T extends 'string' ? string : never;
-declare type ParamTypeToLimits<T extends ParamType> = T extends 'boolean' ? null : T extends 'integer' ? {
+export type ParamType = 'boolean' | 'integer' | 'float' | 'string';
+type ParamTypeToDefault<T extends ParamType> = T extends 'boolean' ? boolean : T extends 'integer' ? number : T extends 'float' ? number : T extends 'string' ? string : never;
+type ParamTypeToLimits<T extends ParamType> = T extends 'boolean' ? null : T extends 'integer' ? {
     min: number;
     max: number;
 } : T extends 'float' ? {
     min: number;
     max: number;
 } : T extends 'string' ? null : never;
-declare type GlobalsType = {
+type GlobalsType = {
     [key: string]: {
         [key: string]: string;
     };
@@ -206,8 +206,8 @@ export declare module MessageTypes {
     };
     export {};
 }
-declare type AvailableLayout = 'null' | 'random' | 'cose' | 'grid' | 'circle' | 'breadthfirst' | 'cose' | 'fcose' | 'cise' | 'spread' | 'd3-force';
-export declare type LayoutSetting = {
+type AvailableLayout = 'null' | 'random' | 'cose' | 'grid' | 'circle' | 'breadthfirst' | 'cose' | 'fcose' | 'cise' | 'spread' | 'd3-force';
+export type LayoutSetting = {
     name: string;
     description: string;
     type: 'number';
@@ -225,7 +225,7 @@ export interface LayoutInfo {
     link: string;
     settings: LayoutSetting[];
 }
-declare type LayoutSettings = {
+type LayoutSettings = {
     name: AvailableLayout;
     randomize: boolean;
     settings: {
@@ -263,7 +263,7 @@ export declare class Session {
         [key: string]: {
             [key: string]: any;
         };
-    }, localAddress: string, websocketPort: string, logger: Logger);
+    }, localAddress: string, websocketPort: string, logger: Logger, timeout: number);
     private setState;
     private changeGraphState;
     private storeCurrentGraphState;

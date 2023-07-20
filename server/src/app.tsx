@@ -32,21 +32,29 @@ type ErrorMessage = {
 let sessions: {[sid: string]: (Session | null)} = {}
 
 // Check if CHECK_INTERVAL is set in ENV.
-if (process.env.CHECK_INTERVAL === undefined) {
+if (process.env.SESSION_CHECKING_INTERVAL === undefined) {
     throw new Error('CHECK_INTERVAL not set in ENV')
 }
 
-let checkInterval = parseInt(process.env.CHECK_INTERVAL)
+let checkInterval = parseInt(process.env.SESSION_CHECKING_INTERVAL)
+
+if (process.env.SESSION_TIMEOUT === undefined) {
+    throw new Error('SESSION_TIMEOUT not set in ENV')
+}
+
+let timeout = parseInt(process.env.SESSION_TIMEOUT)
 
 // Disable TLS certificate check. Only for development.
 if (process.env.NODE_ENV !== 'production') {
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 }
 
-// Check if HOST is set in ENV.
-if (process.env.HOST == undefined || process.env.HOST == '') {
+// Check if LOCAL_ADDRESS is set in ENV.
+if (process.env.LOCAL_ADDRESS == undefined || process.env.LOCAL_ADDRESS == '') {
     throw new Error('HOST not set in ENV')
 }
+
+let localAddress = process.env.LOCAL_ADDRESS
 
 if (process.env.WSCLIENTPORT === undefined) {
     throw new Error('WSCLIENTPORT not set in ENV')
@@ -58,7 +66,6 @@ if (process.env.DEFAULT_GRAPH_URL !== undefined && process.env.DEFAULT_GRAPH_URL
     defaultGraphURL = process.env.DEFAULT_GRAPH_URL
 }
 
-let localAddress = process.env.HOST
 
 const logger = createLogger({
     level: 'info',
@@ -449,7 +456,7 @@ app.post('/urls', body('url').trim().unescape(),  (req, res) => {
                         const session = new Session(sid, ((sid) => {
                             sessions[sid] = null
                         }), url, json.nodes, json.edges, globals, localAddress,
-                            process.env.WSCLIENTPORT!, logger)
+                            process.env.WSCLIENTPORT!, logger, timeout)
 
                         sessions[sid] = session
 

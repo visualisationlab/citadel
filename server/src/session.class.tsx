@@ -572,7 +572,8 @@ export class Session {
                 globals: {[key: string]: {[key: string]: any}},
                 localAddress: string,
                 websocketPort: string,
-                logger: Logger) {
+                logger: Logger,
+                timeout: number) {
 
         this.logger = logger
         this.localAddress = localAddress
@@ -583,7 +584,7 @@ export class Session {
         let expDate = new Date()
 
         /* Session expires in six hours. */
-        expDate.setHours(expDate.getHours() + 6)
+        expDate.setHours(expDate.getHours() + timeout)
 
         this.expirationDate = expDate
 
