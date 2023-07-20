@@ -1,13 +1,30 @@
 {
-    "name": "visgraph",
+    "name": "citadel",
     "private": true,
     "dependencies": {
-        "eslint-plugin-tsdoc": "^0.2.17",
         "immutable": "^4.1.0"
     },
+    "workspaces": [
+        "client",
+        "server",
+        "utility"
+    ],
+    "config": {
+        "devaddress": "dev.citadel"
+    },
+    "scripts": {
+        "lint": "eslint utility --ext .ts",
+        "setup": "npm run config-server",
+        "config-server": "python3 utility/config_server.py",
+        "config-client": "python3 utility/config_client.py",
+        "generate-certs": "npm install && cd utility && npx tsc && cd .. && node utility/devcert_generate.js"
+    },
     "devDependencies": {
-        "@typescript-eslint/eslint-plugin": "^5.47.0",
-        "eslint": "^8.30.0",
+        "@typescript-eslint/eslint-plugin": "^5.62.0",
+        "@typescript-eslint/parser": "^5.62.0",
+        "eslint-plugin-tsdoc": "^0.2.17",
+        "devcert": "^1.2.2",
+        "eslint": "^8.45.0",
         "eslint-config-standard-with-typescript": "^24.0.0",
         "eslint-plugin-import": "^2.26.0",
         "eslint-plugin-n": "^15.6.0",
