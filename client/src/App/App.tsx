@@ -10,26 +10,22 @@ import { Switch, Route, Redirect } from 'react-router-dom';
 import './App.css';
 import '../scss/custom.scss';
 
-
 import Upload from '../components/upload.component'
 import Main from '../components/main.component'
-
 
 export default function App() {
     document.title = "Citadel"
 
     return (
       <div>
-        <div>
-          <Switch>
-            <Route exact path={"/"} component={Upload}/>
-            <Route exact path={"/upload"} component={Upload} />
-            <Route exact path={"/sessions/:sid"} component={Main} />
-            <Route path ={'*'}>
-                <Redirect to='/'></Redirect>
-            </Route>
-          </Switch>
-        </div>
+        <Switch>
+          <Route exact path={"/"} component={Upload}/>
+          <Route exact path={"/upload"} component={Upload} />
+          <Route exact path={"/sessions/:sid"} component={Main} />
+          <Route path ={'*'}>
+              <Redirect to='/'></Redirect>
+          </Route>
+        </Switch>
       </div>
     )
 }
