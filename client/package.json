@@ -1,5 +1,5 @@
 {
-  "name": "visgraph-client",
+  "name": "client",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -19,6 +19,7 @@
     "msgpackr": "^1.6.2",
     "node": "^19.6.0",
     "object-hash": "^3.0.0",
+    "pixi-filters": "^3.2.2",
     "pixi.js": "^5.3.12",
     "qrcode": "^1.5.1",
     "queue": "^6.0.2",
@@ -30,40 +31,24 @@
     "react-icons": "^4.4.0",
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
-    "react-scripts": "^5.0.1",
     "react-validation": "^3.0.7",
     "sass": "^1.59.3",
     "tinycolor": "^0.0.1",
     "tinycolor2": "^1.4.2",
     "typescript": "^4.6.4",
-    "validator": "^13.7.0",
-    "web-vitals": "^2.1.4"
+    "validator": "^13.7.0"
   },
   "scripts": {
     "server": "npx tsc --build; PORT=8060 react-scripts start",
-    "localdev": "npx tsc; HTTPS=true PORT=3000; react-scripts start",
+    "start": "npx tsc; HTTPS=true PORT=3000; react-scripts start",
     "local": "docker run -u=1000:1000 -v $(pwd):/app -w=/app -d -p 3000:3000 --rm --name=nodedev node bash -c \"npm install && npm run dev\"",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "prod": "serve -s build --ssl-cert \"../certs/dev.visgraph.pem\" --ssl-key \"../certs/dev.visgraph-key.pem\""
+    "prod": "serve -s build --ssl-cert \"../certs/dev.visgraph.pem\" --ssl-key \"../certs/dev.visgraph-key.pem\"",
+    "clean": "rm tsconfig.tsbuildinfo; find ./src/ -type f -name '*.d.ts' -delete && find ./src/ -type f -name '*.js' -delete && find ./src/ -type f -name '*.jsx' -delete && rm -rf ./lib/ && rm -rf ./build/"
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ],
-    "overrides": [
-      {
-        "files": [
-          "**/*.stories.*"
-        ],
-        "rules": {
-          "import/no-anonymous-default-export": "off"
-        }
-      }
-    ]
-  },
+  "eslintConfig": {},
   "browserslist": {
     "production": [
       ">0.2%",
@@ -78,6 +63,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.5",
+    "@babel/plugin-transform-private-property-in-object": "^7.22.11",
     "@babel/preset-env": "^7.20.2",
     "@types/cytoscape": "^3.19.4",
     "@types/d3": "^7.1.0",
@@ -90,6 +76,8 @@
     "babel-loader": "^9.1.0",
     "babel-plugin-named-exports-order": "^0.0.2",
     "prop-types": "^15.8.1",
+    "react-scripts": "^5.0.1",
+    "web-vitals": "^3.4.0",
     "webpack": "^5.75.0"
   },
   "overrides": {
