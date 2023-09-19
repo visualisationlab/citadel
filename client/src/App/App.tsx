@@ -11,7 +11,7 @@ import './App.css';
 import '../scss/custom.scss';
 
 import Upload from '../components/upload.component'
-import Main from '../components/main.component'
+// import Main from '../components/main.component'
 
 export default function App() {
     document.title = "Citadel"
@@ -21,7 +21,7 @@ export default function App() {
         <Switch>
           <Route exact path={"/"} component={Upload}/>
           <Route exact path={"/upload"} component={Upload} />
-          <Route exact path={"/sessions/:sid"} component={Main} />
+          {/* <Route exact path={"/sessions/:sid"} component={Main} /> */}
           <Route path ={'*'}>
               <Redirect to='/'></Redirect>
           </Route>
