@@ -7,7 +7,7 @@
  * It also contains information about the project.
  */
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import * as PIXI from "pixi.js"
 import {ShockwaveFilter} from 'pixi-filters'
 // import { useHistory } from 'react-router-dom'
@@ -15,6 +15,13 @@ import {
     Container,
     Row,
     Col,
+    Button,
+    Spinner,
+    Form,
+    InputGroup,
+    DropdownButton,
+    Dropdown,
+    Nav,
     // Table, Spinner, DropdownButton, InputGroup, Dropdown
  } from 'react-bootstrap'
 // import { userService } from '../services/user.service'
@@ -31,10 +38,10 @@ const BACKGROUND_ID = 'backgroundRendering'
 //     errors: string[]
 // }
 
-// interface ServerGraphData {
-//     graphs: string[],
-//     root: string
-// }
+interface ServerGraphData {
+    graphs: string[],
+    root: string
+}
 
 // interface PreviousSession {
 //     sid: string,
@@ -59,7 +66,7 @@ function renderAnimatedBackground() {
     )
 }
 
-function renderTop() {
+function renderHeader() {
     return (
         <Container className="shadow p-3 bg-white rounded"
             style={{
@@ -70,7 +77,8 @@ function renderTop() {
                 <Col md={{span: 2}}>
                     <img
                         width='100%'
-                        src="https://chimay.science.uva.nl:8061/VisLablogo-cropped-notitle.svg"
+                        // src="https://chimay.science.uva.nl:8061/VisLablogo-cropped-notitle.svg"
+                        src="https://dev.citadel:3001/VisLablogo-cropped-notitle.svg"
                         className="custom-logo"
                         alt="Visualisation Lab"
                     />
@@ -90,89 +98,102 @@ function renderTop() {
     )
 }
 
-// function renderInput() {
-//     // Renders the start session button in the second panel.
-//     const startSessionButton = !loading ? (
-//         <Button variant='primary'
-//                 type='submit'
-//                 onClick={() => {
-//                     startSession(
-//                         // url
-//                     )
-//                 }}
-//                 disabled={url === ''}>
-//             Start session
-//         </Button>
-//     ) : (
-//         <Spinner animation='border'/>
-//     )
+function renderInput(
+    loading: boolean,
+    url: string,
+    graphList: string[],
+) {
+    // Renders the start session button in the second panel.
+    const startSessionButton = !loading ? (
+        <Button variant='primary'
+                type='submit'
+                onClick={() => {
+                    // startSession(
+                    //     // url
+                    // )
+                }}
+                disabled={url === ''}>
+            Start session
+        </Button>
+    ) : (
+        <Spinner animation='border'/>
+    )
 
-//     return (
-//         <Container
-//             className="shadow p-3 bg-white rounded"
-//             style={{
-//                 width: '50%',
-//                 marginTop: '20px'
-//             }}>
-//             <Row>
-//                 <Col>
-//                     <Form>
-//                         <Form.Group className="mb-3">
-//                             <Form.Label>
-//                                 New Session
-//                             </Form.Label>
-//                             <InputGroup>
-//                                 <Form.Control
-//                                     type="text"
-//                                     id="url"
-//                                     aria-describedby="urlBlock"
-//                                     onChange={(e) => {setURL(e.target.value)}}
-//                                     value={url}
-//                                 />
-//                                 <DropdownButton
-//                                     variant="outline-primary"
-//                                     title="Graph URLs"
-//                                     id="input-group-dropdown-1"
-//                                 >
-//                                     <div style={{
-//                                         maxHeight: '200px',
-//                                         overflowY: 'auto'
-//                                     }}>
-//                                     {
-//                                         graphList.map((val, index) => {
-//                                             return (
-//                                                 <Dropdown.Item
-//                                                     key={index}
-//                                                     onClick={() => {setURL(graphRoot + val)}}
-//                                                 >
-//                                                     {val}
-//                                                 </Dropdown.Item>
-//                                             )
-//                                         })
-//                                     }
-//                                     </div>
-//                                 </DropdownButton>
-//                             </InputGroup>
-//                             <Form.Text id="url">
-//                                 Enter a URL to a graph file.
-//                             </Form.Text>
-//                         </Form.Group>
-//                         {
-//                             startSessionButton
-//                         }
-//                     </Form>
-//                 </Col>
-//             </Row>
-//             <Row>
-//                 <Col>
-//                     {
-//                         errorText
-//                     }
-//                 </Col>
-//             </Row>
-//         </Container>
-//     )
-// }
+    const graphListDropdown = graphList.length === 0 ? <></>
+        : (
+        <DropdownButton
+            variant="outline-primary"
+            title="Graph URLs"
+            id="input-group-dropdown-1"
+        >
+            <div style={{
+                maxHeight: '200px',
+                overflowY: 'auto'
+            }}>
+            {
+                graphList.map((val, index) => {
+                    return (
+                        <Dropdown.Item
+                            key={index}
+                            // onClick={() => {setURL(graphRoot + val)}}
+                        >
+                            {val}
+                        </Dropdown.Item>
+                    )
+                })
+            }
+            </div>
+        </DropdownButton>
+    )
+
+    const inputForm = (
+        <Form>
+            <Form.Group className="mb-3">
+                <Form.Label>
+                    New Session
+                </Form.Label>
+                <InputGroup>
+                    <Form.Control
+                        type="text"
+                        id="url"
+                        aria-describedby="urlBlock"
+                        // onChange={(e) => {setURL(e.target.value)}}
+                        value={url}
+                    />
+                    {graphListDropdown}
+                </InputGroup>
+                <Form.Text id="url">
+                    Enter a URL to a graph file.
+                </Form.Text>
+            </Form.Group>
+            {
+                startSessionButton
+            }
+        </Form>
+    )
+
+    return (
+        <Container
+            className="shadow p-3 bg-white rounded"
+            style={{
+                width: '50%',
+                marginTop: '20px'
+            }}>
+            <Row>
+                <Col>
+                    {renderInputMenu()}
+                </Col>
+            </Row>
+            <Row>
+                <Col>
+                    {
+                        inputForm
+                    }
+                </Col>
+            </Row>
+        </Container>
+    )
+}
 
 // function renderPreviousSessionSelection() {
 //     // Renders the previous session form in the third panel.
@@ -329,17 +350,81 @@ function renderTop() {
 //     )
 // }
 
+function renderFAQ() {
+    return (
+        <Container className="shadow p-3 bg-white rounded"
+            style={{
+                width: '50%',
+                marginTop: '30px'
+            }}>
+            <Row>
+                <Col>
+                    <h3>
+                        FAQ
+                    </h3>
+                    <p>
+                        <b>What is Citadel?</b>
+                    </p>
+                    <p>
+                        Citadel is a graph visualisation tool. It allows you to upload a graph file and view it in a browser.
+                    </p>
+                    <p>
+                        <b>How do I use Citadel?</b>
+                    </p>
+                    <p>
+                        To start a new session, enter a URL to a graph file in the text box above and click "Start session".
+                        To join an existing session, enter the session ID in the text box above and click "Join session".
+                    </p>
+                    <p>
+                        <b>What graph file formats are supported?</b>
+                    </p>
+                    <p>
+                        Citadel supports the following graph file formats:
+                    </p>
+                    <ul>
+                    </ul>
+                    <p>
+                        <b>How do I create a graph file?</b>
+                    </p>
+                    <p>
+                        You can create a graph file in any text editor.
+                    </p>
+
+                </Col>
+            </Row>
+        </Container>
+    )
+}
+
+function renderInputMenu() {
+    return (
+        <Nav variant='underline' defaultActiveKey={'create'}>
+            <Nav.Item>
+                <Nav.Link eventKey="create">Create</Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+                <Nav.Link eventKey="join">Join</Nav.Link>
+            </Nav.Item>
+        </Nav>
+    )
+}
+
 // Renders the upload component.
-function render() {
+function render(
+    loading: boolean,
+    url: string,
+    graphList: string[],
+) {
     return (
         <div style={{
             overflowY: 'auto',
             maxHeight: '100vh'
         }}>
             {renderAnimatedBackground()}
-            {renderTop()}
+            {renderHeader()}
+            {renderInput(loading, url, graphList)}
+            {renderFAQ()}
             {/* {renderError()}
-            {renderInput()}
             {renderPreviousSessionSelection()} */}
         </div>
     )
@@ -467,16 +552,26 @@ function animationTicker(delta: number, spriteList: RenderedSprite[]) {
             const distance = Math.sqrt(dx * dx + dy * dy)
 
             if (distance < 15) {
-                object.vx = Math.min(Math.abs(object.vx + dx / distance), SPRITE_VELOCITY) 
+                object.vx = Math.min(Math.abs(object.vx + dx / distance), SPRITE_VELOCITY)
                 object.vy = Math.min(Math.abs(object.vy + dy / distance), SPRITE_VELOCITY)
+
+                object.sprite.width = 10
+                object.sprite.height = 10
             }
         }
-        
+
         object.sprite.x += Math.min(object.vx, object.vx + delta)
         object.sprite.y += Math.min(object.vy, object.vy + delta)
 
         const VELOCITY_SLOWDOWN = 0.01
-        
+
+        // Return to original size over time
+        if (Math.abs(object.sprite.width - 20) > 0.1) {
+            object.sprite.rotation += 0.1
+            object.sprite.width += 0.2
+            object.sprite.height += 0.2
+        }
+
         // Return to original velocity over time
         if (Math.abs(object.vx) > 0) {
             object.vx -= Math.sign(object.vx) * VELOCITY_SLOWDOWN
@@ -511,7 +606,7 @@ function animationTicker(delta: number, spriteList: RenderedSprite[]) {
 
                 continue
             }
-            
+
             if (object.sprite.y > window.innerHeight / 2) {
                 object.vy -= SPRITE_VELOCITY / 10
             } else {
@@ -531,7 +626,7 @@ function loadBackgroundRendering() {
         antialias: true,
         backgroundColor: 0xFFFFFF,
     })
-    
+
     const testElement = document.getElementById(BACKGROUND_ID)
 
     if (testElement === null) {
@@ -541,31 +636,23 @@ function loadBackgroundRendering() {
     const spriteList: RenderedSprite[] = []
     app.stage.filters = []
 
-    
+    const spriteTexture = PIXI.Texture.from('https://dev.citadel:3001/VisLablogo-cropped-notitle.svg')
 
     for (let i = 0; i < spriteCount; i++) {
-        const sprite = new PIXI.Sprite(PIXI.Texture.WHITE)
+        const sprite = new PIXI.Sprite(spriteTexture)
         spriteList.push({
             sprite: sprite,
             vx: (Math.random() - 1) * SPRITE_VELOCITY,
             vy: (Math.random() - 1) * SPRITE_VELOCITY
         })
-        sprite.width = 5
-        sprite.height = 5
-        sprite.tint = 0x000000
+        sprite.width = 20
+        sprite.height = 20
+        sprite.anchor.set(0.5)
+        sprite.rotation = Math.random() * Math.PI * 2
+
 
         sprite.x = Math.random() * window.innerWidth
         sprite.y = Math.random() * window.innerHeight;
-
-        if (i % 100 === 0) {
-        
-            const shockWave = new ShockwaveFilter([sprite.x, sprite.y], {
-                radius: 50
-            })
-            // shockWave.time = 0
-            // shockWave.options.radius = 20
-            app.stage.filters.push(shockWave)
-        }
         app.stage.addChild(sprite)
     }
 
@@ -603,15 +690,15 @@ function loadBackgroundRendering() {
 }
 
 export default function UploadComponent() {
-    // const [url, setURL] = useState('')
+    const [url, setURL] = useState('')
+    const [loading, setLoading] = useState<boolean>(false)
+    const [serverGraphData, setServerGraphData] = useState<ServerGraphData>({graphs: [], root: ''})
 
     // const [error, setError] = useState<ErrorMessage | null>(null)
 
-    // const [loading, setLoading] = useState<boolean>(false)
 
     // const [sessionStatusList, setSessionStatusList] = useState<boolean[]>([false, false, false, false, false])
 
-    // const [serverGraphData, setServerGraphData] = useState<ServerGraphData>({graphs: [], root: ''})
 
     // const history = useHistory()
 
@@ -633,8 +720,6 @@ export default function UploadComponent() {
         // userService.getGraphs().then(
         //     response => {
         //         setServerGraphData()
-        //         setGraphList(response.data.graphs)
-        //         setGraphRoot(response.data.root)
         //     }
         // )
     }, [])
@@ -664,7 +749,7 @@ export default function UploadComponent() {
     useEffect(() => {
         loadBackgroundRendering()
     }, [])
-    
+
     // Render the component.
-    return render()
+    return render(loading, url, serverGraphData.graphs)
 }
