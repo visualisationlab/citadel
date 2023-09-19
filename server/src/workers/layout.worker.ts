@@ -1,24 +1,10 @@
 import { parentPort } from 'worker_threads'
-const cytoscape = require('cytoscape')
-// @ts-ignore
+import cytoscape from 'cytoscape'
 import fcose from 'cytoscape-fcose'
-// @ts-ignore
 import euler from 'cytoscape-euler'
-// @ts-ignore
-import cola from 'cytoscape-cola'
-// @ts-ignore
-import spread from 'cytoscape-spread'
-// @ts-ignore
-import cise from 'cytoscape-cise'
-// @ts-ignore
-import d3Force from 'cytoscape-d3-force'
 
 cytoscape.use(fcose)
 cytoscape.use(euler)
-cytoscape.use(cola)
-cytoscape.use(spread)
-cytoscape.use(cise)
-cytoscape.use(d3Force)
 
 export interface WorkerData {
     graphData: object,
@@ -33,17 +19,17 @@ parentPort?.on(('message'), (data: WorkerData) => {
         return
     }
 
-    let cy = cytoscape({
+    const cy = cytoscape({
         headless:true,
         styleEnabled: true,
     })
 
-    let settingsDict = {} as any
+    const settingsDict: Record<string, number | boolean> = {}
 
     data.settings.settings.forEach((setting) => {
         settingsDict[setting.name] =  setting.value})
 
-    let args = {
+    const args = {
         name: data.settings.name,
         boundingBox: {
             x1: 0,
@@ -59,7 +45,7 @@ parentPort?.on(('message'), (data: WorkerData) => {
     console.log('Running layout', args)
     cy.json(data.graphData)
 
-    let layout = cy.layout(
+    const layout = cy.layout(
         args
     )
 
