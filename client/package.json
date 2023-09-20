@@ -40,7 +40,7 @@
   },
   "scripts": {
     "server": "npx tsc --build; PORT=8060 react-scripts start",
-    "start": "npx tsc; HTTPS=true PORT=3000; react-scripts start",
+    "start": "npx tsc; HTTPS=true PORT=3000 SSL_CRT_FILE=../certs/dev.citadel.crt SSL_KEY_FILE=../certs/dev.citadel.key react-scripts start",
     "local": "docker run -u=1000:1000 -v $(pwd):/app -w=/app -d -p 3000:3000 --rm --name=nodedev node bash -c \"npm install && npm run dev\"",
     "build": "react-scripts build",
     "test": "react-scripts test",

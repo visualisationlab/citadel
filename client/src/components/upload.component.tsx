@@ -7,9 +7,12 @@
  * It also contains information about the project.
  */
 
-import { useEffect, useState } from 'react'
-import * as PIXI from "pixi.js"
-import {ShockwaveFilter} from 'pixi-filters'
+import { useEffect, useLayoutEffect, useState } from 'react'
+
+import {
+    loadBackgroundRendering
+} from './globals'
+
 // import { useHistory } from 'react-router-dom'
 import {
     Container,
@@ -22,6 +25,7 @@ import {
     DropdownButton,
     Dropdown,
     Nav,
+    Card,
     // Table, Spinner, DropdownButton, InputGroup, Dropdown
  } from 'react-bootstrap'
 // import { userService } from '../services/user.service'
@@ -43,18 +47,49 @@ interface ServerGraphData {
     root: string
 }
 
-// interface PreviousSession {
-//     sid: string,
-//     date: Date
-// }
+interface SessionStatus {
+    sid: string,
+    creationDate: Date,
+    expirationDate: Date,
+    connectedUsers: number,
+    nodeCount: number,
+    edgeCount: number,
+    graphURL: string,
+}
+
+const testSessionStatus: SessionStatus[] = [
+    {
+        sid: 'test0',
+        creationDate: new Date(Date.now() - 24 * 60 * 60 * 1000),
+        expirationDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        connectedUsers: 1,
+        nodeCount: 1,
+        edgeCount: 1,
+        graphURL: 'test0'
+    },
+    {
+        sid: 'test1',
+        creationDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+        expirationDate: new Date(Date.now() - 24 * 60 * 60 * 1000),
+        connectedUsers: 2,
+        nodeCount: 0,
+        edgeCount: 1,
+        graphURL: 'test1'
+    },
+    {
+        sid: 'test2',
+        creationDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+        expirationDate: new Date(Date.now() - 24 * 60 * 60 * 1000),
+        connectedUsers: 0,
+        nodeCount: 0,
+        edgeCount: 1,
+        graphURL: 'test2'
+    }
+]
 
 // const SID_MAX_LENGTH = 8
 
-
-
 function renderAnimatedBackground() {
-    PIXI.utils.sayHello(PIXI.utils.isWebGLSupported() ? 'WebGL' : 'canvas')
-
     return (
         <div id={BACKGROUND_ID} style={{
             position: 'absolute',
@@ -90,7 +125,7 @@ function renderHeader() {
                     <p
                         className='text-secondary'
                     >
-                        Graph Visualisation Software. Create a new session or join an existing one below.
+                        Graph Visualisation Software! Create a new session or join an existing one below.
                     </p>
                 </Col>
             </Row>
@@ -98,7 +133,7 @@ function renderHeader() {
     )
 }
 
-function renderInput(
+function renderCreate(
     loading: boolean,
     url: string,
     graphList: string[],
@@ -172,107 +207,154 @@ function renderInput(
         </Form>
     )
 
+    return inputForm
+}
+
+function renderSessionCard(session: SessionStatus, active: boolean): JSX.Element {
     return (
-        <Container
-            className="shadow p-3 bg-white rounded"
+        <Card
+            border={active ? 'light' : 'dark'}
             style={{
-                width: '50%',
-                marginTop: '20px'
-            }}>
-            <Row>
-                <Col>
-                    {renderInputMenu()}
-                </Col>
-            </Row>
-            <Row>
-                <Col>
-                    {
-                        inputForm
-                    }
-                </Col>
-            </Row>
-        </Container>
+                marginTop: '5px',
+                marginBottom: '5px',
+                padding: '0px',
+            }}
+        >
+            <Card.Header>
+                {
+                    session.sid + ' (' + session.connectedUsers + ' user(s))'
+                }
+            </Card.Header>
+            <Card.Body>
+                <Card.Text>
+                    Expiration date {session.expirationDate.toLocaleString()}
+                </Card.Text>
+            </Card.Body>
+            <Card.Footer>
+                <Button
+                    disabled={!active}
+                    onClick={() => {
+                        console.log("Connecting to session " + session.sid)
+                        // joinSession(sid)
+                    }}
+                >
+                    Connect
+                </Button>
+            </Card.Footer>
+        </Card>
     )
 }
 
-// function renderPreviousSessionSelection() {
-//     // Renders the previous session form in the third panel.
-//     const previousSessionComponent = parsedPreviousSessions === null ? [] : (
-//         <Table striped bordered hover>
-//             <thead>
-//                 <tr>
-//                     <th>Session ID</th>
-//                 </tr>
-//             </thead>
-//             <tbody>
-//                 {parsedPreviousSessions.map(([sid, date], index) => {
-//                     const elapsedMinutes = round(((new Date()).getTime() - new Date(date).getTime()) / 1000 / 60, 0)
+function renderJoin(
+    manualSid: string,
+    sessions: SessionStatus[]) {
+    // Renders the previous session form in the third panel.
 
-//                     return (
-//                         <tr key={sid}>
-//                             <td>
-//                                 {
-//                                     sid + ((elapsedMinutes > 120) ? '' : ' (' + elapsedMinutes + ' minute(s) ago)')
-//                                 }
-//                             </td>
-//                             <td>
-//                                 <Button
-//                                     disabled={!sessionStatusList[index]}
-//                                     onClick={() => {
-//                                         console.log("Connecting to session " + sid)
-//                                         joinSession(sid)
-//                                     }}
-//                                 >
-//                                     Connect
-//                                 </Button>
-//                             </td>
-//                         </tr>
-//                     )
-//                 })}
-//             </tbody>
-//         </Table>
-//     )
-//     return (
-//         <Container className="shadow p-3 bg-white rounded"
-//             style={{
-//                 width: '50%',
-//                 marginTop: '30px'
-//             }}>
-//             <Row>
-//                 <Col>
-//                     <Form>
-//                         <Form.Group className='mb-3'>
-//                             <Form.Label htmlFor="sid">Existing Session</Form.Label>
-//                             <Form.Control
-//                             type="text"
-//                             id="sid"
-//                             aria-describedby="sidBlock"
-//                             onChange={(e) => {setSid(e.target.value)}}
-//                             />
-//                             <Form.Text id="sid">
-//                             Enter an existing session ID.
-//                             </Form.Text>
-//                         </Form.Group>
-//                         <Button variant='primary'
-//                             type='submit'
-//                             disabled={sid === ''}
-//                             onClick={() => {joinSession(null)}}
-//                         >
-//                             Join Session
-//                         </Button>
-//                     </Form>
-//                 </Col>
-//             </Row>
-//             <Row style={{
-//                 marginTop: '20px'
-//             }}>
-//                 <Col>
-//                     {previousSessionComponent}
-//                 </Col>
-//             </Row>
-//         </Container>
-//     )
-// }
+    if (sessions.length === 0) {
+        return <></>
+    }
+
+    const currentDate = new Date()
+
+    const activeSessionList = sessions.filter((session) => {
+        return (session.expirationDate).getTime() > currentDate.getTime()
+    }).map((session) => {
+        return renderSessionCard(session, true)
+    })
+
+    const previousSessionList = sessions.filter((session) => {
+        return (session.expirationDate).getTime() < currentDate.getTime()
+    }).sort((a, b) => {
+        return b.expirationDate.getTime() - a.expirationDate.getTime()
+    }).map((session) => {
+        return renderSessionCard(session, false)
+    })
+
+
+    // const previousSessionList = (
+    //     <Table striped bordered hover>
+    //         <thead>
+    //             <tr>
+    //                 <th>Session ID</th>
+    //             </tr>
+    //         </thead>
+    //         <tbody>
+    //             {previousSessions.map((previousSession, index) => {
+    //                 const elapsedMinutes = round(((new Date()).getTime() - new Date(previousSession.expirationDate).getTime()) / 1000 / 60, 0)
+
+    //                 return (
+    //                     <tr key={previousSession.sid}>
+    //                         <td>
+    //                             {
+    //                                 previousSession.sid + ((elapsedMinutes > 120) ? '' : ' (' + elapsedMinutes + ' minute(s) ago)')
+    //                             }
+    //                         </td>
+    //                         <td>
+    //                             <Button
+    //                                 disabled={!sessionStatusList[index]}
+    //                                 onClick={() => {
+    //                                     console.log("Connecting to session " + sid)
+    //                                     joinSession(sid)
+    //                                 }}
+    //                             >
+    //                                 Connect
+    //                             </Button>
+    //                         </td>
+    //                     </tr>
+    //                 )
+    //             })}
+    //         </tbody>
+    //     </Table>
+    // )
+
+    {/* <Row>
+                <Col>
+                    <Form>
+                        <Form.Group className='mb-3'>
+                            <Form.Label htmlFor="sid">Existing Session</Form.Label>
+                            <Form.Control
+                            type="text"
+                            id="sid"
+                            aria-describedby="sidBlock"
+                            // onChange={(e) => {setSid(e.target.value)}}
+                            />
+                            <Form.Text id="sid">
+                            Enter an existing session ID.
+                            </Form.Text>
+                        </Form.Group>
+                        <Button variant='primary'
+                            type='submit'
+                            disabled={sid === ''}
+                            // onClick={() => {joinSession(null)}}
+                        >
+                            Join Session
+                        </Button>
+                    </Form>
+                </Col>
+            </Row>
+            <Row style={{
+                marginTop: '20px'
+            }}>
+                <Col>
+                    {previousSessionList}
+                </Col>
+            </Row> */}
+    return (
+        <>
+            <Row>
+                <Col>
+                    {activeSessionList}
+                </Col>
+            </Row>
+            <br></br>
+            <Row>
+                <Col>
+                    {previousSessionList}
+                </Col>
+            </Row>
+        </>
+    )
+}
 
 // function renderError() {
 //     const phaseDescriptions = [
@@ -363,7 +445,7 @@ function renderFAQ() {
                         FAQ
                     </h3>
                     <p>
-                        <b>What is Citadel?</b>
+                        <b>What is Citadel?!!</b>
                     </p>
                     <p>
                         Citadel is a graph visualisation tool. It allows you to upload a graph file and view it in a browser.
@@ -396,24 +478,15 @@ function renderFAQ() {
     )
 }
 
-function renderInputMenu() {
-    return (
-        <Nav variant='underline' defaultActiveKey={'create'}>
-            <Nav.Item>
-                <Nav.Link eventKey="create">Create</Nav.Link>
-            </Nav.Item>
-            <Nav.Item>
-                <Nav.Link eventKey="join">Join</Nav.Link>
-            </Nav.Item>
-        </Nav>
-    )
-}
+type MenuType = 'create' | 'join active' | 'history' | 'join (manual sid)'
 
 // Renders the upload component.
 function render(
     loading: boolean,
     url: string,
     graphList: string[],
+    menuType: MenuType,
+    setMenuType: (type: MenuType) => void
 ) {
     return (
         <div style={{
@@ -422,7 +495,54 @@ function render(
         }}>
             {renderAnimatedBackground()}
             {renderHeader()}
-            {renderInput(loading, url, graphList)}
+            <Container
+                className="shadow p-3 bg-white rounded"
+                style={{
+                    width: '50%',
+                    marginTop: '20px'
+            }}>
+                <Row>
+                    <Col>
+                        <Nav
+                            variant='underline'
+                            defaultActiveKey={'create'}
+                            onSelect={(selectedKey) => {
+                                setMenuType(selectedKey as MenuType)
+                            }}
+                        >
+                            <Nav.Item>
+                                <Nav.Link eventKey='create'>
+                                    Create Session
+                                </Nav.Link>
+                            </Nav.Item>
+                            <Nav.Item>
+                                <Nav.Link eventKey='join active'>
+                                    Join Active Session
+                                </Nav.Link>
+                            </Nav.Item>
+                            <Nav.Item>
+                                <Nav.Link eventKey='history'>
+                                    Session History
+                                </Nav.Link>
+                            </Nav.Item>
+                            <Nav.Item>
+                                <Nav.Link eventKey='join (manual sid)'>
+                                    Join Session (Manual SID)
+                                </Nav.Link>
+                            </Nav.Item>
+                        </Nav>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col>
+                        {
+                            menuType === 'create'
+                            ? renderCreate(loading, url, graphList)
+                            : renderJoin('', testSessionStatus)
+                        }
+                    </Col>
+                </Row>
+            </Container>
             {renderFAQ()}
             {/* {renderError()}
             {renderPreviousSessionSelection()} */}
@@ -499,203 +619,15 @@ function render(
 //     }
 // }
 
-let clearBackgroundRendering = false
 
-const spriteCount = 300
-const SPRITE_VELOCITY = 5
-
-interface RenderedSprite {
-    sprite: PIXI.Sprite,
-    vx: number,
-    vy: number
-}
-
-function animationTicker(delta: number, spriteList: RenderedSprite[]) {
-    for (let i = 0; i < spriteCount; i++) {
-        const object = spriteList[i]
-
-        if (object === undefined) {
-            continue
-        }
-
-        if (object.sprite.x > window.innerWidth) {
-            object.sprite.x = -object.sprite.width
-        }
-
-        if (object.sprite.x < -object.sprite.width) {
-            object.sprite.x = window.innerWidth
-        }
-
-        if (object.sprite.y > window.innerHeight) {
-            object.sprite.y = -object.sprite.height
-        }
-
-        if (object.sprite.y < -object.sprite.height) {
-            object.sprite.y = window.innerHeight
-        }
-
-        // If object is close to another object, move away from it
-        for (let j = 0; j < spriteCount; j++) {
-            if (i === j) {
-                continue
-            }
-
-            const otherObject = spriteList[j]
-
-            if (otherObject === undefined) {
-                continue
-            }
-
-            const dx = object.sprite.x - otherObject.sprite.x
-            const dy = object.sprite.y - otherObject.sprite.y
-
-            const distance = Math.sqrt(dx * dx + dy * dy)
-
-            if (distance < 15) {
-                object.vx = Math.min(Math.abs(object.vx + dx / distance), SPRITE_VELOCITY)
-                object.vy = Math.min(Math.abs(object.vy + dy / distance), SPRITE_VELOCITY)
-
-                object.sprite.width = 10
-                object.sprite.height = 10
-            }
-        }
-
-        object.sprite.x += Math.min(object.vx, object.vx + delta)
-        object.sprite.y += Math.min(object.vy, object.vy + delta)
-
-        const VELOCITY_SLOWDOWN = 0.01
-
-        // Return to original size over time
-        if (Math.abs(object.sprite.width - 20) > 0.1) {
-            object.sprite.rotation += 0.1
-            object.sprite.width += 0.2
-            object.sprite.height += 0.2
-        }
-
-        // Return to original velocity over time
-        if (Math.abs(object.vx) > 0) {
-            object.vx -= Math.sign(object.vx) * VELOCITY_SLOWDOWN
-
-            if (Math.abs(object.vx) < 0.3) {
-                object.vx = 0
-            }
-        } else {
-            if (Math.abs(object.sprite.x - window.innerWidth / 2) < 20) {
-                object.vx = 0
-
-                continue
-            }
-
-            if (object.sprite.x > window.innerWidth / 2) {
-                object.vx -= SPRITE_VELOCITY / 10
-            } else {
-                object.vx += SPRITE_VELOCITY / 10
-            }
-        }
-
-        if (Math.abs(object.vy) > 0) {
-            object.vy -= Math.sign(object.vy) * VELOCITY_SLOWDOWN
-
-            if (Math.abs(object.vy) < 0.3) {
-                object.vy = 0
-            }
-        }
-        else {
-            if (Math.abs(object.sprite.y - window.innerHeight / 2) < 20) {
-                object.vy = 0
-
-                continue
-            }
-
-            if (object.sprite.y > window.innerHeight / 2) {
-                object.vy -= SPRITE_VELOCITY / 10
-            } else {
-                object.vy += SPRITE_VELOCITY / 10
-            }
-        }
-    }
-}
-
-function loadBackgroundRendering() {
-    console.log('Setting up PIXI')
-
-    const app = new PIXI.Application({
-        width: window.innerWidth,
-        height: window.innerHeight,
-        resizeTo: window,
-        antialias: true,
-        backgroundColor: 0xFFFFFF,
-    })
-
-    const testElement = document.getElementById(BACKGROUND_ID)
-
-    if (testElement === null) {
-        return
-    }
-
-    const spriteList: RenderedSprite[] = []
-    app.stage.filters = []
-
-    const spriteTexture = PIXI.Texture.from('https://dev.citadel:3001/VisLablogo-cropped-notitle.svg')
-
-    for (let i = 0; i < spriteCount; i++) {
-        const sprite = new PIXI.Sprite(spriteTexture)
-        spriteList.push({
-            sprite: sprite,
-            vx: (Math.random() - 1) * SPRITE_VELOCITY,
-            vy: (Math.random() - 1) * SPRITE_VELOCITY
-        })
-        sprite.width = 20
-        sprite.height = 20
-        sprite.anchor.set(0.5)
-        sprite.rotation = Math.random() * Math.PI * 2
-
-
-        sprite.x = Math.random() * window.innerWidth
-        sprite.y = Math.random() * window.innerHeight;
-        app.stage.addChild(sprite)
-    }
-
-    app.ticker.add((delta) => {
-        animationTicker(delta as number, spriteList)
-    })
-
-    // Clear children of test div
-    testElement.innerHTML = ''
-
-    document.getElementById(BACKGROUND_ID)?.appendChild(app.view)
-
-    if (!clearBackgroundRendering) {
-        window.addEventListener('beforeunload', () => {
-            app.stage.filters.forEach((filter) => {
-                filter.enabled = false
-            })
-            app.stage.removeChildren()
-            app.destroy()
-
-            for (let i = 0; i < spriteCount; i++) {
-                const object = spriteList[i]
-                if (object === undefined) {
-                    continue
-                }
-
-                object.sprite.destroy()
-            }
-
-            console.log('PIXI destroyed!');
-
-            clearBackgroundRendering = true
-        })
-    }
-}
 
 export default function UploadComponent() {
     const [url, setURL] = useState('')
     const [loading, setLoading] = useState<boolean>(false)
     const [serverGraphData, setServerGraphData] = useState<ServerGraphData>({graphs: [], root: ''})
+    const [menuType, setMenuType] = useState<MenuType>('create')
 
     // const [error, setError] = useState<ErrorMessage | null>(null)
-
 
     // const [sessionStatusList, setSessionStatusList] = useState<boolean[]>([false, false, false, false, false])
 
@@ -746,10 +678,10 @@ export default function UploadComponent() {
     // }, [parsedPreviousSessions])
 
 
-    useEffect(() => {
-        loadBackgroundRendering()
+    useLayoutEffect(() => {
+        loadBackgroundRendering(BACKGROUND_ID)
     }, [])
 
     // Render the component.
-    return render(loading, url, serverGraphData.graphs)
+    return render(loading, url, serverGraphData.graphs, menuType, setMenuType)
 }
