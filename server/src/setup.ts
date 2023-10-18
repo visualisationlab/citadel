@@ -1,20 +1,17 @@
 import { createLogger, format, transports, Logger } from 'winston'
-import express, { Application, RequestHandler, Request, Response } from 'express'
+import express, { Application, RequestHandler, Response } from 'express'
 import path from 'path'
 
 
-import { body } from 'express-validator'
 import uid from 'uid-safe'
 import * as fs from 'fs'
 import * as https from 'https'
 
 // import { Session } from './session.class'
 import winston from 'winston'
-import { Server } from 'ws'
 
 import { GraphFormatConverter } from 'graph-format-converter'
 import { checkGraph } from './parser'
-import { BasicGraph } from 'shared/lib/graph/BasicGraph'
 
 
 export interface Config {
@@ -56,7 +53,7 @@ export function configureExpressApp(
     formatter: Intl.ListFormat): void {
     app.use(express.json())
     app.use(express.urlencoded({ extended: true }))
-    app.use(express.static(path.join(__dirname, '/../public')))
+    app.use(express.static(path.join(__dirname, '../../public')))
 
     // Set up routes.
     const getGraphs: RequestHandler = (_, res, next) => {
@@ -67,14 +64,14 @@ export function configureExpressApp(
                 return
             }
 
-            res.root = "https://" + config.localAddress + ":" + process.env.SERVERPORT + "/graphs/"
+            res.root = "https://" + config.localAddress + ":" + config.serverPort + "/graphs/"
             res.graphs = graphs
 
             next()
         })
     }
 
-    app.get('/graphs', getGraphs, (req: Request, res: Response) => {
+    app.get('/graphs', getGraphs, (res: Response) => {
         res.json({graphs: res.graphs, root: res.root})
     })
 
@@ -101,7 +98,8 @@ export function configureExpressApp(
     //     res.send(sessions[req.params.session]?.getKeys(remoteAddress).toString())
     // })
 
-    app.post('/urls', body('url').trim().unescape(),  (req, res) => {
+    app.post('/urls', (req, res) => {
+        // body('url').trim().unescape()
         const url = req.content.url
 
         if (url === undefined) {
@@ -298,9 +296,9 @@ export function configureExpressApp(
         })
     })
 
-    app.get('/ws', (req: Request, res: Response) => {
-        res.json({port: config.websocketPort})
-    })
+    // app.get('/ws', (req: Request, res: Response) => {
+    //     res.json({port: config.websocketPort})
+    // })
 
     app.get('/')
 }
@@ -481,59 +479,59 @@ export function setupLogger(): Logger {
 
 export function loadEnvironmentVariables(logger: winston.Logger): Config {
     // Check if CHECK_INTERVAL is set in ENV.
-    if (process.env.SESSION_CHECKING_INTERVAL === undefined) {
+    if (process.env['SESSION_CHECKING_INTERVAL'] === undefined) {
         throw new Error('CHECK_INTERVAL not set in ENV')
     }
 
-    const checkInterval = parseInt(process.env.SESSION_CHECKING_INTERVAL)
+    const checkInterval = parseInt(process.env['SESSION_CHECKING_INTERVAL'])
 
     if (isNaN(checkInterval)) {
         throw new Error('CHECK_INTERVAL is not a number')
     }
 
-    if (process.env.SESSION_TIMEOUT === undefined) {
+    if (process.env['SESSION_TIMEOUT'] === undefined) {
         throw new Error('SESSION_TIMEOUT not set in ENV')
     }
 
-    const timeout = parseInt(process.env.SESSION_TIMEOUT)
+    const timeout = parseInt(process.env['SESSION_TIMEOUT'])
 
     if (isNaN(timeout)) {
         throw new Error('SESSION_TIMEOUT is not a number')
     }
 
     // Disable TLS certificate check. Only for development.
-    if (process.env.NODE_ENV !== 'production') {
-        process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    if (process.env['NODE_ENV'] !== 'production') {
+        process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
     }
 
     // Check if LOCAL_ADDRESS is set in ENV.
-    if (process.env.LOCAL_ADDRESS == undefined || process.env.LOCAL_ADDRESS == '') {
+    if (process.env['LOCAL_ADDRESS'] == undefined || process.env['LOCAL_ADDRESS'] == '') {
         throw new Error('LOCAL_ADDRESS not set in ENV')
     }
 
-    const localAddress = process.env.LOCAL_ADDRESS
+    const localAddress = process.env['LOCAL_ADDRESS']
 
-    if (process.env.WEBSOCKET_PORT === undefined) {
+    if (process.env['WEBSOCKET_PORT'] === undefined) {
         throw new Error('WEBSOCKET_PORT not set in ENV')
     }
 
-    const websocketPort = parseInt(process.env.WEBSOCKET_PORT)
+    const websocketPort = parseInt(process.env['WEBSOCKET_PORT'])
 
     if (isNaN(websocketPort)) {
         throw new Error('WEBSOCKET_PORT is not a number')
     }
 
-    if (process.env.SERVERPORT === undefined) {
+    if (process.env['SERVERPORT'] === undefined) {
         throw new Error('SERVERPORT not set in ENV')
     }
 
-    const serverPort = parseInt(process.env.SERVERPORT)
+    const serverPort = parseInt(process.env['SERVERPORT'])
 
-    if (process.env.CLIENTPORT === undefined) {
+    if (process.env['CLIENTPORT'] === undefined) {
         throw new Error('CLIENTPORT not set in ENV')
     }
 
-    const clientPort = parseInt(process.env.CLIENTPORT)
+    const clientPort = parseInt(process.env['CLIENTPORT'])
 
     if (isNaN(clientPort)) {
         throw new Error('CLIENTPORT is not a number')
@@ -541,24 +539,24 @@ export function loadEnvironmentVariables(logger: winston.Logger): Config {
 
     let defaultGraphURL: string | null = null
 
-    if (process.env.DEFAULT_GRAPH_URL !== undefined && process.env.DEFAULT_GRAPH_URL !== '') {
-        defaultGraphURL = process.env.DEFAULT_GRAPH_URL
+    if (process.env['DEFAULT_GRAPH_URL'] !== undefined && process.env['DEFAULT_GRAPH_URL'] !== '') {
+        defaultGraphURL = process.env['DEFAULT_GRAPH_URL']
     }
 
     let keyPath = ''
     let certPath = ''
 
-    if (process.env.KEY_PATH === undefined || process.env.KEY_PATH === '') {
+    if (process.env['KEY_PATH'] === undefined || process.env['KEY_PATH'] === '') {
         throw new Error('KEY_PATH not set in ENV')
     }
 
-    keyPath = process.env.KEY_PATH
+    keyPath = process.env['KEY_PATH']
 
-    if (process.env.CERT_PATH === undefined || process.env.CERT_PATH === '') {
+    if (process.env['CERT_PATH'] === undefined || process.env['CERT_PATH'] === '') {
         throw new Error('CERT_PATH not set in ENV')
     }
 
-    certPath = process.env.CERT_PATH
+    certPath = process.env['CERT_PATH']
 
     logger.log(
         'info',

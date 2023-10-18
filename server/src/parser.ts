@@ -1,5 +1,5 @@
 import { ValidationError, Validator } from 'jsonschema'
-import { BasicGraph } from 'shared/lib/graph/BasicGraph'
+import { Graph } from 'shared'
 
 const validator = new Validator()
 
@@ -219,10 +219,10 @@ export const graphSchema = {
     "required": ["attributes", "nodes", "edges"]
 }
 
-export function checkGraph(data: object): BasicGraph | ValidationError[] {
+export function checkGraph(data: object): Graph.BasicGraph | ValidationError[] {
     const vr = validator.validate(data, graphSchema)
 
-    const f = (newData: object): newData is BasicGraph => {
+    const f = (_newData: object): _newData is Graph.BasicGraph => {
         return vr.valid
     }
 
@@ -232,5 +232,5 @@ export function checkGraph(data: object): BasicGraph | ValidationError[] {
         return vr.errors
     }
 
-    return data as BasicGraph
+    return data as Graph.BasicGraph
 }

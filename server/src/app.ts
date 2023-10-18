@@ -3,7 +3,7 @@
  *
  */
 
-import { WebSocketServer } from 'ws'
+// import { WebSocketServer } from 'ws'
 import express from 'express'
 import https from 'https'
 // import { Session } from './session.class'
@@ -18,18 +18,18 @@ import {
     setupLogger
 } from './setup'
 
-dotenv.config({path:__dirname + '/../.env'})
+dotenv.config({path:__dirname + '/../../.env'})
 
 function main() {
     const logger = setupLogger()
     const config = loadEnvironmentVariables(logger)
     // const sessions: Record<string, Session | null> = {}
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     const formatter = new Intl.ListFormat('en', { style: 'short', type: 'conjunction' })
     const app = express()
     // Set up CORS.
     const corsOptions = {
         origin: "https://" + config.localAddress + ":" + config.clientPort,
-
     }
 
     app.use(cors(corsOptions))
@@ -42,11 +42,11 @@ function main() {
 
     configureExpressApp(app, config, logger, formatter)
 
-    const websocketServer = new WebSocketServer({
-        server: httpsServer,
-        clientTracking: true,
-        perMessageDeflate: true
-    })
+    // const websocketServer = new WebSocketServer({
+    //     server: httpsServer,
+    //     clientTracking: true,
+    //     perMessageDeflate: true
+    // })
 
     // Session checker.
     // setInterval(() => {
