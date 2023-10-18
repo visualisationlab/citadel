@@ -2,34 +2,36 @@
     "name": "citadel",
     "private": true,
     "dependencies": {
-        "immutable": "^4.1.0"
+        "concurrently": "^8.2.1",
+        "immutable": "^4.1.0",
+        "typescript": "^5.2.2"
     },
     "workspaces": [
         "client",
         "server",
-        "utility"
+        "utility",
+        "shared"
     ],
     "config": {
         "devaddress": "dev.citadel"
     },
     "scripts": {
+        "start": "concurrently \"npm run start-server\" \"npm run start-client\" \"tsc -b client server --watch \"",
+        "start-server": "cd server && npm run start",
+        "start-client": "cd client && npm run start",
         "lint": "eslint utility --ext .ts",
         "setup": "npm run config-server",
         "config-server": "python3 utility/config_server.py",
         "config-client": "python3 utility/config_client.py",
-        "generate-certs": "npm install && cd utility && npx tsc && cd .. && node utility/devcert_generate.js"
+        "generate-certs": "npm install && cd utility && npx tsc && cd .. && node utility/devcert_generate.js",
+        "clean": "rm -rf node_modules && rm -rf client/node_modules && rm -rf server/node_modules && rm -rf utility/node_modules && rm -rf shared/node_modules"
     },
     "devDependencies": {
-        "@typescript-eslint/eslint-plugin": "^5.62.0",
-        "@typescript-eslint/parser": "^5.62.0",
-        "eslint-plugin-tsdoc": "^0.2.17",
+        "@types/intl": "^1.2.0",
+        "@types/node": "^20.4.8",
+        "@typescript-eslint/eslint-plugin": "^6.2.0",
+        "@typescript-eslint/parser": "^6.2.0",
         "devcert": "^1.2.2",
-        "eslint": "^8.45.0",
-        "eslint-config-standard-with-typescript": "^24.0.0",
-        "eslint-plugin-import": "^2.26.0",
-        "eslint-plugin-n": "^15.6.0",
-        "eslint-plugin-promise": "^6.1.1",
-        "eslint-plugin-react": "^7.31.11",
-        "typescript": "^4.9.4"
+        "eslint": "^8.45.0"
     }
 }
