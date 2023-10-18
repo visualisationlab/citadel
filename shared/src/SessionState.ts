@@ -1,0 +1,1 @@
+export type SessionState = 'disconnected' | 'idle' | 'generating layout' | 'simulating' | 'playing'

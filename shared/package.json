@@ -1,0 +1,12 @@
+{
+  "name": "shared",
+  "version": "1.0.0",
+  "description": "Contains shared type definitions for citadel client/server.",
+  "main": "lib/types.js",
+  "scripts": {
+    "compile": "mkdir lib; npm run clean && npx tsc",
+    "clean": "rm tsconfig.tsbuildinfo; find ./src/ -type f -name '*.js.map' -delete && find ./src/ -type f -name '*.js' -delete && find ./src/ -type f -name '*.jsx' -delete && rm -rf ./lib/ && rm -rf ./build/"
+  },
+  "author": "Miles van der Lely",
+  "license": "MIT"
+}
