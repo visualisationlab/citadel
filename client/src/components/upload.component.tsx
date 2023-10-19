@@ -28,6 +28,8 @@ import {
     Card,
     Alert,
     ListGroup,
+    Popover,
+    OverlayTrigger
     // Table, Spinner, DropdownButton, InputGroup, Dropdown
  } from 'react-bootstrap'
 // import { userService } from '../services/user.service'
@@ -67,34 +69,60 @@ interface GraphDataInfo {
     size: number
 }
 
+function subtractHours(date: Date, hours: number): Date {
+    const newDate = new Date()
+
+    newDate.setHours(date.getHours() - hours)
+
+    return newDate
+}
+
+function subtractMinutes(date: Date, minutes: number): Date {
+    const newDate = new Date()
+
+    newDate.setMinutes(date.getMinutes() - minutes)
+
+    return newDate
+}
+
+function addDays(date: Date, days: number): Date {
+    const newDate = new Date()
+
+    newDate.setDate(date.getDate() + days)
+
+    return newDate
+}
+
+const currentDate = new Date()
+
 const testSessionStatus: SessionStatus[] = [
     {
         sid: 'test0',
-        creationDate: new Date(Date.now() - 24 * 60 * 60 * 1000),
-        expirationDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        creationDate: subtractHours(currentDate, 3),
+        expirationDate: addDays(currentDate, 1),
         connectedUsers: 1,
         nodeCount: 1,
-        edgeCount: 1,
+        edgeCount: 2,
         graphURL: 'test0'
     },
-    {
-        sid: 'test1',
-        creationDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-        expirationDate: new Date(Date.now() - 24 * 60 * 60 * 1000),
-        connectedUsers: 2,
-        nodeCount: 0,
-        edgeCount: 1,
-        graphURL: 'test1'
-    },
-    {
-        sid: 'test2',
-        creationDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-        expirationDate: new Date(Date.now() - 24 * 60 * 60 * 1000),
-        connectedUsers: 0,
-        nodeCount: 0,
-        edgeCount: 1,
-        graphURL: 'test2'
-    }
+    // {
+    //     sid: 'test1',
+    //     creationDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+    //     expirationDate: new Date(Date.now() - 24 * 60 * 60 * 1000),
+    //     connectedUsers: 2,
+    //     nodeCount: 0,
+    //     edgeCount: 1,
+    //     graphURL: 'test1'
+    // },
+    // {
+    //     sid: 'test2',
+    //     creationDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+    //     expirationDate: new Date(Date.now() - 24 * 60 * 60 * 1000),
+    //     connectedUsers: 0,
+    //     nodeCount: 0,
+    //     edgeCount: 1,
+    //     graphURL: 'test2'
+    // }
 ]
 
 const testGraphData: GraphDataInfo[] = [
@@ -106,6 +134,14 @@ const testGraphData: GraphDataInfo[] = [
         size: 100
     }
 ]
+
+const testServerInfo: ServerInfo = {
+    currentSessionCount: 0,
+    serverRoot: 'HELLo',
+    sessionDuration: new Date(1),
+    storedGraphs: 4,
+    uptime: new Date(1000)
+}
 
 // const SID_MAX_LENGTH = 8
 
@@ -164,31 +200,49 @@ function renderCreate(
         <Spinner animation='border'/>
     )
 
+    const graphListInfoOver = (
+        <Popover id="popover-graphlist" style={{
+        }}>
+            <Popover.Header>Stored Graph Data</Popover.Header>
+            <Popover.Body>
+                A set of preset graphs stored on the server.
+            </Popover.Body>
+        </Popover>
+    )
+
     const graphListDropdown = graphList.length === 0 ? <></>
         : (
-        <DropdownButton
-            variant="outline-primary"
-            title="Graph URLs"
-            id="input-group-dropdown-1"
-        >
-            <div style={{
-                maxHeight: '200px',
-                overflowY: 'auto'
-            }}>
-            {
-                graphList.map((val, index) => {
-                    return (
-                        <Dropdown.Item
-                            key={index}
-                            onClick={() => {setURL(val.name)}}
-                        >
-                            {val.name}
-                        </Dropdown.Item>
-                    )
-                })
-            }
-            </div>
-        </DropdownButton>
+        <OverlayTrigger
+            trigger={["hover", "focus"]}
+            placement="top"
+            overlay={graphListInfoOver}
+            key={'a'}>
+            <span>
+                <DropdownButton
+                    variant="outline-primary"
+                    title="Graph URLs"
+                    id="input-group-dropdown-1"
+                >
+                    <div style={{
+                        maxHeight: '200px',
+                        overflowY: 'auto'
+                    }}>
+                    {
+                        graphList.map((val, index) => {
+                            return (
+                                <Dropdown.Item
+                                    key={index}
+                                    onClick={() => {setURL(val.name)}}
+                                >
+                                    {val.name}
+                                </Dropdown.Item>
+                            )
+                        })
+                    }
+                    </div>
+                </DropdownButton>
+            </span>
+        </OverlayTrigger>
     )
 
     const graphIndex = graphList.findIndex((graph) => {
@@ -207,6 +261,15 @@ function renderCreate(
         </Card>
     )
 
+    const urlOverlay = (
+        <Popover id="popover-url">
+            <Popover.Header>Source URL</Popover.Header>
+            <Popover.Body>
+                Citadel fetches the data pointed at by this URL to create a new session.
+            </Popover.Body>
+        </Popover>
+    )
+
     const inputForm = (
         <>
             <Row>
@@ -217,13 +280,22 @@ function renderCreate(
                                 New Session
                             </Form.Label>
                             <InputGroup>
-                                <Form.Control
-                                    type="text"
-                                    id="url"
-                                    aria-describedby="urlBlock"
-                                    // onChange={(e) => {setURL(e.target.value)}}
-                                    value={url}
-                                />
+                                <OverlayTrigger
+                                    trigger={['focus', 'hover']}
+                                    placement="top"
+                                    overlay={urlOverlay}
+                                    key={'b'}
+                                >
+                                    {/* <span> */}
+                                        <Form.Control
+                                            type="text"
+                                            id="url"
+                                            aria-describedby="urlBlock"
+                                            // onChange={(e) => {setURL(e.target.value)}}
+                                            value={url}
+                                        />
+                                    {/* </span> */}
+                                </OverlayTrigger>
                                 {graphListDropdown}
                             </InputGroup>
                             <Form.Text id="url">
@@ -248,6 +320,10 @@ function renderCreate(
 }
 
 function renderSessionCard(session: SessionStatus, active: boolean): JSX.Element {
+    const elapsedHours = (new Date((currentDate).getTime() - session.creationDate.getTime())).toString()
+    const elapsedMinutes = (new Date((currentDate).getTime() - session.creationDate.getTime())).getMinutes()
+
+
     return (
         <Card
             border={active ? 'light' : 'dark'}
@@ -257,26 +333,56 @@ function renderSessionCard(session: SessionStatus, active: boolean): JSX.Element
                 padding: '0px',
             }}
         >
-            <Card.Header>
+            {/* <Card.Header>
                 {
                     session.sid + ' (' + session.connectedUsers + ' user(s))'
                 }
-            </Card.Header>
+            </Card.Header> */}
             <Card.Body>
-                <Card.Text>
-                    Expiration date {session.expirationDate.toLocaleString()}
-                </Card.Text>
+                <Row>
+                    <Col>
+                        Number of nodes: {session.nodeCount}
+                    </Col>
+                    <Col>
+                        Number of edges: {session.edgeCount}
+                    </Col>
+                    <Col>
+                        Session started: {elapsedHours} hours ago, {elapsedMinutes} minutes
+                    </Col>
+                </Row>
             </Card.Body>
             <Card.Footer>
-                <Button
-                    disabled={!active}
-                    onClick={() => {
-                        console.log("Connecting to session " + session.sid)
-                        // joinSession(sid)
-                    }}
-                >
-                    Connect
-                </Button>
+                <Row>
+                    <Col>
+                        <Button
+                            disabled={!active}
+                            onClick={() => {
+                                console.log("Connecting to session " + session.sid)
+                                // joinSession(sid)
+                            }}
+                        >
+                            Connect
+                        </Button>
+                    </Col>
+                    <Col>
+                        <Button onClick={() => {
+                            console.log("Copying session ID")
+                        }}
+                            variant="outline-secondary"
+                        >
+                            Copy Session ID
+                        </Button>
+                    </Col>
+                    <Col>
+                        <Button onClick={() => {
+                            console.log("Copying session ID")
+                        }}
+                            variant="outline-secondary"
+                        >
+                            Copy Source URL
+                        </Button>
+                    </Col>
+                </Row>
             </Card.Footer>
         </Card>
     )
@@ -409,7 +515,7 @@ function renderJoinActive(sessions: SessionStatus[]) {
     )
 }
 
-function renderError(error: string) {
+function renderError(heading: string, content: string) {
     // const phaseDescriptions = [
     //     'Connect to server',
     //     'Check URL',
@@ -484,9 +590,17 @@ function renderError(error: string) {
     //     </>
     // )
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, no-constant-condition
+    if (true) {
+        return <></>
+    }
+
     return (
-        <Alert variant='danger'>
-            {error}
+        <Alert variant='danger' dismissible>
+            <Alert.Heading>{heading}</Alert.Heading>
+            <p>
+                {content}
+            </p>
         </Alert>
     )
 }
@@ -542,7 +656,11 @@ interface ServerInfo {
 }
 
 function renderServerStatus(serverInfo: ServerInfo) {
-    return <></>
+    return (
+        <p>
+            {serverInfo.serverRoot}
+        </p>
+    )
 }
 
 // Renders the upload component.
@@ -580,7 +698,7 @@ function render(
             content = renderFAQ()
             break
         case 'server status':
-            content = renderServerStatus()
+            content = renderServerStatus(testServerInfo)
             break
     }
 
@@ -591,10 +709,9 @@ function render(
                 style={{
                     position: 'absolute',
                     maxHeight: '100vh',
+                    maxWidth: '70vw',
                     overflowY: 'auto',
-                    width: 'auto',
-                    left: '25%',
-                    right: '25%',
+                    left: '15%',
                     marginTop: '20px'
                 }}>
                 {renderHeader()}
@@ -648,7 +765,7 @@ function render(
                 <Row>
                     <Col>
                         {
-                            renderError('TEST')
+                            renderError('Test Message', 'Some information')
                         }
                     </Col>
                 </Row>
