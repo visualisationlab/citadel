@@ -29,7 +29,9 @@ import {
     Alert,
     ListGroup,
     Popover,
-    OverlayTrigger
+    OverlayTrigger,
+    Toast,
+    ToastContainer
     // Table, Spinner, DropdownButton, InputGroup, Dropdown
  } from 'react-bootstrap'
 // import { userService } from '../services/user.service'
@@ -67,6 +69,13 @@ interface GraphDataInfo {
     edgeCount: number,
     lastAccessed: Date | null,
     size: number
+}
+
+interface Notification {
+    title: string,
+    contents: string,
+    time: Date,
+    show: boolean
 }
 
 function subtractHours(date: Date, hours: number): Date {
@@ -143,6 +152,28 @@ const testServerInfo: ServerInfo = {
     uptime: new Date(1000)
 }
 
+const testNotifications: Notification[] = [
+    {
+        title: 'Test',
+        contents: 'Test contents',
+        time: subtractMinutes(currentDate, 1),
+        show: true
+    },
+    {
+        title: 'Test',
+        contents: 'Test contents',
+        time: subtractMinutes(currentDate, 2),
+        show: true
+    },
+    {
+        title: 'Test',
+        contents: 'Test contents',
+        time: subtractMinutes(currentDate, 5),
+        show: true
+    }
+
+]
+
 // const SID_MAX_LENGTH = 8
 
 function renderAnimatedBackground() {
@@ -152,7 +183,7 @@ function renderAnimatedBackground() {
     )
 }
 
-function renderHeader() {
+function renderHeader(notifications: Notification[], setNotifications: (notifications: Notification[]) => void) {
     return (
         <Row>
             <Col md={{span: 2}}>
@@ -173,6 +204,17 @@ function renderHeader() {
                 >
                     Graph Visualisation Software! Create a new session or join an existing one below.
                 </p>
+            </Col>
+            <Col>
+                <Button onClick={() => {
+                    setNotifications([{
+                        title: "NEW NEW",
+                        contents: "NEW NEW 2",
+                        show: true,
+                        time: (new Date())
+                    }, ...notifications])
+
+                }}>Add notification</Button>
             </Col>
         </Row>
     )
@@ -320,9 +362,7 @@ function renderCreate(
 }
 
 function renderSessionCard(session: SessionStatus, active: boolean): JSX.Element {
-    const elapsedHours = (new Date((currentDate).getTime() - session.creationDate.getTime())).toString()
-    const elapsedMinutes = (new Date((currentDate).getTime() - session.creationDate.getTime())).getMinutes()
-
+    // const elapsedTime = new Date((currentDate).getTime() - session.creationDate.getTime())
 
     return (
         <Card
@@ -331,6 +371,7 @@ function renderSessionCard(session: SessionStatus, active: boolean): JSX.Element
                 marginTop: '5px',
                 marginBottom: '5px',
                 padding: '0px',
+                maxWidth: '400px'
             }}
         >
             {/* <Card.Header>
@@ -343,11 +384,25 @@ function renderSessionCard(session: SessionStatus, active: boolean): JSX.Element
                     <Col>
                         Number of nodes: {session.nodeCount}
                     </Col>
+                </Row>
+                <Row>
                     <Col>
                         Number of edges: {session.edgeCount}
                     </Col>
+                </Row>
+                <Row>
                     <Col>
-                        Session started: {elapsedHours} hours ago, {elapsedMinutes} minutes
+                        Session started: {session.creationDate.toLocaleDateString()}
+                    </Col>
+                </Row>
+                <Row>
+                    <Col>
+                        Session expires on: {session.expirationDate.toLocaleDateString()}
+                    </Col>
+                </Row>
+                <Row>
+                    <Col>
+                        Number of connected users: {session.connectedUsers}
                     </Col>
                 </Row>
             </Card.Body>
@@ -366,7 +421,11 @@ function renderSessionCard(session: SessionStatus, active: boolean): JSX.Element
                     </Col>
                     <Col>
                         <Button onClick={() => {
-                            console.log("Copying session ID")
+                            navigator.clipboard.writeText(session.sid).then(() => {
+                                console.log('Copied sid to clipboard')
+                            }).catch((reason) => {
+                                console.log('Unable to print sid to clipboard due to ', reason)
+                            })
                         }}
                             variant="outline-secondary"
                         >
@@ -663,8 +722,63 @@ function renderServerStatus(serverInfo: ServerInfo) {
     )
 }
 
+function renderNotifications(
+    notifications: Notification[],
+    setNotifications: (notifications: Notification[]) => void) {
+    const visibleNotifications = notifications.slice(0, 5).map((notification, index) => {
+        return (
+            <Toast
+                show={notification.show}
+                delay={5000}
+                autohide
+                onClose={() => {
+                    const newNotifications = [...notifications]
+
+                    const val = newNotifications[index]
+
+                    if (val === undefined) {
+                        return
+                    }
+
+                    val.show = false
+
+                    Object.assign([], newNotifications, {index: val})
+
+                    setNotifications(newNotifications)
+                }}
+            >
+                <Toast.Header closeButton={true}
+                    style={{
+                        display: 'flex',
+                        justifyContent: 'space-between'
+                    }}
+                >
+                    <strong>{notification.title}</strong>
+                    <small style={{
+                        marginLeft: 'auto'
+                    }}>{new Date(currentDate.getTime() - notification.time.getTime()).getMinutes()} mins ago</small>
+                </Toast.Header>
+                <Toast.Body>
+                    {notification.contents}
+                </Toast.Body>
+            </Toast>
+        )
+    })
+
+    return (
+        <ToastContainer
+            className='p-3'
+            position='top-end'
+        >
+            {visibleNotifications}
+        </ToastContainer>
+    )
+}
+
 // Renders the upload component.
 function render(
+    notifications: Notification[],
+    setNotifications: (notifications: Notification[]) => void,
     loading: boolean,
     url: string,
     setUrl: (url: string) => void,
@@ -704,6 +818,7 @@ function render(
 
     return (
         <>
+            {renderNotifications(notifications, setNotifications)}
             <Container
                 className="shadow p-3 bg-white rounded"
                 style={{
@@ -714,7 +829,7 @@ function render(
                     left: '15%',
                     marginTop: '20px'
                 }}>
-                {renderHeader()}
+                {renderHeader(notifications , setNotifications)}
                 <Row>
                     <Col>
                         <Nav
@@ -860,6 +975,7 @@ export default function Upload() {
     const [serverGraphData, setServerGraphData] = useState<ServerGraphData>({graphs: [], root: ''})
     const [sessions, setSessions] = useState<SessionStatus[]>([])
     const [menuType, setMenuType] = useState<MenuType>('create')
+    const [notifications, setNotifications] = useState<Notification[]>([])
 
     // const [error, setError] = useState<ErrorMessage | null>(null)
 
@@ -887,6 +1003,7 @@ export default function Upload() {
         setLoading(false)
         setServerGraphData({graphs: testGraphData, root: ''})
         setSessions(testSessionStatus)
+        setNotifications(testNotifications)
         // userService.getGraphs().then(
         //     response => {
         //         setServerGraphData()
@@ -921,5 +1038,5 @@ export default function Upload() {
     }, [])
 
     // Render the component.
-    return render(loading, url, setURL, sessions, serverGraphData.graphs, menuType, setMenuType)
+    return render(notifications, setNotifications, loading, url, setURL, sessions, serverGraphData.graphs, menuType, setMenuType)
 }
