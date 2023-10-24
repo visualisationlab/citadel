@@ -7,7 +7,7 @@
  * It also contains information about the project.
  */
 
-import { useEffect, useLayoutEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useReducer, useState } from 'react'
 
 import {
     loadBackgroundRendering
@@ -26,7 +26,6 @@ import {
     Dropdown,
     Nav,
     Card,
-    Alert,
     ListGroup,
     Popover,
     OverlayTrigger,
@@ -71,11 +70,15 @@ interface GraphDataInfo {
     size: number
 }
 
+type NotificationType = 'info' | 'warn' | 'error'
+
 interface Notification {
+    type: NotificationType
     title: string,
     contents: string,
     time: Date,
-    show: boolean
+    show: boolean,
+    delay: number
 }
 
 function subtractHours(date: Date, hours: number): Date {
@@ -154,22 +157,28 @@ const testServerInfo: ServerInfo = {
 
 const testNotifications: Notification[] = [
     {
-        title: 'Test',
+        title: 'Info test',
+        type: 'info',
         contents: 'Test contents',
         time: subtractMinutes(currentDate, 1),
-        show: true
+        show: true,
+        delay: 5
     },
     {
-        title: 'Test',
+        title: 'Warning Test',
+        type: 'warn',
         contents: 'Test contents',
         time: subtractMinutes(currentDate, 2),
-        show: true
+        show: true,
+        delay: 5
     },
     {
-        title: 'Test',
+        title: 'Error Test',
+        type: 'error',
         contents: 'Test contents',
         time: subtractMinutes(currentDate, 5),
-        show: true
+        show: true,
+        delay: 5
     }
 
 ]
@@ -183,7 +192,7 @@ function renderAnimatedBackground() {
     )
 }
 
-function renderHeader(notifications: Notification[], setNotifications: (notifications: Notification[]) => void) {
+function renderHeader() {
     return (
         <Row>
             <Col md={{span: 2}}>
@@ -204,17 +213,6 @@ function renderHeader(notifications: Notification[], setNotifications: (notifica
                 >
                     Graph Visualisation Software! Create a new session or join an existing one below.
                 </p>
-            </Col>
-            <Col>
-                <Button onClick={() => {
-                    setNotifications([{
-                        title: "NEW NEW",
-                        contents: "NEW NEW 2",
-                        show: true,
-                        time: (new Date())
-                    }, ...notifications])
-
-                }}>Add notification</Button>
             </Col>
         </Row>
     )
@@ -361,7 +359,32 @@ function renderCreate(
     return inputForm
 }
 
-function renderSessionCard(session: SessionStatus, active: boolean): JSX.Element {
+function copyToClipboard(
+    item: string,
+    value: string,
+    setNotifications: React.Dispatch<NotificationReducerAction>
+) {
+    navigator.clipboard.writeText(value).then(() => {
+        setNotifications({
+            type: 'addNotificationInfo',
+            payload: {
+                contents: `Copied ${item} to clipboard!`
+            }
+        })
+    }).catch((reason) => {
+        setNotifications({
+            type: 'addNotificationError',
+            payload: {
+                contents: `Unable to print ${item} to clipboard due to ${reason}`
+            }
+        })
+    })
+}
+
+function renderSessionCard(
+    session: SessionStatus,
+    active: boolean,
+    setNotifications: React.Dispatch<NotificationReducerAction>): JSX.Element {
     // const elapsedTime = new Date((currentDate).getTime() - session.creationDate.getTime())
 
     return (
@@ -421,11 +444,7 @@ function renderSessionCard(session: SessionStatus, active: boolean): JSX.Element
                     </Col>
                     <Col>
                         <Button onClick={() => {
-                            navigator.clipboard.writeText(session.sid).then(() => {
-                                console.log('Copied sid to clipboard')
-                            }).catch((reason) => {
-                                console.log('Unable to print sid to clipboard due to ', reason)
-                            })
+                            copyToClipboard('Session ID', session.sid, setNotifications)
                         }}
                             variant="outline-secondary"
                         >
@@ -434,7 +453,7 @@ function renderSessionCard(session: SessionStatus, active: boolean): JSX.Element
                     </Col>
                     <Col>
                         <Button onClick={() => {
-                            console.log("Copying session ID")
+                            copyToClipboard('Source URL', session.graphURL, setNotifications)
                         }}
                             variant="outline-secondary"
                         >
@@ -461,7 +480,9 @@ function renderJoinManual(
     )
 }
 
-function renderHistory(sessions: SessionStatus[]) {
+function renderHistory(
+    sessions: SessionStatus[],
+    setNotifications: React.Dispatch<NotificationReducerAction>) {
     if (sessions.length === 0) {
         return <></>
     }
@@ -471,7 +492,7 @@ function renderHistory(sessions: SessionStatus[]) {
     const activeSessionList = sessions.filter((session) => {
         return (session.expirationDate).getTime() > currentDate.getTime()
     }).map((session) => {
-        return renderSessionCard(session, true)
+        return renderSessionCard(session, true, setNotifications)
     })
 
     return (
@@ -481,7 +502,7 @@ function renderHistory(sessions: SessionStatus[]) {
     )
 }
 
-function renderJoinActive(sessions: SessionStatus[]) {
+function renderJoinActive(sessions: SessionStatus[], setNotification: React.Dispatch<NotificationReducerAction>) {
     // Renders the previous session form in the third panel.
     if (sessions.length === 0) {
         return <></>
@@ -492,7 +513,7 @@ function renderJoinActive(sessions: SessionStatus[]) {
     const activeSessionList = sessions.filter((session) => {
         return (session.expirationDate).getTime() > currentDate.getTime()
     }).map((session) => {
-        return renderSessionCard(session, true)
+        return renderSessionCard(session, true, setNotification)
     })
 
     // const previousSessionList = (
@@ -574,96 +595,6 @@ function renderJoinActive(sessions: SessionStatus[]) {
     )
 }
 
-function renderError(heading: string, content: string) {
-    // const phaseDescriptions = [
-    //     'Connect to server',
-    //     'Check URL',
-    //     'Get from external URL',
-    //     'Read data',
-    //     'Parse data',
-    //     'Create session'
-    // ]
-
-    // const renderPhase = phaseDescriptions.map((phaseText, index) => {
-    //     let variant = 'secondary'
-
-    //     if (index === error.phase) {
-    //         variant = 'danger'
-    //     }
-    //     else if (index < error.phase) {
-    //         variant = 'success'
-    //     }
-
-    //     return (
-    //         <>
-    //             <Col>
-    //                 <Button
-    //                     variant={variant}
-    //                     disabled={true}
-    //                 >
-    //                     {phaseText}
-
-    //                 </Button>
-    //             </Col>
-    //             {index < phaseDescriptions.length - 1 && (
-    //                 <Col>
-    //                     {'->'}
-    //                 </Col>
-    //             )}
-    //         </>
-    //     )
-    // })
-
-    // errorText = (
-    //     <>
-    //         <Row style={{
-    //             marginTop: '10px',
-    //             marginBottom: '10px'
-    //         }}>
-    //             {renderPhase}
-    //         </Row>
-    //         <Row>
-    //             <Col>
-    //                 <Table variant="responsive" responsive striped bordered hover>
-    //                     <thead>
-    //                         <tr>
-    //                             {/* <th>Phase</th> */}
-    //                             {/* <th>Property</th> */}
-    //                             <th>Error</th>
-    //                         </tr>
-    //                     </thead>
-    //                     <tbody>
-    //                         {error.errors.map((val) => {
-    //                             return (
-    //                                 <tr key='val'>
-    //                                     {/* <td>{error.phase}</td> */}
-    //                                     {/* <td>{index}</td> */}
-    //                                     <td>{val}</td>
-    //                                 </tr>
-    //                             )
-    //                         })}
-    //                     </tbody>
-    //                 </Table>
-    //             </Col>
-    //         </Row>
-    //     </>
-    // )
-
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, no-constant-condition
-    if (true) {
-        return <></>
-    }
-
-    return (
-        <Alert variant='danger' dismissible>
-            <Alert.Heading>{heading}</Alert.Heading>
-            <p>
-                {content}
-            </p>
-        </Alert>
-    )
-}
-
 function renderFAQ() {
     return (
         <Row>
@@ -724,30 +655,38 @@ function renderServerStatus(serverInfo: ServerInfo) {
 
 function renderNotifications(
     notifications: Notification[],
-    setNotifications: (notifications: Notification[]) => void) {
-    const visibleNotifications = notifications.slice(0, 5).map((notification, index) => {
+    setNotifications: React.Dispatch<NotificationReducerAction>,
+    showNotifications: boolean) {
+
+    const visibleNotifications = notifications.slice(0, showNotifications ? notifications.length : 5).map((notification, index) => {
+        let variant = 'light'
+        let textColour = 'text-black'
+
+        switch (notification.type) {
+            case 'info':
+                variant = 'light'
+                textColour = 'text-black'
+                break
+            case 'error':
+                variant = 'danger'
+                textColour = 'text-white'
+                break
+            case 'warn':
+                variant = 'warning'
+                textColour = 'text-black'
+                break
+            default:
+                console.log('Unknown notification type')
+        }
         return (
             <Toast
-                show={notification.show}
-                delay={5000}
-                autohide
+                show={showNotifications ? true : notification.show}
                 onClose={() => {
-                    const newNotifications = [...notifications]
-
-                    const val = newNotifications[index]
-
-                    if (val === undefined) {
-                        return
-                    }
-
-                    val.show = false
-
-                    Object.assign([], newNotifications, {index: val})
-
-                    setNotifications(newNotifications)
+                    setNotifications({type: 'hideNotification', payload:{index: index}})
                 }}
+                bg={variant}
             >
-                <Toast.Header closeButton={true}
+                <Toast.Header closeButton={!showNotifications}
                     style={{
                         display: 'flex',
                         justifyContent: 'space-between'
@@ -756,14 +695,35 @@ function renderNotifications(
                     <strong>{notification.title}</strong>
                     <small style={{
                         marginLeft: 'auto'
-                    }}>{new Date(currentDate.getTime() - notification.time.getTime()).getMinutes()} mins ago</small>
+                    }}>{Math.round(((new Date()).getTime() - notification.time.getTime()) / (1000 * 60))} mins ago</small>
                 </Toast.Header>
-                <Toast.Body>
+                <Toast.Body className={textColour}>
                     {notification.contents}
                 </Toast.Body>
             </Toast>
         )
     })
+
+    if (showNotifications) {
+        return (
+            <ToastContainer
+                className='p-3'
+                position='top-end'
+                style={{
+                    maxHeight: '60vh',
+                    overflow: 'auto',
+                    borderWidth: '2px',
+                    borderColor: 'black',
+                    borderStyle: 'solid',
+                    borderRadius: '4px',
+                    backgroundColor: 'rgba(255,255,255,0.6)',
+                    zIndex: 10
+                }}
+            >
+                {visibleNotifications}
+            </ToastContainer>
+        )
+    }
 
     return (
         <ToastContainer
@@ -778,18 +738,21 @@ function renderNotifications(
 // Renders the upload component.
 function render(
     notifications: Notification[],
-    setNotifications: (notifications: Notification[]) => void,
+    setNotifications: React.Dispatch<NotificationReducerAction>,
+    showNotifications: boolean,
+    setShowNotifications: (show: boolean) => void,
     loading: boolean,
     url: string,
     setUrl: (url: string) => void,
     sessions: SessionStatus[],
     graphList: GraphDataInfo[],
     menuType: MenuType,
-    setMenuType: (type: MenuType) => void
+    setMenuType: (type: MenuType) => void,
+    currentTime: Date
 ) {
     let content = <></>
 
-    const currentDate = new Date().getTime()
+    const currentDate = currentTime.getTime()
 
     const activeSessionCount = sessions.filter((session) => {
         return (session.expirationDate).getTime() > currentDate
@@ -800,13 +763,13 @@ function render(
             content = renderCreate(loading, url, setUrl, graphList)
             break
         case 'join active':
-            content = renderJoinActive(sessions)
+            content = renderJoinActive(sessions, setNotifications)
             break
         case 'join (manual sid)':
             content = renderJoinManual(url, setUrl)
             break
         case 'history':
-            content = renderHistory(sessions)
+            content = renderHistory(sessions, setNotifications)
             break
         case 'faq':
             content = renderFAQ()
@@ -818,7 +781,19 @@ function render(
 
     return (
         <>
-            {renderNotifications(notifications, setNotifications)}
+            <Button
+                style={{
+                    position: 'absolute',
+                    marginLeft: '85vw',
+                    marginTop: '90vh'
+                }}
+                onClick={() => {
+                    setShowNotifications(!showNotifications)
+                }}
+                >
+                    {showNotifications ? 'hide' : 'show'} Notifications
+            </Button>
+            {renderNotifications(notifications, setNotifications, showNotifications)}
             <Container
                 className="shadow p-3 bg-white rounded"
                 style={{
@@ -829,7 +804,7 @@ function render(
                     left: '15%',
                     marginTop: '20px'
                 }}>
-                {renderHeader(notifications , setNotifications)}
+                {renderHeader()}
                 <Row>
                     <Col>
                         <Nav
@@ -875,13 +850,6 @@ function render(
                 <Row>
                     <Col>
                         <br></br>
-                    </Col>
-                </Row>
-                <Row>
-                    <Col>
-                        {
-                            renderError('Test Message', 'Some information')
-                        }
                     </Col>
                 </Row>
                 <Row>
@@ -968,6 +936,76 @@ function render(
 //     }
 // }
 
+type NotificationReducerAction =
+    { type: 'hideNotification', payload: {index: number} } |
+    { type: 'addNotification', payload: {notification: Notification}} |
+    { type: 'addNotificationInfo', payload: {contents: string} } |
+    { type: 'addNotificationWarn', payload: {contents: string} } |
+    { type: 'addNotificationError', payload: {contents: string} } |
+    { type: 'decrementDelays', payload: Record<string, never>}
+
+function notificationReducer(state: Notification[], action: NotificationReducerAction): Notification[] {
+    switch (action.type) {
+        case 'hideNotification': {
+            const newNotifications = [...state]
+
+            const val = newNotifications[action.payload.index]
+
+            if (val === undefined) {
+                return state
+            }
+
+            val.show = false
+
+            Object.assign([], newNotifications, {index: val})
+
+            return newNotifications
+        }
+        case 'addNotification':
+            return [action.payload.notification, ...state]
+        case 'addNotificationInfo':
+            return [{
+                contents: action.payload.contents,
+                show: true,
+                time: (new Date()),
+                title: 'Info',
+                type: 'info',
+                delay: 5
+            }, ...state]
+        case 'addNotificationWarn':
+            return [{
+                contents: action.payload.contents,
+                show: true,
+                time: (new Date()),
+                title: 'Warning',
+                type: 'warn',
+                delay: 5
+            }, ...state]
+        case 'addNotificationError':
+            return [{
+                contents: action.payload.contents,
+                show: true,
+                time: (new Date()),
+                title: 'Error',
+                type: 'error',
+                delay: 5
+            }, ...state]
+        case 'decrementDelays':
+            return state.map((notification) => {
+                if (notification.delay == 0) {
+                    return notification
+                }
+
+                notification.delay -= 1
+
+                if (notification.delay == 0) {
+                    notification.show = false
+                }
+
+                return notification
+            })
+    }
+}
 
 export default function Upload() {
     const [url, setURL] = useState('')
@@ -975,7 +1013,18 @@ export default function Upload() {
     const [serverGraphData, setServerGraphData] = useState<ServerGraphData>({graphs: [], root: ''})
     const [sessions, setSessions] = useState<SessionStatus[]>([])
     const [menuType, setMenuType] = useState<MenuType>('create')
-    const [notifications, setNotifications] = useState<Notification[]>([])
+    const [notifications, setNotifications] = useReducer(notificationReducer, testNotifications)
+    const [currentTime, setCurrentTime] = useState(new Date())
+    const [showNotifications, setShowNotifications] = useState(false)
+
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            setCurrentTime(new Date())
+            setNotifications({type: 'decrementDelays', payload: {}})
+        }, 1000)
+
+        return () => {clearInterval(intervalId)}
+    })
 
     // const [error, setError] = useState<ErrorMessage | null>(null)
 
@@ -1003,7 +1052,6 @@ export default function Upload() {
         setLoading(false)
         setServerGraphData({graphs: testGraphData, root: ''})
         setSessions(testSessionStatus)
-        setNotifications(testNotifications)
         // userService.getGraphs().then(
         //     response => {
         //         setServerGraphData()
@@ -1038,5 +1086,17 @@ export default function Upload() {
     }, [])
 
     // Render the component.
-    return render(notifications, setNotifications, loading, url, setURL, sessions, serverGraphData.graphs, menuType, setMenuType)
+    return render(
+        notifications,
+        setNotifications,
+        showNotifications,
+        setShowNotifications,
+        loading,
+        url,
+        setURL,
+        sessions,
+        serverGraphData.graphs,
+        menuType,
+        setMenuType,
+        currentTime)
 }
