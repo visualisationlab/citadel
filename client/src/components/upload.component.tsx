@@ -187,7 +187,7 @@ const testNotifications: Notification[] = [
 
 function renderAnimatedBackground() {
     return (
-        <div id={BACKGROUND_ID} style={{        }}>
+        <div id={BACKGROUND_ID} >
         </div>
     )
 }
@@ -717,7 +717,6 @@ function renderNotifications(
                     borderStyle: 'solid',
                     borderRadius: '4px',
                     backgroundColor: 'rgba(255,255,255,0.6)',
-                    zIndex: 10
                 }}
             >
                 {visibleNotifications}
@@ -781,7 +780,7 @@ function render(
 
     return (
         <>
-            <Button
+            {/* <Button
                 style={{
                     position: 'absolute',
                     marginLeft: '85vw',
@@ -792,7 +791,7 @@ function render(
                 }}
                 >
                     {showNotifications ? 'hide' : 'show'} Notifications
-            </Button>
+            </Button> */}
             {renderNotifications(notifications, setNotifications, showNotifications)}
             <Container
                 className="shadow p-3 bg-white rounded"
@@ -860,9 +859,9 @@ function render(
                     </Col>
                 </Row>
             </Container>
-        <>
-            {renderAnimatedBackground()}
-        </>
+            <>
+                {renderAnimatedBackground()}
+            </>
         </>
     )
 }

@@ -6,142 +6,104 @@ import {
     Texture,
     ParticleContainer,
     Text,
-    TextStyle} from "pixi.js"
+    TextStyle,
+    Graphics,
+    FederatedEvent,
+    FederatedMouseEvent} from "pixi.js"
+
+import {
+    Engine,
+    Body,
+    Bodies,
+    Composite,
+    Vector,
+    Constraint
+} from 'matter-js'
+
+interface Circle {
+    sprite: Sprite,
+    object: Matter.Body
+    tail: Graphics | null
+}
 
 export let app: Application | null = null
+let engine: Engine | null = null
 
 let clearBackgroundRendering = false
-let spriteList: RenderedSprite[] = []
+let objectList: Circle[] = []
+
 let particleContainer: Container | null = null
 let text: Text | null = null
 
-const spriteCount = 50
-const SPRITE_VELOCITY = 2
-const SCALE = 50
+const spriteCount = 1000
+const SCALE = 5
+const LINELENGTH = 200
 
-interface RenderedSprite {
-    sprite: Sprite,
-    vx: number,
-    vy: number
-}
+function animationTicker(objects: Circle[]) {
+    if (!engine) {
+        return
+    }
 
-function animationTicker(spriteList: RenderedSprite[]) {
     if (text) {
         text.text = `FPS: ${Math.round(app?.ticker.FPS ?? 0)}`
     }
-    console.assert(spriteCount === spriteList.length, 'Sprite count does not match sprite list length')
+
+    console.assert(spriteCount === objectList.length, 'Object count does not match sprite list length')
+
     const delta = app?.ticker.deltaTime ?? 0
-    for (let i = 0; i < spriteCount; i++) {
-        const object = spriteList[i]
 
-        if (object === undefined) {
-            continue
+    Engine.update(engine, 1000 / 60, delta)
+    // Update visuals
+
+    const firstObject = objects[0]
+
+    // if (firstObject) {
+    //     Body.setSpeed(firstObject.object, 10)
+    // }
+
+    let previousObject: Circle | null = null
+
+    for (const object of objects) {
+        if (object.object.position.x > window.innerWidth) {
+            Body.setPosition(object.object, Vector.create(0, object.object.position.y))
+        }
+        else if (object.object.position.x < -object.sprite.width) {
+
+            Body.setPosition(object.object, Vector.create(window.innerWidth, object.object.position.y))
         }
 
-        const sprite = object.sprite
-
-        if (sprite.x > window.innerWidth) {
-            sprite.x = -sprite.width
+        if (object.object.position.y > window.innerHeight) {
+            Body.setPosition(object.object, Vector.create(object.object.position.x, 0))
+        }
+        else if (object.object.position.y < -object.sprite.height) {
+            Body.setPosition(object.object, Vector.create(object.object.position.x, window.innerHeight))
         }
 
-        if (sprite.x < -sprite.width) {
-            sprite.x = window.innerWidth
+        object.sprite.x = object.object.position.x
+        object.sprite.y = object.object.position.y
+
+        const tail = object.tail
+
+        if (tail && previousObject) {
+            tail.clear()
+
+            const distanceBetweenPoints = Math.sqrt(Math.pow(previousObject.object.position.x - object.object.position.x, 2) + Math.pow(previousObject.object.position.y - object.object.position.y, 2))
+
+            tail.lineStyle({
+                width: 3,
+                color: distanceBetweenPoints > LINELENGTH ? 'red' : 'green'
+            })
+            tail.zIndex = -100
+            tail.moveTo(previousObject.object.position.x, previousObject.object.position.y)
+            tail.lineTo(object.object.position.x, object.object.position.y)
         }
 
-        if (sprite.y > window.innerHeight) {
-            sprite.y = -sprite.height
-        }
-
-        if (sprite.y < -sprite.height) {
-            sprite.y = window.innerHeight
-        }
-
-        // If object is close to another object, move away from it
-        // for (let j = 0; j < spriteCount; j++) {
-        //     if (i === j) {
-        //         continue
-        //     }
-
-        //     const otherObject = spriteList[j]
-
-        //     if (otherObject === undefined) {
-        //         continue
-        //     }
-
-        //     const otherSprite = otherObject.sprite
-
-        //     const dx = sprite.x - otherSprite.x
-        //     const dy = sprite.y - otherSprite.y
-
-        //     const distance = Math.sqrt(dx * dx + dy * dy)
-
-        //     if (distance < 15) {
-        //         object.vx = Math.min(Math.abs(object.vx + dx / distance), SPRITE_VELOCITY)
-        //         object.vy = Math.min(Math.abs(object.vy + dy / distance), SPRITE_VELOCITY)
-
-        //         sprite.width = 10
-        //         sprite.height = 10
-        //     }
-        // }
-
-        sprite.x += object.vx + Math.sign(object.vx) * delta
-        sprite.y += object.vy + Math.sign(object.vy) * delta
-        // sprite.rotation += 0.1
-
-        // const VELOCITY_SLOWDOWN = 0.01
-
-        // // Return to original size over time
-        // if (Math.abs(sprite.width - 20) > 0.1) {
-        //     sprite.width += 0.2
-        //     sprite.height += 0.2
-        // }
-
-        // // Return to original velocity over time
-        // if (Math.abs(object.vx) > 0) {
-        //     object.vx -= Math.sign(object.vx) * VELOCITY_SLOWDOWN - Math.sign(object.vx) * delta
-
-        //     if (Math.abs(object.vx) < 0.3) {
-        //         object.vx = 0
-        //     }
-        // } else {
-        //     if (Math.abs(sprite.x - window.innerWidth / 2) < 20) {
-        //         object.vx = 0
-
-        //         continue
-        //     }
-
-        //     if (sprite.x > window.innerWidth / 2) {
-        //         object.vx -= SPRITE_VELOCITY / 10
-        //     } else {
-        //         object.vx += SPRITE_VELOCITY / 10
-        //     }
-        // }
-
-        // if (Math.abs(object.vy) > 0) {
-        //     object.vy -= Math.sign(object.vy) * VELOCITY_SLOWDOWN - Math.sign(object.vy) * delta
-
-        //     if (Math.abs(object.vy) < 0.3) {
-        //         object.vy = 0
-        //     }
-        // }
-        // else {
-        //     if (Math.abs(sprite.y - window.innerHeight / 2) < 20) {
-        //         object.vy = 0
-
-        //         continue
-        //     }
-
-        //     if (sprite.y > window.innerHeight / 2) {
-        //         object.vy -= SPRITE_VELOCITY / 10
-        //     } else {
-        //         object.vy += SPRITE_VELOCITY / 10
-        //     }
-        // }
+        previousObject = object
     }
 }
 
 
-function cleanPixi(spriteList: RenderedSprite[]) {
+function cleanPixi(spriteList: Circle[]) {
     if (app === null) {
         return
     }
@@ -179,10 +141,14 @@ function cleanPixi(spriteList: RenderedSprite[]) {
 
 export async function loadBackgroundRendering(id: string) {
     if (app) {
-        cleanPixi(spriteList)
+        cleanPixi(objectList)
     }
 
-    console.log('Setting up PIXI!!!!')
+    engine = Engine.create()
+
+    engine.gravity.scale = 0
+
+    console.log('Setting up PIXI')
 
     app = new Application<HTMLCanvasElement>({
         width: window.innerWidth,
@@ -198,57 +164,92 @@ export async function loadBackgroundRendering(id: string) {
         return
     }
 
-    // Clear children of test div
-    testElement.innerHTML = ''
-
-    testElement.appendChild(app.view as HTMLCanvasElement)
-
     app.stage.filters = []
 
     const texture = await Assets.load<Texture>({alias: 'image', src: 'https://dev.citadel:3001/VisLablogo-cropped-notitle.svg'})
-
-    spriteList = []
-    particleContainer = new ParticleContainer(
-        spriteCount,
-        {
-            scale: true,
-            position: true,
-            rotation: true,
-            uvs: true,
-            alpha: false,
-        }
+    objectList = []
+    particleContainer = new Container(
     )
 
-    // particleContainer.eventMode = 'static'
+    console.log(app.stage.eventMode)
+    console.log(app.stage.interactive)
 
+    const background = new Graphics()
+    background.beginFill(0xFFFFFF)
+    background.drawRect(0, 0, innerWidth, innerHeight)
+    background.endFill()
+    background.zIndex = -1000
+    app.stage.addChild(background)
+
+    background.eventMode = 'static'
+
+    background.on('pointerdown', (event) => {
+        const mouseOrigin = Vector.create(event.clientX, event.clientY)
+        for (const object of objectList) {
+            Body.applyForce(object.object, object.object.position, Vector.div(Vector.normalise(Vector.sub(object.object.position, mouseOrigin)), 10))
+        }
+    })
+    // app.stage.on('mousemovecapture') = (event: FederatedMouseEvent) => {
+    //     console.log(event.clientX)
+    //     console.log('hierzo 2')
+    // }
+
+    particleContainer.zIndex = -20
     app.stage.addChild(particleContainer)
+    app.stage.sortableChildren = true
+
+    let previousBody: Body | null = null
 
     for (let i = 0; i < spriteCount; i++) {
-        const sprite = Sprite.from(texture)
-        spriteList.push({
-            sprite: sprite,
-            vx: (Math.random() - 0.5) * SPRITE_VELOCITY,
-            vy: (Math.random() - 0.5) * SPRITE_VELOCITY
-        })
-
         const scale = Math.random() * 20
-        sprite.width = SCALE + scale
-        sprite.height = SCALE + scale
-        sprite.anchor.set(0.5)
-        sprite.rotation = Math.random() * Math.PI * 2
-        sprite.x = Math.random() * window.innerWidth
-        sprite.y = Math.random() * window.innerHeight
+        const object = Bodies.circle(Math.random() * window.innerWidth, Math.random() * window.innerHeight, SCALE + scale)
+        const sprite = Sprite.from(texture)
 
-        sprite.eventMode = 'static'
+        // Body.setMass(object, Math.random())
 
-        sprite.onpointerdown = () => {
-            sprite.tint = 0xFF0000
-            sprite.width = 20
+        let newTail = null
+
+        if (previousBody) {
+            Composite.add(engine.world, Constraint.create({
+                bodyA: previousBody,
+                bodyB: object,
+                length: LINELENGTH,
+                stiffness: 0.001
+            }))
+
+            newTail = new Graphics()
+
+            newTail.lineStyle({
+                width: 20,
+                color: 'red'
+            })
+
+            newTail.moveTo(previousBody.position.x, previousBody.position.y)
+            newTail.lineTo(object.position.x, object.position.y)
+
+            app.stage.addChild(newTail)
         }
+
+        previousBody = object
+
+        Composite.add(engine.world, object)
+
+        sprite.width = (SCALE + scale) * 2
+        sprite.height = (SCALE + scale) * 2
+        sprite.x = object.position.x
+        sprite.y = object.position.y
+        sprite.anchor.set(0.5)
 
         sprite.tint = Math.random() * 0xFFFFFF
 
         particleContainer.addChild(sprite)
+
+        objectList.push({
+            sprite: sprite,
+            object: object,
+            tail: newTail
+        })
+
     }
 
     const style = new TextStyle({
@@ -260,11 +261,16 @@ export async function loadBackgroundRendering(id: string) {
     text.x = 10
     text.y = 10
     app.ticker.add(() => {
-        animationTicker(spriteList)
+        animationTicker(objectList)
     })
 
 
     if (!clearBackgroundRendering) {
-        window.addEventListener('beforeunload', () => {cleanPixi(spriteList)})
+        window.addEventListener('beforeunload', () => {cleanPixi(objectList)})
     }
+
+    // Clear children of test div
+    testElement.innerHTML = ''
+
+    testElement.appendChild(app.view as HTMLCanvasElement)
 }
