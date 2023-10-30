@@ -780,7 +780,7 @@ function render(
 
     return (
         <>
-            {/* <Button
+            <Button
                 style={{
                     position: 'absolute',
                     marginLeft: '85vw',
@@ -791,7 +791,7 @@ function render(
                 }}
                 >
                     {showNotifications ? 'hide' : 'show'} Notifications
-            </Button> */}
+            </Button>
             {renderNotifications(notifications, setNotifications, showNotifications)}
             <Container
                 className="shadow p-3 bg-white rounded"
@@ -859,9 +859,7 @@ function render(
                     </Col>
                 </Row>
             </Container>
-            <>
                 {renderAnimatedBackground()}
-            </>
         </>
     )
 }
