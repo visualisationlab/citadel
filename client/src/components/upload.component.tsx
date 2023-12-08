@@ -322,9 +322,21 @@ function renderCreate(
             {
                 graphList.map((graph) =>{
                     return (
-                        <Card style={{ width: '20%' ,margin:'1% 1% 1% 0' }}>
+                        <Card 
+                            className='hover-overlay'
+                            style={{ width: '20%' ,margin:'1% 1% 1% 0' }}
+                            onClick={() => {setURL(graph.name)}}
+                        >
+                            <img
+                                // width='100%'
+                                // src="https://chimay.science.uva.nl:8061/VisLablogo-cropped-notitle.svg"
+                                src="https://dev.citadel:3001/images/example-network.png"
+                                // className="custom-logo"
+                                // alt="Visualisation Lab"
+                            />
                             {graph.name}
                         </Card>
+                        
                     )
                 })
             }
