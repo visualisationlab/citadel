@@ -149,7 +149,7 @@ const testGraphData: GraphDataInfo[] = [
 
 const testServerInfo: ServerInfo = {
     currentSessionCount: 0,
-    serverRoot: 'HELLo',
+    serverRoot: 'HELLO',
     sessionDuration: new Date(1),
     storedGraphs: 4,
     uptime: new Date(1000)
@@ -310,14 +310,17 @@ function renderCreate(
         </Popover>
     )
 
-    const inputForm = (
+    const inputForm = (// data-bs-theme="dark"
         <>
-            <Row>
+            <Row> 
                 <Col>
+                    <Card style={{ width: '20%' }}>
+                        this is a network
+                    </Card>
                     <Form>
                         <Form.Group className="mb-3">
                             <Form.Label>
-                                New Session
+                                Upload your own network:
                             </Form.Label>
                             <InputGroup>
                                 <OverlayTrigger

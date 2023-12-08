@@ -17,7 +17,9 @@ export default function App() {
     document.title = "Citadel"
 
     return (
-      <div>
+      <div
+      data-bs-theme="dark"
+      >
         <Switch>
           <Route exact path={"/"} component={Upload}/>
           <Route exact path={"/upload"} component={Upload} />
