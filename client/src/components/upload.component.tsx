@@ -144,6 +144,13 @@ const testGraphData: GraphDataInfo[] = [
         nodeCount: 10,
         lastAccessed: null,
         size: 100
+    },
+    {
+        name: 'TEST2',
+        edgeCount: 10,
+        nodeCount: 10,
+        lastAccessed: null,
+        size: 100
     }
 ]
 
@@ -310,13 +317,28 @@ function renderCreate(
         </Popover>
     )
 
+    const graphChoiceCards = (
+        <Row className='ms-auto'>
+            {
+                graphList.map((graph) =>{
+                    return (
+                        <Card style={{ width: '20%' ,margin:'1% 1% 1% 0' }}>
+                            {graph.name}
+                        </Card>
+                    )
+                })
+            }
+
+        </Row>
+    )
+
     const inputForm = (// data-bs-theme="dark"
         <>
+            {
+                graphChoiceCards
+            }
             <Row> 
                 <Col>
-                    <Card style={{ width: '20%' }}>
-                        this is a network
-                    </Card>
                     <Form>
                         <Form.Group className="mb-3">
                             <Form.Label>
