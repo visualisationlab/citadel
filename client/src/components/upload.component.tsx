@@ -331,7 +331,7 @@ function renderCreate(
                                             type="text"
                                             id="url"
                                             aria-describedby="urlBlock"
-                                            // onChange={(e) => {setURL(e.target.value)}}
+                                            onChange={(e) => {setURL(e.target.value)}}
                                             value={url}
                                         />
                                     {/* </span> */}
