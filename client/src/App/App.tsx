@@ -16,6 +16,14 @@ import Upload from '../components/upload.component'
 export default function App() {
     document.title = "Citadel"
 
+    // Get <html> element
+    const html = document.getElementsByTagName('html')[0]
+
+    if (html) {
+      // Set data-bs-theme to dark
+      html.setAttribute('data-bs-theme', 'dark')
+    }
+
     return (
       <div>
         <Switch>

@@ -778,6 +778,7 @@ function render(
             break
     }
 
+
     return (
         <>
             <Button
@@ -794,7 +795,7 @@ function render(
             </Button>
             {renderNotifications(notifications, setNotifications, showNotifications)}
             <Container
-                className="shadow p-3 bg-white rounded"
+                className="shadow p-3 bg-dark rounded"
                 style={{
                     position: 'absolute',
                     maxHeight: '100vh',
@@ -802,7 +803,8 @@ function render(
                     overflowY: 'auto',
                     left: '15%',
                     marginTop: '20px'
-                }}>
+                }}
+                >
                 {renderHeader()}
                 <Row>
                     <Col>
