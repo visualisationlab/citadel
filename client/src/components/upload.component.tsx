@@ -68,6 +68,7 @@ interface GraphDataInfo {
     edgeCount: number,
     lastAccessed: Date | null,
     size: number
+    imgUrl: string | null
 }
 
 type NotificationType = 'info' | 'warn' | 'error'
@@ -143,14 +144,16 @@ const testGraphData: GraphDataInfo[] = [
         edgeCount: 10,
         nodeCount: 10,
         lastAccessed: null,
-        size: 100
+        size: 100,
+        imgUrl:null
     },
     {
         name: 'TEST2',
         edgeCount: 10,
         nodeCount: 10,
         lastAccessed: null,
-        size: 100
+        size: 100,
+        imgUrl:null
     }
 ]
 
@@ -236,9 +239,9 @@ function renderCreate(
         <Button variant='primary'
                 type='submit'
                 onClick={() => {
-                    // startSession(
-                    //     // url
-                    // )
+                    startSession(
+                        // url
+                    )
                 }}
                 disabled={url === ''}>
             Start session
@@ -330,7 +333,7 @@ function renderCreate(
                             <img
                                 // width='100%'
                                 // src="https://chimay.science.uva.nl:8061/VisLablogo-cropped-notitle.svg"
-                                src="https://dev.citadel:3001/images/example-network.png"
+                                src= {"https://dev.citadel:3001/images/example-network.png" ?? graph.imgUrl }
                                 // className="custom-logo"
                                 // alt="Visualisation Lab"
                             />
@@ -831,7 +834,7 @@ function render(
             </Button>
             {renderNotifications(notifications, setNotifications, showNotifications)}
             <Container
-                className="shadow p-3 bg-white rounded"
+                className="shadow p-3 bg-dark rounded"
                 style={{
                     position: 'absolute',
                     maxHeight: '100vh',
@@ -839,7 +842,8 @@ function render(
                     overflowY: 'auto',
                     left: '15%',
                     marginTop: '20px'
-                }}>
+                }}
+                >
                 {renderHeader()}
                 <Row>
                     <Col>
