@@ -1,15 +1,19 @@
 {
     "root": true,
-    "parserOptions": {
-        "tsconfigRootDir": "__dirname",
-        "project": ["./packages/*/tsconfig.json"]
-    },
+    "parser": "@typescript-eslint/parser",
+    "plugins": ["@typescript-eslint"],
     "extends": [
-        "eslint:recommended",
-        "plugin:@typescript-eslint/recommended"],
-    "plugins": [
-        "@typescript-eslint"
+      "eslint:recommended",
+      "plugin:@typescript-eslint/eslint-recommended"
     ],
-    "rules": {
+    "ignorePatterns": ["**/*.d.ts", "**/*.js"],
+    "parserOptions": {
+      "project": true,
+      "tsconfigRootDir": "__dirname",
+      "ecmaVersion": 2021
+  },
+    "env": {
+      "node": true,
+      "browser": true
     }
 }

@@ -1,0 +1,1 @@
+{"version":3,"file":"BasicEdge.d.ts","sourceRoot":"","sources":["../../../src/graph/BasicEdge.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,SAAS,EAAE,aAAa,EAAE,MAAM,aAAa,CAAC;AAEvD,MAAM,WAAW,SAAS;IACtB,EAAE,EAAE,MAAM,CAAC;IACX,MAAM,EAAE,MAAM,CAAC;IACf,MAAM,EAAE,MAAM,CAAC;IACf,UAAU,EAAE,MAAM,CAAC,MAAM,EAAE,SAAS,CAAC,aAAa,CAAC,CAAC,CAAA;CACvD"}

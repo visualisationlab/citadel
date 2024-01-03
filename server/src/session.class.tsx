@@ -580,7 +580,7 @@ export class Session {
         this.sourceURL = sourceURL
         this.destroyFun = destroyFun
         this.sessionID = sid
-        let expDate = new Date()
+        const expDate = new Date()
 
         /* Session expires in six hours. */
         expDate.setHours(expDate.getHours() + 6)
