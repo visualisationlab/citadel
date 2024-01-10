@@ -75,28 +75,28 @@ export function configureExpressApp(
         res.json({graphs: res.graphs, root: res.root})
     })
 
-    // app.get('/status/:session', (req: Request, res: Response) => {
-    //     res.send(
-    //         sessions[req.params.session]
-    //     )
-    // })
+    app.get('/status/:session', (req: Request, res: Response) => {
+        res.send(
+            sessions[req.params.session]
+        )
+    })
 
-    // app.get('/keys/:session', (req: Request, res: Response) => {
-    //     if (sessions[req.params.session]) {
-    //         res.send("0")
-    //         return
-    //     }
+    app.get('/keys/:session', (req: Request, res: Response) => {
+        if (sessions[req.params.session]) {
+            res.send("0")
+            return
+        }
 
-    //     const remoteAddress = req.socket.remoteAddress
+        const remoteAddress = req.socket.remoteAddress
 
-    //     if (remoteAddress === undefined) {
-    //         res.send("0")
+        if (remoteAddress === undefined) {
+            res.send("0")
 
-    //         return
-    //     }
+            return
+        }
 
-    //     res.send(sessions[req.params.session]?.getKeys(remoteAddress).toString())
-    // })
+        res.send(sessions[req.params.session]?.getKeys(remoteAddress).toString())
+    })
 
     app.post('/urls', (req, res) => {
         // body('url').trim().unescape()
@@ -313,141 +313,141 @@ function sendGraphError(res: Response,
     res.status(400).json({phase: phase, errors: errors})
 }
 
-// export function configureWebsocketServer(
-//     server: Server, logger: winston.Logger, sessions: Record<string, Session | null>): void {
-//     server.on('connection', (socket, req) => {
-//         const inputURL = req.url
+export function configureWebsocketServer(
+    server: Server, logger: winston.Logger, sessions: Record<string, Session | null>): void {
+    server.on('connection', (socket, req) => {
+        const inputURL = req.url
 
-//         // If URL is not set in header, exit.
-//         if (inputURL === undefined) {
-//             socket.close()
+        // If URL is not set in header, exit.
+        if (inputURL === undefined) {
+            socket.close()
 
-//             return
-//         }
+            return
+        }
 
-//         try {
-//             // Get sid/URL/key.
-//             const url = new URL(inputURL, `wss://${req.headers.host}`)
-//             const sid = url.searchParams.get('sid')
-//             const apiKey = url.searchParams.get('key')
-//             const headsetKey = url.searchParams.get('headsetKey')
-//             const headsetUserID = url.searchParams.get('userID')
-//             const username = url.searchParams.get('username')
+        try {
+            // Get sid/URL/key.
+            const url = new URL(inputURL, `wss://${req.headers.host}`)
+            const sid = url.searchParams.get('sid')
+            const apiKey = url.searchParams.get('key')
+            const headsetKey = url.searchParams.get('headsetKey')
+            const headsetUserID = url.searchParams.get('userID')
+            const username = url.searchParams.get('username')
 
-//             const keyString = url.searchParams.get('keys')
-//             const keys = keyString ? parseInt(keyString) : 0
+            const keyString = url.searchParams.get('keys')
+            const keys = keyString ? parseInt(keyString) : 0
 
-//             logger.log('info', `New connection from ${req.socket.remoteAddress} with sid ${sid}, key ${apiKey}, headsetKey ${headsetKey}, headsetUserID ${headsetUserID}, username ${username}, keys ${keys}`)
-//             let userID: string | null = null
+            logger.log('info', `New connection from ${req.socket.remoteAddress} with sid ${sid}, key ${apiKey}, headsetKey ${headsetKey}, headsetUserID ${headsetUserID}, username ${username}, keys ${keys}`)
+            let userID: string | null = null
 
-//             if (sid === null) {
-//                 socket.close()
+            if (sid === null) {
+                socket.close()
 
-//                 return
-//             }
+                return
+            }
 
-//             // Store session.
-//             const session = sessions[sid]
+            // Store session.
+            const session = sessions[sid]
 
-//             // If session doesn't exist, exit.
-//             if (!session) {
-//                 socket.close()
+            // If session doesn't exist, exit.
+            if (!session) {
+                socket.close()
 
-//                 return
-//             }
+                return
+            }
 
-//             // If apiKey is set, register simulator.
-//             if (apiKey) {
-//                 session.registerSimulator(apiKey, socket)
-//             }
-//             else if (headsetKey && headsetUserID) {
-//                 session.registerHeadset(headsetKey, headsetUserID, socket)
-//             }
-//             else {
-//                 userID = session.addUser(socket, username, keys, req)
+            // If apiKey is set, register simulator.
+            if (apiKey) {
+                session.registerSimulator(apiKey, socket)
+            }
+            else if (headsetKey && headsetUserID) {
+                session.registerHeadset(headsetKey, headsetUserID, socket)
+            }
+            else {
+                userID = session.addUser(socket, username, keys, req)
 
-//                 logger.log('info', `User ${userID} joined session ${sid}`)
-//             }
+                logger.log('info', `User ${userID} joined session ${sid}`)
+            }
 
-//             socket.on('close', (code: number, reason: Buffer) => {
-//                 // Read buffer and log
-//                 const reasonString = reason.toString()
+            socket.on('close', (code: number, reason: Buffer) => {
+                // Read buffer and log
+                const reasonString = reason.toString()
 
-//                 logger.log('info', `Connection closed with code ${code} and reason ${reasonString}`)
+                logger.log('info', `Connection closed with code ${code} and reason ${reasonString}`)
 
-//                 const session = sessions[sid]
+                const session = sessions[sid]
 
-//                 if (!session) {
-//                     return
-//                 }
+                if (!session) {
+                    return
+                }
 
-//                 if (headsetKey) {
-//                     session.removeHeadset(headsetKey)
-//                 }
+                if (headsetKey) {
+                    session.removeHeadset(headsetKey)
+                }
 
-//                 if (apiKey) {
-//                     session.deRegisterSimulator(apiKey)
-//                 }
+                if (apiKey) {
+                    session.deRegisterSimulator(apiKey)
+                }
 
-//                 if (userID) {
-//                     session.removeUser(userID)
-//                     return
-//                 }
-//             })
+                if (userID) {
+                    session.removeUser(userID)
+                    return
+                }
+            })
 
-//             socket.on('message', (data, isBinary) => {
-//                 if (isBinary) {
-//                     throw new Error(`BINARY! HELP!`)
-//                 }
+            socket.on('message', (data, isBinary) => {
+                if (isBinary) {
+                    throw new Error(`BINARY! HELP!`)
+                }
 
-//                 try {
-//                     // If data is a Buffer, convert to string.
-//                     const message: unknown = JSON.parse(JSON.stringify(data))
+                try {
+                    // If data is a Buffer, convert to string.
+                    const message: unknown = JSON.parse(JSON.stringify(data))
 
-//                     if (message === null) {
-//                         throw new Error(`Message is null`)
-//                     }
+                    if (message === null) {
+                        throw new Error(`Message is null`)
+                    }
 
-//                     if (typeof message !== 'object') {
-//                         throw new Error(`Message is not an object`)
-//                     }
+                    if (typeof message !== 'object') {
+                        throw new Error(`Message is not an object`)
+                    }
 
-//                     if (message.sessionID === undefined) {
-//                         throw new Error(`Message doesn't have a sessionID`)
-//                     }
+                    if (message.sessionID === undefined) {
+                        throw new Error(`Message doesn't have a sessionID`)
+                    }
 
-//                     if (sessions[message.sessionID] === null || sessions[message.sessionID] === undefined) {
-//                         logger.log('warn', "Received invalid message, closing connection")
-//                         socket.close()
+                    if (sessions[message.sessionID] === null || sessions[message.sessionID] === undefined) {
+                        logger.log('warn', "Received invalid message, closing connection")
+                        socket.close()
 
-//                         return
-//                     }
+                        return
+                    }
 
-//                     session.addMessage(message)
-//                 } catch (e) {
-//                     logger.log('error', `Error '${e}' when parsing message`)
+                    session.addMessage(message)
+                } catch (e) {
+                    logger.log('error', `Error '${e}' when parsing message`)
 
-//                     return
-//                 }
-//             })
-//         } catch (e) {
-//             socket.close()
-//         }
-//     })
+                    return
+                }
+            })
+        } catch (e) {
+            socket.close()
+        }
+    })
 
-//     // Close all sessions when server is closed.
-//     server.on('close', () => {
-//         Object.keys(sessions).forEach((key) => {
-//             const session = sessions[key]
+    // Close all sessions when server is closed.
+    server.on('close', () => {
+        Object.keys(sessions).forEach((key) => {
+            const session = sessions[key]
 
-//             if (!session) {
-//                 return
-//             }
+            if (!session) {
+                return
+            }
 
-//             session.destroy()
-//         })
-//     })
-// }
+            session.destroy()
+        })
+    })
+}
 
 export function setupLogger(): Logger {
     const logger = createLogger({

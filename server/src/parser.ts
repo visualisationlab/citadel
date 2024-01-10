@@ -3,7 +3,7 @@ import { Graph } from 'shared'
 
 const validator = new Validator()
 
-// Parses JSON for use by cytoscape.
+// // Parses JSON for use by cytoscape.
 // private parseJson(
 //     nodes: Types.BasicNode[],
 //     edges: Types.BasicEdge[]) {

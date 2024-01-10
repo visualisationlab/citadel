@@ -1,51 +1,51 @@
-// import axios from 'axios';
-// // import authHeader from './auth-header';
+import axios from 'axios';
+// import authHeader from './auth-header';
 
-// const ROOTURL = process.env.REACT_APP_URL === "http://localhost" ? "https://" + window.location.hostname : process.env.REACT_APP_URL;
-// const SERVERPORT = process.env.REACT_APP_SERVERPORT;
-// console.log(ROOTURL)
+const ROOTURL = process.env.REACT_APP_URL === "http://localhost" ? "https://" + window.location.hostname : process.env.REACT_APP_URL;
+const SERVERPORT = process.env.REACT_APP_SERVERPORT;
+console.log(ROOTURL)
 
-// const API_URL = ROOTURL + ':' + SERVERPORT + '/api/test';
-// const DATA_URL = ROOTURL + ':' + SERVERPORT + '/data.csv';
-// const URL = ROOTURL + ':' + SERVERPORT;
+const API_URL = ROOTURL + ':' + SERVERPORT + '/api/test';
+const DATA_URL = ROOTURL + ':' + SERVERPORT + '/data.csv';
+const URL = ROOTURL + ':' + SERVERPORT;
 
-// class UserService {
-//     getPublicContent() {
-//         return axios.get(API_URL + '/all');
-//     }
+class UserService {
+    getPublicContent() {
+        return axios.get(API_URL + '/all');
+    }
 
-//     // getUserBoard() {
-//     //     return axios.get(API_URL + '/user', { headers: authHeader() });
-//     // }
+    // getUserBoard() {
+    //     return axios.get(API_URL + '/user', { headers: authHeader() });
+    // }
 
-//     getGraphs() {
-//         return axios.get(URL + "/graphs");
-//     }
+    getGraphs() {
+        return axios.get(URL + "/graphs");
+    }
 
-//     getGraph(name: string) {
-//         return axios.get(URL + "/graphs/" + name);
-//     }
+    getGraph(name: string) {
+        return axios.get(URL + "/graphs/" + name);
+    }
 
-//     // getModeratorBoard() {
-//     //     return axios.get(API_URL + '/mod', { headers: authHeader() });
-//     // }
+    // getModeratorBoard() {
+    //     return axios.get(API_URL + '/mod', { headers: authHeader() });
+    // }
 
-//     // getAdminBoard() {
-//     //     return axios.get(API_URL + '/admin', { headers: authHeader() });
-//     // }
+    // getAdminBoard() {
+    //     return axios.get(API_URL + '/admin', { headers: authHeader() });
+    // }
 
-//     getData() {
-//         return axios.get(DATA_URL);
-//     }
+    getData() {
+        return axios.get(DATA_URL);
+    }
 
-//     genSession(url: string) {
-//         console.log(url)
-//         return axios.post(URL + '/urls', { url: url})
-//     }
+    genSession(url: string) {
+        console.log(url)
+        return axios.post(URL + '/urls', { url: url})
+    }
 
-//     getSessionStatus(sid: string) {
-//         return axios.get(URL + '/status/' + sid)
-//     }
-// }
+    getSessionStatus(sid: string) {
+        return axios.get(URL + '/status/' + sid)
+    }
+}
 
-// export const userService = new UserService()
+export const userService = new UserService()

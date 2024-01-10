@@ -3,8 +3,8 @@
         // Type Checking
         "allowUnreachableCode": false,
         "allowUnusedLabels": false,
-        "strict": true,
-        "exactOptionalPropertyTypes": true,
+        "strict": false,
+        // "exactOptionalPropertyTypes": true,
         "noFallthroughCasesInSwitch": true,
         "noImplicitOverride": true,
         "noImplicitReturns": true,

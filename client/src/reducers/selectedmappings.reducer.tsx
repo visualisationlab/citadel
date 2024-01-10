@@ -1,260 +1,260 @@
-// /**
-//  * @author Miles van der Lely <m.vanderlely@uva.nl>
-//  *
-//  * This file contains logic for selecting mappings. Mapping settings are
-//  * stored separately.
-//  */
-// import { Set, Map } from 'immutable'
+/**
+ * @author Miles van der Lely <m.vanderlely@uva.nl>
+ *
+ * This file contains logic for selecting mappings. Mapping settings are
+ * stored separately.
+ */
+import { Set, Map } from 'immutable'
 
-// export const shapeTypes = ['circle', 'square']
+export const shapeTypes = ['circle', 'square']
 
-// // All available mapping channels.
-// export type MappingChannel = 'hue' | 'saturation' | 'lightness' | 'radius' | 'shape'
-//                                    | 'alpha' | 'text' | 'width' | 'opacity'
-//                                    | 'none' | 'region' | 'x-position' | 'y-position'
+// All available mapping channels.
+export type MappingChannel = 'hue' | 'saturation' | 'lightness' | 'radius' | 'shape'
+                                   | 'alpha' | 'text' | 'width' | 'opacity'
+                                   | 'none' | 'region' | 'x-position' | 'y-position'
 
-// export const mappingChannels = ['hue', 'saturation', 'lightness',
-//                                 'radius', 'alpha', 'text', 'width',
-//                                 'none', 'region']
+export const mappingChannels = ['hue', 'saturation', 'lightness',
+                                'radius', 'alpha', 'text', 'width',
+                                'none', 'region']
 
-// // A mapping is a mapping channel, an attribute type, an object type, and an attribute name.
-// export type MappingType = {
-//     mappingName: MappingChannel,
-//     attributeType: 'categorical' | 'ordered',
-//     objectType: 'none' | 'node' | 'edge',
-//     attributeName: string,
-// }
+// A mapping is a mapping channel, an attribute type, an object type, and an attribute name.
+export type MappingType = {
+    mappingName: MappingChannel,
+    attributeType: 'categorical' | 'ordered',
+    objectType: 'none' | 'node' | 'edge',
+    attributeName: string,
+}
 
-// // Maps stringified mappingType to settings.
-// export type MappingConfigState = Map<string, MappingSettings>
+// Maps stringified mappingType to settings.
+export type MappingConfigState = Map<string, MappingSettings>
 
-// // Defines the number of regions, the colour scheme, and mapping per attribute value.
-// export type MappingSettings = {
-//     regionNum: number,
-//     colourScheme: string | null,
-//     settings: Map<string, number>,
-// }
+// Defines the number of regions, the colour scheme, and mapping per attribute value.
+export type MappingSettings = {
+    regionNum: number,
+    colourScheme: string | null,
+    settings: Map<string, number>,
+}
 
-// export type SchemeState = Map<string, number[]>
+export type SchemeState = Map<string, number[]>
 
-// // The action type for the scheme reducer.
-// export type SchemeReducerAction =
-//     | { type: 'add', key: string, value: number[]}
-//     | { type: 'remove', key: string}
-//     | { type: 'update', key: string, value: number[]}
+// The action type for the scheme reducer.
+export type SchemeReducerAction =
+    | { type: 'add', key: string, value: number[]}
+    | { type: 'remove', key: string}
+    | { type: 'update', key: string, value: number[]}
 
-// // The state of the selected mappings state is a set of mappings.
-// // Javascript doesn't support object sets, so we use immutable.js sets.
-// // The immutable.js sets are implemented as maps, so we use the Map type.
-// // This keeps the reducer logic simple.
-// export type MappingsState = {
-//     selectedMappings: Set<Map<string, any>>
-//     schemes: Map<string, number[]>
-//     config: MappingConfigState
-// }
+// The state of the selected mappings state is a set of mappings.
+// Javascript doesn't support object sets, so we use immutable.js sets.
+// The immutable.js sets are implemented as maps, so we use the Map type.
+// This keeps the reducer logic simple.
+export type MappingsState = {
+    selectedMappings: Set<Map<string, any>>
+    schemes: Map<string, number[]>
+    config: MappingConfigState
+}
 
-// // The action type for the selected mappings reducer.
-// export type MappingsReducerAction =
-//     | { type: 'selection', action: 'add' }
-//     | { type: 'selection', action: 'remove', mapping: MappingType}
-//     | { type: 'selection', action: 'edit', prevMapping: MappingType, newMapping: MappingType }
-//     | { type: 'selection', action: 'load', state: MappingsState }
-//     | { type: 'selection', action: 'clear' }
-//     | { type: 'settings', action: 'add', mapping: MappingType, settings: MappingSettings }
-//     | { type: 'settings', action: 'edit', mapping: MappingType, settings: MappingSettings }
-//     | { type: 'scheme', action: 'add', key: string}
-//     | { type: 'scheme', action: 'remove', key: string}
-//     | { type: 'scheme', action: 'update', key: string, values: number[]}
-//     | { type: 'scheme', action: 'load', state: SchemeState }
-//     | { type: 'scheme', action: 'rename', oldName: string, newName: string}
-
-
-// // The mapping properties are used to determine which channels can be used for which object types and attribute types.
-// type BasicMappingType = {objectType: 'node' | 'edge' | 'all', channelType: 'categorical' | 'ordered'}
-
-// // The mapping properties are stored in a map.
-// export type MappingProperties = {[key: string]: BasicMappingType}
-
-// export let mappingProperties = Map<MappingChannel, BasicMappingType>()
-
-// // The mapping properties are initialized here.
-// mappingProperties = mappingProperties.set('hue', {objectType: 'all', channelType: 'categorical'})
-// mappingProperties = mappingProperties.set('saturation', {objectType: 'all', channelType: 'ordered'})
-// mappingProperties = mappingProperties.set('lightness', {objectType: 'all', channelType: 'ordered'})
-// mappingProperties = mappingProperties.set('radius', {objectType: 'node', channelType: 'ordered'})
-// mappingProperties = mappingProperties.set('alpha', {objectType: 'all', channelType: 'ordered'})
-// mappingProperties = mappingProperties.set('text', {objectType: 'node', channelType: 'categorical'})
-// mappingProperties = mappingProperties.set('width', {objectType: 'edge', channelType: 'ordered'})
-// mappingProperties = mappingProperties.set('none', {objectType: 'all', channelType: 'categorical'})
-// // mappingProperties = mappingProperties.set('region', {objectType: 'node', channelType: 'categorical'})
-// mappingProperties = mappingProperties.set('x-position', {objectType: 'node', channelType: 'ordered'})
-// mappingProperties = mappingProperties.set('y-position', {objectType: 'node', channelType: 'ordered'})
-// mappingProperties = mappingProperties.set('shape', {objectType: 'node', channelType: 'categorical'})
-
-// // Reducer for scheme settings.
-// function SchemeReducer(state: MappingsState, action: MappingsReducerAction): MappingsState {
-//     if (action.type !== 'scheme') return state
-
-//     switch(action.action) {
-//         case 'add':
-//             if (state.schemes.get(action.key) !== undefined) {
-//                 console.log('Adding scheme: Scheme already exists')
-
-//                 return state
-//             }
-
-//             state.schemes = state.schemes.set(action.key, [])
-
-//             localStorage.setItem('schemes', JSON.stringify(state.schemes.toJS()))
-
-//             return state
-//         case 'remove':
-//             if (state.schemes.get(action.key) === undefined) {
-//                 console.log('Deleting scheme: Scheme does not exist')
-
-//                 return state
-//             }
-
-//             state.config = state.config.map((value, _) => {
-//                 if (value.colourScheme === action.key) {
-//                         value.colourScheme = null
-//                     }
-
-//                     return value
-//                 })
-
-//             state.schemes = state.schemes.delete(action.key)
-
-//             localStorage.setItem('schemes', JSON.stringify(state.schemes.toJS()))
-
-//             return state
-//         case 'update':
-//             if (state.schemes.get(action.key) === undefined) {
-//                 console.log('Updating scheme: Scheme does not exist')
-
-//                 return state
-//             }
-
-//             state.schemes = state.schemes.set(action.key, action.values)
-
-//             localStorage.setItem('schemes', JSON.stringify(state.schemes.toJS()))
-
-//             return state
-//         case 'load':
-//             state.schemes = action.state
-
-//             return state
-//         case 'rename':
-//             let oldName = state.schemes.get(action.oldName)
-//             if (oldName === undefined) {
-//                 console.log('Renaming scheme: Scheme does not exist')
-
-//                 return state
-//             }
+// The action type for the selected mappings reducer.
+export type MappingsReducerAction =
+    | { type: 'selection', action: 'add' }
+    | { type: 'selection', action: 'remove', mapping: MappingType}
+    | { type: 'selection', action: 'edit', prevMapping: MappingType, newMapping: MappingType }
+    | { type: 'selection', action: 'load', state: MappingsState }
+    | { type: 'selection', action: 'clear' }
+    | { type: 'settings', action: 'add', mapping: MappingType, settings: MappingSettings }
+    | { type: 'settings', action: 'edit', mapping: MappingType, settings: MappingSettings }
+    | { type: 'scheme', action: 'add', key: string}
+    | { type: 'scheme', action: 'remove', key: string}
+    | { type: 'scheme', action: 'update', key: string, values: number[]}
+    | { type: 'scheme', action: 'load', state: SchemeState }
+    | { type: 'scheme', action: 'rename', oldName: string, newName: string}
 
 
-//             state.schemes = state.schemes.set(action.newName, oldName)
-//             state.schemes = state.schemes.delete(action.oldName)
+// The mapping properties are used to determine which channels can be used for which object types and attribute types.
+type BasicMappingType = {objectType: 'node' | 'edge' | 'all', channelType: 'categorical' | 'ordered'}
 
-//             localStorage.setItem('schemes', JSON.stringify(state.schemes.toJS()))
+// The mapping properties are stored in a map.
+export type MappingProperties = {[key: string]: BasicMappingType}
 
-//             return state
+export let mappingProperties = Map<MappingChannel, BasicMappingType>()
 
-//         default:
-//             return state
-//     }
-// }
+// The mapping properties are initialized here.
+mappingProperties = mappingProperties.set('hue', {objectType: 'all', channelType: 'categorical'})
+mappingProperties = mappingProperties.set('saturation', {objectType: 'all', channelType: 'ordered'})
+mappingProperties = mappingProperties.set('lightness', {objectType: 'all', channelType: 'ordered'})
+mappingProperties = mappingProperties.set('radius', {objectType: 'node', channelType: 'ordered'})
+mappingProperties = mappingProperties.set('alpha', {objectType: 'all', channelType: 'ordered'})
+mappingProperties = mappingProperties.set('text', {objectType: 'node', channelType: 'categorical'})
+mappingProperties = mappingProperties.set('width', {objectType: 'edge', channelType: 'ordered'})
+mappingProperties = mappingProperties.set('none', {objectType: 'all', channelType: 'categorical'})
+// mappingProperties = mappingProperties.set('region', {objectType: 'node', channelType: 'categorical'})
+mappingProperties = mappingProperties.set('x-position', {objectType: 'node', channelType: 'ordered'})
+mappingProperties = mappingProperties.set('y-position', {objectType: 'node', channelType: 'ordered'})
+mappingProperties = mappingProperties.set('shape', {objectType: 'node', channelType: 'categorical'})
 
-// // Reducer for mapping config.
-// function ConfigReducer(state: MappingsState, action: MappingsReducerAction): MappingsState {
-//     if (action.type !== 'settings') return state
+// Reducer for scheme settings.
+function SchemeReducer(state: MappingsState, action: MappingsReducerAction): MappingsState {
+    if (action.type !== 'scheme') return state
 
-//     switch(action.action) {
-//         case 'add':
-//             if (state.config.get(JSON.stringify(action.mapping)) !== undefined) {
-//                 console.log('Adding config: Config already exists')
-//             }
+    switch(action.action) {
+        case 'add':
+            if (state.schemes.get(action.key) !== undefined) {
+                console.log('Adding scheme: Scheme already exists')
 
-//             state.config = state.config.set(JSON.stringify(action.mapping), action.settings)
+                return state
+            }
 
-//             return state
-//         case 'edit':
-//             if (state.config.get(JSON.stringify(action.mapping)) === undefined) {
-//                 console.log('Editing config: Config does not exist')
+            state.schemes = state.schemes.set(action.key, [])
 
-//                 return state
-//             }
+            localStorage.setItem('schemes', JSON.stringify(state.schemes.toJS()))
 
-//             state.config = state.config.set(JSON.stringify(action.mapping), action.settings)
+            return state
+        case 'remove':
+            if (state.schemes.get(action.key) === undefined) {
+                console.log('Deleting scheme: Scheme does not exist')
 
-//             return state
+                return state
+            }
 
-//         default:
-//             return state
-//     }
-// }
+            state.config = state.config.map((value, _) => {
+                if (value.colourScheme === action.key) {
+                        value.colourScheme = null
+                    }
 
-// // The selected mappings reducer.
-// export function MappingsReducer(state: MappingsState, action: MappingsReducerAction): MappingsState {
-//     switch(action.type) {
-//         case 'selection':
-//             switch (action.action) {
-//                 case 'add':
-//                     const emptyRow = Map({
-//                         mappingName: 'none',
-//                         mappingType: 'categorical',
-//                         objectType: 'none',
-//                         attributeName: '',
-//                     })
+                    return value
+                })
 
-//                     if (state.selectedMappings.has(emptyRow)) {
-//                         console.log('Adding mapping: Empty row already exists')
-//                         return state
-//                     }
+            state.schemes = state.schemes.delete(action.key)
 
-//                     state.selectedMappings = state.selectedMappings.add(emptyRow)
+            localStorage.setItem('schemes', JSON.stringify(state.schemes.toJS()))
 
-//                     return {...state}
-//                 case 'remove':
-//                     state.selectedMappings = state.selectedMappings.delete(Map(action.mapping))
+            return state
+        case 'update':
+            if (state.schemes.get(action.key) === undefined) {
+                console.log('Updating scheme: Scheme does not exist')
 
-//                     return {...state}
-//                 case 'edit':
-//                     if (!state.selectedMappings.has(Map(action.prevMapping))) {
-//                         console.log('Editing mapping: Previous mapping does not exist')
+                return state
+            }
 
-//                         return {...state}
-//                     }
+            state.schemes = state.schemes.set(action.key, action.values)
 
-//                     state.selectedMappings = state.selectedMappings.delete(Map(action.prevMapping))
+            localStorage.setItem('schemes', JSON.stringify(state.schemes.toJS()))
 
-//                     state.selectedMappings = state.selectedMappings.add(Map(action.newMapping))
+            return state
+        case 'load':
+            state.schemes = action.state
 
-//                     if (!state.config.has(JSON.stringify(action.newMapping))) {
-//                         // If the mapping does not have a config, create one.
-//                         state.config = state.config.set(JSON.stringify(action.newMapping), {
-//                             colourScheme: 'default',
-//                             regionNum: 0,
-//                             settings: Map(),
-//                         })
-//                     }
+            return state
+        case 'rename':
+            let oldName = state.schemes.get(action.oldName)
+            if (oldName === undefined) {
+                console.log('Renaming scheme: Scheme does not exist')
 
-//                     return {...state}
-//                 case 'load':
-//                     return {...action.state}
-//                 case 'clear':
-//                     state.selectedMappings = Set()
+                return state
+            }
 
-//                     return {...state}
-//                 default:
-//                     return {...state}
-//             }
-//         case 'settings':
-//             return {...ConfigReducer(state, action)}
-//         case 'scheme':
-//             return {...SchemeReducer(state, action)}
-//         default:
-//             return {...state}
 
-//     }
-// }
+            state.schemes = state.schemes.set(action.newName, oldName)
+            state.schemes = state.schemes.delete(action.oldName)
+
+            localStorage.setItem('schemes', JSON.stringify(state.schemes.toJS()))
+
+            return state
+
+        default:
+            return state
+    }
+}
+
+// Reducer for mapping config.
+function ConfigReducer(state: MappingsState, action: MappingsReducerAction): MappingsState {
+    if (action.type !== 'settings') return state
+
+    switch(action.action) {
+        case 'add':
+            if (state.config.get(JSON.stringify(action.mapping)) !== undefined) {
+                console.log('Adding config: Config already exists')
+            }
+
+            state.config = state.config.set(JSON.stringify(action.mapping), action.settings)
+
+            return state
+        case 'edit':
+            if (state.config.get(JSON.stringify(action.mapping)) === undefined) {
+                console.log('Editing config: Config does not exist')
+
+                return state
+            }
+
+            state.config = state.config.set(JSON.stringify(action.mapping), action.settings)
+
+            return state
+
+        default:
+            return state
+    }
+}
+
+// The selected mappings reducer.
+export function MappingsReducer(state: MappingsState, action: MappingsReducerAction): MappingsState {
+    switch(action.type) {
+        case 'selection':
+            switch (action.action) {
+                case 'add':
+                    const emptyRow = Map({
+                        mappingName: 'none',
+                        mappingType: 'categorical',
+                        objectType: 'none',
+                        attributeName: '',
+                    })
+
+                    if (state.selectedMappings.has(emptyRow)) {
+                        console.log('Adding mapping: Empty row already exists')
+                        return state
+                    }
+
+                    state.selectedMappings = state.selectedMappings.add(emptyRow)
+
+                    return {...state}
+                case 'remove':
+                    state.selectedMappings = state.selectedMappings.delete(Map(action.mapping))
+
+                    return {...state}
+                case 'edit':
+                    if (!state.selectedMappings.has(Map(action.prevMapping))) {
+                        console.log('Editing mapping: Previous mapping does not exist')
+
+                        return {...state}
+                    }
+
+                    state.selectedMappings = state.selectedMappings.delete(Map(action.prevMapping))
+
+                    state.selectedMappings = state.selectedMappings.add(Map(action.newMapping))
+
+                    if (!state.config.has(JSON.stringify(action.newMapping))) {
+                        // If the mapping does not have a config, create one.
+                        state.config = state.config.set(JSON.stringify(action.newMapping), {
+                            colourScheme: 'default',
+                            regionNum: 0,
+                            settings: Map(),
+                        })
+                    }
+
+                    return {...state}
+                case 'load':
+                    return {...action.state}
+                case 'clear':
+                    state.selectedMappings = Set()
+
+                    return {...state}
+                default:
+                    return {...state}
+            }
+        case 'settings':
+            return {...ConfigReducer(state, action)}
+        case 'scheme':
+            return {...SchemeReducer(state, action)}
+        default:
+            return {...state}
+
+    }
+}
