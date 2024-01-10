@@ -7,11 +7,11 @@
  * It also contains information about the project.
  */
 
-import { useEffect, useLayoutEffect, useReducer, useState } from 'react'
-
-import {
-    loadBackgroundRendering
-} from './backgroundrenderer.component'
+import { useEffect,  useReducer, useState } from 'react'
+// useLayoutEffect,
+// import {
+//     loadBackgroundRendering
+// } from './backgroundrenderer.component'
 
 // import { useHistory } from 'react-router-dom'
 import {
@@ -1080,9 +1080,9 @@ export default function Upload() {
     // }, [parsedPreviousSessions])
 
 
-    useLayoutEffect(() => {
-        void loadBackgroundRendering(BACKGROUND_ID)
-    }, [])
+    // useLayoutEffect(() => {
+    //     void loadBackgroundRendering(BACKGROUND_ID)
+    // }, [])
 
     // Render the component.
     return render(

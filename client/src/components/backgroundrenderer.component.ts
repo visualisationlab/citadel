@@ -4,7 +4,7 @@ import {
     Sprite,
     Container,
     Texture,
-    ParticleContainer,
+    // ParticleContainer,
     Text,
     TextStyle,
     Graphics} from "pixi.js"
