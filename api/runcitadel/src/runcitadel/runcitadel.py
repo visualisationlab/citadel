@@ -228,6 +228,9 @@ def process_response(connection: websockets.WebSocketClientProtocol, response,
                      simulatefun):
     try:
         jsonObj = json.loads(response)
+        
+        print('JSONOBJ : \n')
+        print(jsonObj)
 
         params = {}
 
@@ -245,6 +248,9 @@ def process_response(connection: websockets.WebSocketClientProtocol, response,
 
         res = simulatefun(connection, jsonObj['payload']['nodes'],
                   jsonObj['payload']['edges'], params, jsonObj['payload']['globals'])
+        
+        print('SIMULATE FUN RESULT : \n')
+        print(res)
 
         params = [res[2][param['attribute']]
                   for param in jsonObj['payload']['params']]
@@ -340,6 +346,8 @@ async def connect(url: str,
 
         while (1):
             response = await websocket.recv()
+            print("RAW RESPONSE")
+            print(response)
 
             result = process_response(websocket, response, fun)
 
