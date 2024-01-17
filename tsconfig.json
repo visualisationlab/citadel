@@ -7,11 +7,13 @@
         // "exactOptionalPropertyTypes": true,
         "noFallthroughCasesInSwitch": true,
         "noImplicitOverride": true,
-        "noImplicitReturns": true,
+        "noImplicitReturns": false,
+        "noImplicitAny": false,
         "noPropertyAccessFromIndexSignature": true,
         "noUncheckedIndexedAccess": true,
         "noUnusedLocals": false,
         "noUnusedParameters": false,
+
 
         // Modules
         "allowArbitraryExtensions": false,

@@ -323,14 +323,16 @@ export default function SessionTab() {
         nodes: graphState.nodes.data.map((data) => {
             return {
                 id: data.id,
-                attributes: data.attributes
+                //attributes: data.attributes
+                attributes: data['attributes'] // LAU
             }
         }),
         edges: graphState.edges.data.map((edges) => {
             return {
                 source: edges.source,
                 target: edges.target,
-                attributes: edges.attributes
+                // attributes: edges.attributes
+                attributes: edges['attributes'] // LAU
             }
         }),
         attributes: {

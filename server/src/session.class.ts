@@ -19,7 +19,8 @@ import fs from 'fs'
 import * as MessageTypes from './messagetypes'
 
 import * as Types from 'shared'
-import { BasicGraph } from 'shared/lib/graph/BasicGraph'
+// import { BasicGraph } from 'shared/graph'
+// import { BasicGraph } from 'shared/src/graph/BasicGraph'
 
 export type AvailableLayout =
         | 'null'
@@ -306,7 +307,8 @@ export class Session {
      * apiKey: API key for the current simulation
      * params: parameters for the current simulation
      */
-    private simulatorState: Types.Simulator.SimulatorState | null = null
+    private simState: Types.Simulator.SimulatorState | null = null
+    //private simulatorState: Types.Simulator.SimulatorState | null = null //LAU
 
     /* Stores graph slices for timeline. */
     private graphHistory: [string, AvailableLayout | null][]
@@ -328,7 +330,8 @@ export class Session {
     constructor(sid: string,
                 destroyFun: (sid: string) => void,
                 sourceURL: string,
-                graph: BasicGraph,
+                //graph: BasicGraph,
+                graph: Types.Graph.BasicGraph, //LAU
                 localAddress: string,
                 websocketPort: number,
                 logger: Logger) {
@@ -347,9 +350,10 @@ export class Session {
         this.expirationDate = expDate
 
         /* Load graph data. */
-        // const data = this.parseJson(nodes, edges)
+        //const data = this.parseJson(nodes, edges)
 
         /* Compress graph state and store it. */
+        const data = this.cy.json() //Added by LAU
         this.graphHistory = [[gzipSync(JSON.stringify(data)).toString('base64'), null]]
 
         /* Startup cytoscape session. */
@@ -374,7 +378,7 @@ export class Session {
 
         this.currentLayout = null
 
-        this.globals = globals
+        // this.globals = globals //COMMENTED BY LAU
     }
 
     /* Sets session state. */

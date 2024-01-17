@@ -349,7 +349,7 @@ function renderValidateButton(simKey: string | null, validated: 'valid' | 'unkno
         )
     }
 
-    <Button variant='outline-primary' onClick={() => {
+    return <Button variant='outline-primary' onClick={() => { //return added by LAU
         if ((simKey) !== null && simKey !== '') {
             API.validate(simKey)
         }

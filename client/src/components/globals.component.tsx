@@ -12,7 +12,13 @@ import { UserDataContext } from './main.component'
 import { SessionState } from '../reducers/sessiondata.reducer'
 
 function renderFull(
-    setHidden: React.Dispatch<React.SetStateAction<boolean>>
+    setHidden: React.Dispatch<React.SetStateAction<boolean>>,
+    state:SessionState,
+    query:string,
+    setQuery:React.Dispatch<React.SetStateAction<string>>,
+    showHidden:boolean,
+    setShowHidden:React.Dispatch<React.SetStateAction<boolean>>,
+    searchResult:{parents: string[], data: string[]}
 ) {
     return (
         <Container
@@ -237,6 +243,12 @@ export default function RenderGlobalsEditor() {
     }
 
     return renderFull(
-        setHidden
-    )
+        setHidden,
+        state,
+        query,
+        setQuery,
+        showHidden,
+        setShowHidden,
+        searchResult
+        )
 }

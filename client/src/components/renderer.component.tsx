@@ -1,8 +1,9 @@
 
 import * as PIXI from "pixi.js"
+// import { InteractionEvent } from '@pixi/interaction'
 import * as d3 from "d3"
 
-import { VisGraph } from '../types'
+// import { VisGraph } from '../types'
 import { SelectionDataReducerAction, SelectionDataState } from "../reducers/selection.reducer"
 
 import { API } from '../services/api.service'
@@ -43,6 +44,11 @@ interface RendererProps {
 }
 
 export type EdgeCallback = (edge: ExtendedEdge, selectionState: SelectionDataState) => number
+
+
+// interface FederatedPointerEvent {
+//     OnRewards: CustomEvent
+// }
 
 // PIXI.settings.GC_MAX_IDLE = 100000;
 PIXI.settings.PREFER_ENV = PIXI.ENV.WEBGL2
@@ -123,7 +129,7 @@ class SpriteCache {
                 return new PIXI.Sprite(PIXI.Texture.WHITE)
             }
 
-            return new PIXI.Sprite(PIXI.Texture.from(`${process.env.REACT_APP_SPRITE_ORIGIN}/${shape}.png`))
+            return new PIXI.Sprite(PIXI.Texture.from(`${process.env['REACT_APP_SPRITE_ORIGIN']}/${shape}.png`))// process.env.REACT_APP_SPRITE_ORIGIN modified by LAU
         }
 
         return this.cache[shapeString].pop()!
@@ -359,10 +365,11 @@ function renderBackground(stage: PIXI.Container,
                 // Selection is x0 + x1, y0 + y1
                 // x0 is not necessarily less than x1, so we need to check both.
 
-                if (node.x * transformK + transformX > xmin
-                    && node.x * transformK + transformX < xmax
-                    && node.y * transformK + transformY > ymin
-                    && node.y * transformK + transformY < ymax)    {
+                // chagned node.x -> node['x'] LAU
+                if (node['x'] * transformK + transformX > xmin
+                    && node['x'] * transformK + transformX < xmax
+                    && node['y'] * transformK + transformY > ymin
+                    && node['y'] * transformK + transformY < ymax)    {
 
                     selectionDispatch({
                         type: 'selection/added',
@@ -401,10 +408,10 @@ function renderBackground(stage: PIXI.Container,
             }
 
             nodes.forEach((node) => {
-                if (node.x * transformK + transformX > selectionBox.x0
-                    && node.x * transformK + transformX < selectionBox.x0 + selectionBox.x1
-                    && node.y * transformK + transformY > selectionBox.y0
-                    && node.y * transformK + transformY < selectionBox.y0 + selectionBox.y1) {
+                if (node['x'] * transformK + transformX > selectionBox.x0
+                    && node['x'] * transformK + transformX < selectionBox.x0 + selectionBox.x1
+                    && node['y'] * transformK + transformY > selectionBox.y0
+                    && node['y'] * transformK + transformY < selectionBox.y0 + selectionBox.y1) {
                     selectionDispatch({
                         type: 'selection/added',
                         payload: {
@@ -485,8 +492,8 @@ function updateNodePositions(nodes: ExtendedNode[]) {
     let nodeDict: {[key: string]: ExtendedNode} = {}
 
     renderedNodes.forEach((renderedNode, index) => {
-        renderedNode.x = nodes[index].x
-        renderedNode.y = nodes[index].y
+        renderedNode['x'] = nodes[index]['x']     //renderedNode.x = nodes[index].x
+        renderedNode['y'] = nodes[index]['y']
 
         renderedNode.nodesprite.scale.x = ((renderedNode.visualAttributes.radius) / 16  * transformK ) / SPRITESCALE
         renderedNode.nodesprite.scale.y = ((renderedNode.visualAttributes.radius) / 16  * transformK ) / SPRITESCALE
@@ -521,7 +528,7 @@ function updateTransform() {
     }
 
     renderedNodes.forEach((renderedNode) => {
-        moveRenderedNode(renderedNode, renderedNode.x, renderedNode.y)
+        moveRenderedNode(renderedNode, renderedNode['x'], renderedNode['y'])
 
         renderedNode.nodesprite.scale.x = ((renderedNode.visualAttributes.radius) / 16 * transformK) / SPRITESCALE
         renderedNode.nodesprite.scale.y = ((renderedNode.visualAttributes.radius) / 16 * transformK) / SPRITESCALE
@@ -537,7 +544,7 @@ function updateTransform() {
         const target = edge.targetNode
 
             // Calculate the angles to get the circle border location.
-        let angle = Math.atan2(target.y - source.y, target.x - source.x);
+        let angle = Math.atan2(target['y'] - source['y'], target['x'] - source['x']);
 
         let sinSource = Math.sin(angle) * source.visualAttributes.radius / (SPRITESCALE / 2);
         let cosSource = Math.cos(angle) * source.visualAttributes.radius / (SPRITESCALE / 2);
@@ -545,11 +552,11 @@ function updateTransform() {
         let sinTarget = Math.sin(angle) * target.visualAttributes.radius / (SPRITESCALE / 2);
         let cosTarget = Math.cos(angle) * target.visualAttributes.radius / (SPRITESCALE / 2);
 
-        let sourceX = (source.x + cosSource) * transformK;
-        let sourceY = (source.y + sinSource) * transformK;
+        let sourceX = (source['x'] + cosSource) * transformK;
+        let sourceY = (source['y'] + sinSource) * transformK;
 
-        let targetX = (target.x - cosTarget) * transformK;
-        let targetY = (target.y - sinTarget) * transformK;
+        let targetX = (target['x'] - cosTarget) * transformK;
+        let targetY = (target['y'] - sinTarget) * transformK;
 
         let dx = targetX - sourceX;
         let dy = targetY - sourceY;
@@ -561,8 +568,8 @@ function updateTransform() {
 
         // let wingLength = 5 * transformK;
 
-        edge.gfx.x = (source.x + cosSource) * transformK + transformX
-        edge.gfx.y = (source.y + sinSource) * transformK + transformY
+        edge.gfx.x = (source['x'] + cosSource) * transformK + transformX
+        edge.gfx.y = (source['y'] + sinSource) * transformK + transformY
 
         edge.gfx.width = lineLength
         edge.gfx.height = edge.visualAttributes.width
@@ -590,8 +597,8 @@ function animator(timestamp: DOMHighResTimeStamp) {
 
             let gfx = renderedNode.nodesprite
 
-            let targetX = renderedNode.x * transformK + transformX
-            let targetY = renderedNode.y * transformK + transformY
+            let targetX = renderedNode['x'] * transformK + transformX
+            let targetY = renderedNode['y'] * transformK + transformY
 
             if (renderedNode.visualAttributes.prevShape !== renderedNode.visualAttributes.shape) {
                 gfx.x = targetX
@@ -799,7 +806,7 @@ export function Renderer({
         app.stage.addChild(text)
 
         const id = node.id
-        nodeSprite.on(('mousedown'), (event: PIXI.InteractionEvent) => {
+        nodeSprite.on(('mousedown'), () => {//event: InteractionEvent
             if (selectionDispatch === null) {
                 return
             }
@@ -822,7 +829,7 @@ export function Renderer({
             })}, 250)
         })
 
-        nodeSprite.on(('pointertap'), (event: PIXI.InteractionEvent) => {
+        nodeSprite.on(('pointertap'), () => {//event: PIXI.InteractionEvent
             if (selectionDispatch === null) {
                 return
             }
@@ -843,7 +850,7 @@ export function Renderer({
             })
         })
 
-        nodeSprite.on(('pointerup'), (event: PIXI.InteractionEvent) => {
+        nodeSprite.on(('pointerup'), () => {//event: PIXI.InteractionEvent
             if (selectionDispatch === null) {
                 return
             }
@@ -858,7 +865,7 @@ export function Renderer({
             }
         })
 
-        nodeSprite.on(('pointerupoutside'), (event: PIXI.InteractionEvent) => {
+        nodeSprite.on(('pointerupoutside'), (event: PIXI.FederatedPointerEvent) => {// used to be PIXI.InteractionEvent
             if (event.target === null) {
                 return
             }
@@ -881,8 +888,8 @@ export function Renderer({
             })
         })
 
-        node.x = nodeX
-        node.y = nodeY
+        node['y'] = nodeX
+        node['y'] = nodeY
 
         nodeDict[node.id] = node
 

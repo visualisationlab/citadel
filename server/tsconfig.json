@@ -10,7 +10,7 @@
 
         // Modules
         "paths": {
-            "shared": ["../shared/types/src/types"]
+            "shared": ["../shared/dist/src/types"]
         },
     },
     "references": [

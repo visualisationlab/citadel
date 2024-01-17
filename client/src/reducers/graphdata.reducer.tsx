@@ -3,7 +3,7 @@
  *
  * This file contains the graph data reducer, which is used to store the graph data.
  */
-import { VisGraph } from '../types'
+// import { VisGraph } from '../types'
 
 import { API } from '../services/api.service'
 import { BasicEdge, BasicNode } from '../components/router.component'

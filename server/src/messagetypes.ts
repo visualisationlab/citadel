@@ -1,7 +1,7 @@
 import { LayoutSettings, AvailableLayout, LayoutInfo } from "./session.class" //ParamType SimulatorParam
 // import { SimulatorParameter , SimulatorParameterType } from ""
 
-import * as Types from "shared"
+import * as Types from 'shared'
 
 export type ServerDataType = 'graphState' | 'sessionState' | 'layouts' | 'apiKey' | 'QR'
 

@@ -39,8 +39,11 @@ export type Simulator = {
 }
 
 // Websocket WSURL.
-const WSURL = process.env.REACT_APP_WSURL + ':' +
-    process.env.REACT_APP_WEBSOCKETPORT
+const WSURL = process.env['REACT_APP_WSURL'] + ':' +
+    process.env['REACT_APP_WEBSOCKETPORT']
+
+// const WSURL = process.env.REACT_APP_WSURL + ':' +
+//     process.env.REACT_APP_WEBSOCKETPORT
 
 class WebsocketService {
     ws: WebSocket | null = null

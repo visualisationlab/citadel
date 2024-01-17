@@ -1,4 +1,4 @@
-import { number } from "mathjs"
+// import { number } from "mathjs"
 import { LayoutInfo } from "./sessiondata.reducer"
 
 export type AvailableLayout =
@@ -146,6 +146,7 @@ export function LayoutSettingsReducer(state: LayoutSettingsState, action: Layout
                 if (setting.name === action.key) {
                     setting.auto = action.value
                 }
+                return setting // ADDED BY LAU
             })
 
             return {...state}
