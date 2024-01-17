@@ -2,7 +2,7 @@ import { Dispatch } from 'react'
 
 import { LayoutInfo, ParamType, ServerState, SessionReducer, SessionState, SimulatorParam } from '../reducers/sessiondata.reducer'
 
-import { VisGraph } from '../types'
+// import { VisGraph } from '../types'
 import { GraphDataReducerAction } from '../reducers/graphdata.reducer'
 import { API } from '../services/api.service'
 

@@ -1,4 +1,5 @@
-import { SimulatorParam, LayoutSettings, ParamType, AvailableLayout, LayoutInfo } from "./session.class"
+import { LayoutSettings, AvailableLayout, LayoutInfo } from "./session.class" //ParamType SimulatorParam
+// import { SimulatorParameter , SimulatorParameterType } from ""
 
 import * as Types from "shared"
 
@@ -22,12 +23,12 @@ export type MessageTypeMap = {
     'stopSimulator': Record<string, never>,
     'sendSessionState': SessionStatePayload,
     'sendGlobals': {globals: Record<string, string | number | boolean>},
-    'sendGraphState': Types.BasicGraph,
+    'sendGraphState': Types.Graph.BasicGraph,
     'headsetConnected': {headsetID: string, connected: boolean},
     'simulatorData': SimulatorDataPayload,
     'setPlayState': {playState: boolean},
     'generateLayout': {layout: LayoutSettings},
-    'setGraphState': Types.BasicGraph,
+    'setGraphState': Types.Graph.BasicGraph,
     'setSliceIndex': {index: number},
     'addHeadset': object,
     'userInitialization': UserInitializationPayload,
@@ -36,17 +37,17 @@ export type MessageTypeMap = {
 }
 
 type SimulatorDataPayload = {
-    nodes: Types.BasicNode[],
-    edges: Types.BasicEdge[],
+    nodes: Types.Graph.BasicNode[],
+    edges: Types.Graph.BasicEdge[],
     apikey: string,
     globals: {[key: string]: string | number | boolean}
-    params: Array<SimulatorParam<ParamType>>
+    params: Array<Types.Simulator.SimulatorParameter<Types.Simulator.SimulatorParameterType>>
 }
 
 type StartSimulatorPayload = {
     stepCount: number,
     apiKey: string,
-    params: Array<SimulatorParam<ParamType>>,
+    params: Array<Types.Simulator.SimulatorParameter<Types.Simulator.SimulatorParameterType>>,
     name: string,
 }
 
@@ -64,7 +65,7 @@ type PanPayload = {
 // Register a new simulator instance.
 type RegisterSimulatorPayload = {
     apikey: string,
-    params: Array<SimulatorParam<ParamType>>,
+    params: Array<Types.Simulator.SimulatorParameter<Types.Simulator.SimulatorParameterType>>,
     title: string,
     validator: boolean,
 }
@@ -128,7 +129,7 @@ type SessionStatePayload = {
 
 type ServerSimulator = {
     readonly apikey: string | null,
-    params: Array<SimulatorParam<ParamType>>,
+    params: Array<Types.Simulator.SimulatorParameter<Types.Simulator.SimulatorParameterType>>,
     title: string,
     state: 'disconnected' | 'idle' | 'generating' | 'connecting',
     valid: 'valid' | 'invalid' | 'unknown',

@@ -7,7 +7,9 @@
 import * as d3 from "d3";
 import * as PIXI from "pixi.js";
 import { websocketService } from "../services/websocket.service";
-import { VisGraph } from '../types'
+// import { VisGraph } from '../types'
+// import 
+
 PIXI.settings.ROUND_PIXELS = true;
 PIXI.settings.GC_MAX_IDLE = 100000;
 PIXI.settings.PRECISION_FRAGMENT = PIXI.PRECISION.LOW;

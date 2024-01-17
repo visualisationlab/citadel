@@ -10,6 +10,11 @@
 
         // Language and Environment
         "jsx": "react-jsx",
+
+        // Modules
+        "paths": {
+            "shared": ["../shared/types/src/types"]
+        },
     },
     "eslintConfig": {
         "extends": ["react-app", "shared-config"]

@@ -1,6 +1,7 @@
 // Handles Websocket communication between client and server.
 
-import { VisGraph } from '../types'
+// import { VisGraph } from '../types'
+// import { Cytograph } from "shared"
 import { Router } from '../components/router.component'
 import { API } from '../services/api.service'
 
