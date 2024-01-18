@@ -40,7 +40,7 @@ function main() {
         cert: fs.readFileSync(config.certPath, 'utf8')
     }, app)
 
-    configureExpressApp(app, config, logger, formatter)
+    configureExpressApp(app, config,sessions, logger, formatter)
 
     const websocketServer = new WebSocketServer({
         server: httpsServer,

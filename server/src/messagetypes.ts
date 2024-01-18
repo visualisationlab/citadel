@@ -40,7 +40,8 @@ type SimulatorDataPayload = {
     nodes: Types.Graph.BasicNode[],
     edges: Types.Graph.BasicEdge[],
     apikey: string,
-    globals: {[key: string]: string | number | boolean}
+    globals: {[key: string]: string | number | boolean}//{ value: number; }
+    //globals: {[key: string]: string | number | boolean}
     params: Array<Types.Simulator.SimulatorParameter<Types.Simulator.SimulatorParameterType>>
 }
 

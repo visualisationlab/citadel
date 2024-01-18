@@ -4,6 +4,7 @@ import axios from 'axios';
 const ROOTURL = process.env['REACT_APP_URL'] === "http://localhost" ? "https://" + window.location.hostname : process.env['REACT_APP_URL'];
 const SERVERPORT = process.env['REACT_APP_SERVERPORT'];
 console.log(ROOTURL)
+console.log(SERVERPORT)
 
 const API_URL = ROOTURL + ':' + SERVERPORT + '/api/test';
 const DATA_URL = ROOTURL + ':' + SERVERPORT + '/data.csv';

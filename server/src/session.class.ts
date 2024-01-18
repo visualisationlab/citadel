@@ -17,6 +17,7 @@ import { IncomingMessage } from 'http'
 import fs from 'fs'
 
 import * as MessageTypes from './messagetypes'
+import * as Parser from './parser'
 
 import * as Types from 'shared'
 // import { BasicGraph } from 'shared/graph'
@@ -279,7 +280,8 @@ export class Session {
 
     /* Connection settings. */
     private readonly localAddress: string
-    private readonly websocketPort: number
+    // private readonly websocketPort: number
+    private readonly websocketPort: string
 
     /* Used to store current session graph state. */
     private cy: cytoscape.Core
@@ -327,13 +329,15 @@ export class Session {
 
     private simRunID: Record<string, number> = {}
 
+    private parseJson: (edges,nodes) => {}
+
     constructor(sid: string,
                 destroyFun: (sid: string) => void,
                 sourceURL: string,
                 //graph: BasicGraph,
                 graph: Types.Graph.BasicGraph, //LAU
                 localAddress: string,
-                websocketPort: number,
+                websocketPort: string,
                 logger: Logger) {
 
         this.logger = logger
@@ -554,7 +558,8 @@ export class Session {
     }
 
     private handleSimulatorDataMessage(message: MessageTypes.Message<'simulatorResponse'>,
-        resolve: (value: () => void) => void) {
+        resolve: (value: () => void) => void,
+        reject: (error: Error) => void)  {
 
         const payload = message.payload
 
@@ -660,7 +665,7 @@ export class Session {
                 this.handleRegisterSimulatorMessage(message as MessageTypes.Message<'registerSimulator'>, resolve, reject)
 
                 break
-            case 'data':
+            case 'getData':  //used to be data --> changed by lau
                 this.handleSimulatorDataMessage(message as MessageTypes.Message<'simulatorResponse'>, resolve, reject)
         }
     }
@@ -799,7 +804,7 @@ export class Session {
         })
     }
 
-    async layoutTimer(resolve: () => void, worker: Worker, signal: AbortSignal ) {
+    async layoutTimer(resolve: (resolveMessage:string) => void, worker: Worker, signal: AbortSignal ) { //LAU added resolve message Honestly don't really get what happens here
         try {
             await setTimeout(60000, null, {
                 signal: signal
@@ -812,7 +817,7 @@ export class Session {
                 console.log(reason)
             })
 
-            resolve()
+            resolve('')
         } catch(error) {
             console.log(error)
             // if (error typeof Error) {
@@ -861,7 +866,7 @@ export class Session {
                     this.handleRegisterSimulatorMessage(message as MessageTypes.Message<'registerSimulator'>, resolve, reject)
 
                     break
-                case 'data':
+                case 'getData':  //data LAU
                     this.handleSimulatorDataMessage(message as MessageTypes.Message<'simulatorResponse'>, resolve, reject)
                     break
                 case 'setPlayState':
@@ -1191,7 +1196,7 @@ export class Session {
     private sendGraphState() {
         this.pruneSessions()
 
-        const graphData = this.cy.json() as CytoGraph
+        const graphData = this.cy.json() as Types.CytoGraph
 
         const payload = {
             nodes: graphData.elements.nodes.map((node) => {
@@ -1264,9 +1269,9 @@ export class Session {
 
         message.payload.globals = {
             ...message.payload.globals,
-            test: {
-                value: Math.random(),
-            }
+            // test: {
+            //     value: Math.random(),
+            // }
         }
 
         // Create a response message
@@ -1365,7 +1370,7 @@ export class Session {
         this.sendMessage(sim[0].socket!, message)
     }
 
-    private getSimulatorInfo(userID: string): Simulator[] {
+    private getSimulatorInfo(userID: string): Types.Simulator[] {
         return this.simulators.map((sim) => {
             if (sim.userID === userID) {
                 return sim

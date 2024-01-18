@@ -13,7 +13,7 @@ import { useEffect,  useReducer, useState } from 'react'
 //     loadBackgroundRendering
 // } from './backgroundrenderer.component'
 
-// import { useHistory } from 'react-router-dom'
+import { useHistory,RouteComponentProps } from 'react-router-dom'
 import {
     Container,
     Row,
@@ -33,19 +33,19 @@ import {
     ToastContainer
     // Table, Spinner, DropdownButton, InputGroup, Dropdown
  } from 'react-bootstrap'
-// import { userService } from '../services/user.service'
+import { userService } from '../services/user.service'
 // import { round } from 'mathjs'
 
 import './home.component.css'
 
 const BACKGROUND_ID = 'backgroundRendering'
 
-// type ErrorPhase = 0 | 1 | 2 | 3 | 4 | 5 | 6
+type ErrorPhase = 0 | 1 | 2 | 3 | 4 | 5 | 6
 
-// interface ErrorMessage {
-//     phase: ErrorPhase,
-//     errors: string[]
-// }
+interface ErrorMessage {
+    phase: ErrorPhase,
+    errors: string[]
+}
 
 interface ServerGraphData {
     graphs: GraphDataInfo[],
@@ -69,6 +69,12 @@ interface GraphDataInfo {
     lastAccessed: Date | null,
     size: number
 }
+
+interface PreviousSession {
+    sid: string,
+    creationDate:Date
+}
+// let prevSessions: [string, Date][] = []
 
 type NotificationType = 'info' | 'warn' | 'error'
 
@@ -222,16 +228,22 @@ function renderCreate(
     loading: boolean,
     url: string,
     setURL: (url: string) => void,
-    graphList: GraphDataInfo[],
+    setError:React.Dispatch<React.SetStateAction<ErrorMessage>>,
+    setLoading:React.Dispatch<React.SetStateAction<boolean>>,
+    graphList: [],//GraphDataInfo
+    history:RouteComponentProps["history"]
 ) {
     // Renders the start session button in the second panel.
     const startSessionButton = !loading ? (
         <Button variant='primary'
                 type='submit'
                 onClick={() => {
-                    // startSession(
-                    //     // url
-                    // )
+                    startSession(
+                        url,
+                        setError,
+                        setLoading,
+                        history
+                    )
                 }}
                 disabled={url === ''}>
             Start session
@@ -269,12 +281,17 @@ function renderCreate(
                     }}>
                     {
                         graphList.map((val, index) => {
+                            console.log('graphlist.map in dropdown')
+                            console.log(val)
+                            console.log(index)
+                            // val.name = {val}
                             return (
                                 <Dropdown.Item
                                     key={index}
-                                    onClick={() => {setURL(val.name)}}
+                                    onClick={() => {setURL(val)}}
                                 >
-                                    {val.name}
+                                    {val}
+                                    {/* {val.name} */}
                                 </Dropdown.Item>
                             )
                         })
@@ -743,11 +760,14 @@ function render(
     loading: boolean,
     url: string,
     setUrl: (url: string) => void,
+    setError:React.Dispatch<React.SetStateAction<ErrorMessage>>,
+    setLoading:React.Dispatch<React.SetStateAction<boolean>>,
     sessions: SessionStatus[],
     graphList: GraphDataInfo[],
     menuType: MenuType,
     setMenuType: (type: MenuType) => void,
-    currentTime: Date
+    currentTime: Date,
+    history:RouteComponentProps["history"]
 ) {
     let content = <></>
 
@@ -759,7 +779,7 @@ function render(
 
     switch (menuType) {
         case 'create':
-            content = renderCreate(loading, url, setUrl, graphList)
+            content = renderCreate(loading, url, setUrl,setError,setLoading, graphList,history)
             break
         case 'join active':
             content = renderJoinActive(sessions, setNotifications)
@@ -867,64 +887,70 @@ function render(
 }
 
 // Parses the previous sessions from local storage.
-// function parsePreviousSessions(previousSessions: string | null): PreviousSession[] {
-//     if (previousSessions === null) {
-//         return []
-//     }
+function parsePreviousSessions(previousSessions: string | null): PreviousSession[] {
+    if (previousSessions === null) {
+        return []
+    }
 
-//     const result: PreviousSession[] = []
+    const result: PreviousSession[] = []
 
-//     const sessions = previousSessions.split(',')
+    const SID_MAX_LENGTH: number = 6
 
-//     sessions.forEach(session => {
-//         const [sid, date] = session.split(':')
+    const sessions = previousSessions.split(',')
 
-//         if (sid === undefined || date === undefined) {
-//             return
-//         }
+    sessions.forEach(session => {
+        const [sid, date] = session.split(':')
 
-//         if (sid.length > SID_MAX_LENGTH) {
-//             return
-//         }
+        if (sid === undefined || date === undefined) {
+            return
+        }
 
-//         result.push([sid, new Date(date)])
-//     })
+        if (sid.length > SID_MAX_LENGTH) {
+            return
+        }
+        const creationDate = new Date(date)
+        //result.push([sid, new Date(date)]) LAU
+        result.push({sid,creationDate})
+    })
 
-//     return result
-// }
+    return result
+}
 
-// function startSession(
-//     // url: string
-//     ) {
-//     setError(null)
+function startSession(
+    url: string,
+    setError:React.Dispatch<React.SetStateAction<ErrorMessage>>,
+    setLoading:React.Dispatch<React.SetStateAction<boolean>>,
+    history:RouteComponentProps["history"]
+    ) {
+    setError(null)
 
-//     setLoading(true)
+    setLoading(true)
 
-//     userService.genSession(url).then(
-//         response => {
-//             setLoading(false)
-//             history.push(`/sessions/${response.data}`)
-//         },
-//         error => {
-//             setLoading(false)
+    userService.genSession(url).then(
+        response => {
+            setLoading(false)
+            history.push(`/sessions/${response.data}`)
+        },
+        error => {
+            setLoading(false)
 
-//             if (error.response.status === 404) {
-//                 setError({
-//                     phase: 0,
-//                     errors: ['Could not connect to server.']
-//                 })
-//             }
-//             else if (error.response.status === 400) {
-//                 console.log("setting errors")
+            if (error.response.status === 404) {
+                setError({
+                    phase: 0,
+                    errors: ['Could not connect to server.']
+                })
+            }
+            else if (error.response.status === 400) {
+                console.log("setting errors")
 
-//                 setError({
-//                     phase: error.response.data.phase,
-//                     errors: error.response.data.errors
-//                 })
-//             }
-//         }
-//     )
-// }
+                setError({
+                    phase: error.response.data.phase,
+                    errors: error.response.data.errors
+                })
+            }
+        }
+    )
+}
 
 // function joinSession(newSid: string | null) {
 //     if (newSid === null) {
@@ -1025,59 +1051,63 @@ export default function Upload() {
         return () => {clearInterval(intervalId)}
     })
 
-    // const [error, setError] = useState<ErrorMessage | null>(null)
+    const [error, setError] = useState<ErrorMessage | null>(null)
 
-    // const [sessionStatusList, setSessionStatusList] = useState<boolean[]>([false, false, false, false, false])
+    const [sessionStatusList, setSessionStatusList] = useState<boolean[]>([false, false, false, false, false])
 
 
-    // const history = useHistory()
+    const history = useHistory()
 
-    // const [sid, setSid] = useState('')
+    const [sid, setSid] = useState('')
 
-    // const [parsedPreviousSessions, setParsedPreviousSessions] = useState<PreviousSession[]>([])
+    const [parsedPreviousSessions, setParsedPreviousSessions] = useState<PreviousSession[]>([])
 
     // Load previous sessions from local storage
-    // useEffect(() => {
-    //     const previousSessions = parsePreviousSessions(localStorage.getItem('prevSessions'))
+    useEffect(() => {
+        const previousSessions = parsePreviousSessions(localStorage.getItem('prevSessions'))
 
-    //     if (previousSessions.length > 0) {
-    //         setParsedPreviousSessions(previousSessions)
-    //     }
-    // }, [setParsedPreviousSessions])
+        if (previousSessions.length > 0) {
+            setParsedPreviousSessions(previousSessions)
+        }
+    }, [setParsedPreviousSessions])
 
     // Load graphlist from server
     useEffect(() => {
         setURL('')
         setLoading(false)
-        setServerGraphData({graphs: testGraphData, root: ''})
+        // setServerGraphData({graphs: testGraphData, root: ''})
         setSessions(testSessionStatus)
-        // userService.getGraphs().then(
-        //     response => {
-        //         setServerGraphData()
-        //     }
-        // )
+        userService.getGraphs().then(
+            response => {
+                let graphs: GraphDataInfo[] = response.data.graphs
+                let root: string = response.data.root
+                console.log(graphs)
+                console.log(root)
+                setServerGraphData({graphs: graphs, root: root})
+            }
+        )
     }, [])
 
     // Load session status from server
-    // useEffect(() => {
-    //     const result: boolean[] = []
+    useEffect(() => {
+        const result: boolean[] = []
 
-    //     if (parsedPreviousSessions.length === 0) {
-    //         return
-    //     }
+        if (parsedPreviousSessions.length === 0) {
+            return
+        }
 
-    //     parsedPreviousSessions.forEach((data) => {
-    //         userService.getSessionStatus(data.sid).then(
-    //             response => {
-    //                 result.push(response.data)
+        parsedPreviousSessions.forEach((data) => {
+            userService.getSessionStatus(data.sid).then(
+                response => {
+                    result.push(response.data)
 
-    //                 if (parsedPrevSessions && res.length === parsedPrevSessions.length - 1) {
-    //                     setSessionStatusList(res)
-    //                 }
-    //             }
-    //         )
-    //     })
-    // }, [parsedPreviousSessions])
+                    if (parsedPreviousSessions && result.length === parsedPreviousSessions.length - 1) {
+                        setSessionStatusList(result)
+                    }
+                }
+            )
+        })
+    }, [parsedPreviousSessions])
 
 
     // useLayoutEffect(() => {
@@ -1093,9 +1123,12 @@ export default function Upload() {
         loading,
         url,
         setURL,
+        setError,
+        setLoading,
         sessions,
         serverGraphData.graphs,
         menuType,
         setMenuType,
-        currentTime)
+        currentTime,
+        history)
 }

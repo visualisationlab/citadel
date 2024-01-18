@@ -7,11 +7,14 @@ import uid from 'uid-safe'
 import * as fs from 'fs'
 import * as https from 'https'
 
-// import { Session } from './session.class'
 import winston from 'winston'
 
 import { GraphFormatConverter } from 'graph-format-converter'
 import { checkGraph } from './parser'
+import { Session } from './session.class'
+import { BasicGraph } from 'shared'
+import * as MessageTypes from './messagetypes'
+
 
 
 export interface Config {
@@ -48,7 +51,7 @@ declare module 'express-serve-static-core' {
 export function configureExpressApp(
     app: Application,
     config: Config,
-    // sessions: Record<string, Session | null>,
+    sessions: Record<string, Session | null>,
     logger: winston.Logger,
     formatter: Intl.ListFormat): void {
     app.use(express.json())
@@ -66,22 +69,25 @@ export function configureExpressApp(
 
             res.root = "https://" + config.localAddress + ":" + config.serverPort + "/graphs/"
             res.graphs = graphs
+            // graphs.map((graph) =>{
+                
+            // })
 
             next()
         })
     }
 
-    app.get('/graphs', getGraphs, (res: Response) => {
+    app.get('/graphs', getGraphs, (req, res: Response)=> {
         res.json({graphs: res.graphs, root: res.root})
     })
 
-    app.get('/status/:session', (req: Request, res: Response) => {
+    app.get('/status/:session', (req, res: Response) => {//: Request
         res.send(
             sessions[req.params.session]
         )
     })
 
-    app.get('/keys/:session', (req: Request, res: Response) => {
+    app.get('/keys/:session', (req, res: Response) => {//: Request
         if (sessions[req.params.session]) {
             res.send("0")
             return
@@ -100,7 +106,9 @@ export function configureExpressApp(
 
     app.post('/urls', (req, res) => {
         // body('url').trim().unescape()
-        const url = req.content.url
+        // const url = req.content.url
+        const url = req.body.url
+        console.log(url)
 
         if (url === undefined) {
             res.status(400).json({msg: "URL is not set", errors: []})
@@ -114,14 +122,20 @@ export function configureExpressApp(
             if (err) throw err
 
             const dest = './cache/' + sid
+            if (fs.existsSync('./cache/')) {
+                console.log('found cache dir')
+            }
 
             // Create session.
             fs.rm(dest, (err) => {
-                if (err) {
-                    sendGraphError(res, 6, [err.message], logger, formatter)
+                // if (err) {
+                //     console.log('error here')
+                //     sendGraphError(res, 6, [err.message], logger, formatter)
 
-                    return
-                }
+                //     return
+                // }
+
+                // LAU doesn't understand above return --> you try to remove the cache file, failing means there is no so you create a new session? Why return then? 
 
                 const file = fs.createWriteStream(dest)
 
@@ -216,30 +230,30 @@ export function configureExpressApp(
 
 
                             // Parse globals
-                            // let globals: {[key: string]: {[key: string]: string}} = {general: {}}
+                            let globals: {[key: string]: {[key: string]: string}} = {general: {}}
 
-                            // if (json.attributes) {
-                            //     // Parse globals.
-                            //     for (const key in json.attributes) {
-                            //         if (typeof json.attributes[key] === 'object') {
-                            //             globals[key] = json.attributes[key]
+                            if (json.attributes) {
+                                // Parse globals.
+                                for (const key in json.attributes) {
+                                    if (typeof json.attributes[key] === 'object') {
+                                        globals[key] = json.attributes[key]
 
-                            //             for (let param in globals[key]) {
-                            //                 globals[key][param] = globals[key][param].toString()
-                            //             }
-                            //         }
-                            //         else {
-                            //             globals['general'][key] = json.attributes[key]
-                            //         }
-                            //     }
-                            // }
+                                        for (let param in globals[key]) {
+                                            globals[key][param] = globals[key][param].toString()
+                                        }
+                                    }
+                                    else {
+                                        globals['general'][key] = json.attributes[key]
+                                    }
+                                }
+                            }
 
-                            // const session = new Session(sid, ((sid) => {
-                            //     sessions[sid] = null
-                            // }), url, json as BasicGraph, config.localAddress,
-                            //     config.websocketPort, logger)
+                            const session = new Session(sid, ((sid) => {
+                                sessions[sid] = null
+                            }), url, json as BasicGraph, config.localAddress,
+                                String(config.websocketPort), logger)
 
-                            // sessions[sid] = session
+                            sessions[sid] = session
 
                         } catch (e) {
                             if (e instanceof Error) {
@@ -314,7 +328,7 @@ function sendGraphError(res: Response,
 }
 
 export function configureWebsocketServer(
-    server: Server, logger: winston.Logger, sessions: Record<string, Session | null>): void {
+    server, logger: winston.Logger, sessions: Record<string, Session | null>): void { //: Server
     server.on('connection', (socket, req) => {
         const inputURL = req.url
 
@@ -402,7 +416,7 @@ export function configureWebsocketServer(
 
                 try {
                     // If data is a Buffer, convert to string.
-                    const message: unknown = JSON.parse(JSON.stringify(data))
+                    const message: any = JSON.parse(JSON.stringify(data))  //changed unknown into any LAU
 
                     if (message === null) {
                         throw new Error(`Message is null`)

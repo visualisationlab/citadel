@@ -129,7 +129,7 @@ class SpriteCache {
                 return new PIXI.Sprite(PIXI.Texture.WHITE)
             }
 
-            return new PIXI.Sprite(PIXI.Texture.from(`${process.env['REACT_APP_SPRITE_ORIGIN']}/${shape}.png`))// process.env.REACT_APP_SPRITE_ORIGIN modified by LAU
+            return new PIXI.Sprite(PIXI.Texture.from(`${process.env.REACT_APP_SPRITE_ORIGIN}/${shape}.png`))// process.env.REACT_APP_SPRITE_ORIGIN modified by LAU
         }
 
         return this.cache[shapeString].pop()!
@@ -749,7 +749,7 @@ export function Renderer({
     selectionDispatch
     }: RendererProps) {
 
-    container.appendChild(app.view)
+    // container.appendChild(app.view) LAU
 
     if (!startupFlag) {
         setupRendering()
