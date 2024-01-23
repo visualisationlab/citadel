@@ -329,13 +329,13 @@ export class Session {
 
     private simRunID: Record<string, number> = {}
 
-    private parseJson: (edges,nodes) => {}
+    // private parseJson: (edges,nodes) => {}
 
     constructor(sid: string,
                 destroyFun: (sid: string) => void,
                 sourceURL: string,
-                //graph: BasicGraph,
-                graph: Types.Graph.BasicGraph, //LAU
+                graph: Types.Graph.BasicGraph,
+                //graph: Types.CytoGraph,//Types.Graph.BasicGraph, //LAU
                 localAddress: string,
                 websocketPort: string,
                 logger: Logger) {
@@ -353,12 +353,7 @@ export class Session {
 
         this.expirationDate = expDate
 
-        /* Load graph data. */
-        //const data = this.parseJson(nodes, edges)
 
-        /* Compress graph state and store it. */
-        const data = this.cy.json() //Added by LAU
-        this.graphHistory = [[gzipSync(JSON.stringify(data)).toString('base64'), null]]
 
         /* Startup cytoscape session. */
         this.cy = cytoscape({
@@ -366,10 +361,30 @@ export class Session {
             styleEnabled: true,
         })
 
+        /* Load graph data. */
+        const data = this.parseJson(graph.nodes, graph.edges)
+
+        /* Compress graph state and store it. */
+
+        this.cy.json(data) //Added by LAU
+        
+        console.log('data in session constructor')
+        console.log(data)
+        this.graphHistory = [[gzipSync(JSON.stringify(data)).toString('base64'), null]]
+
+
         this.users = []
         this.simulators = []
         this.messageQueue = []
         this.sessionState = 'idle'
+        this.simState = {
+            startTime: new Date,
+            currentStep: 0,
+            steps: 0,
+            simulatorKey: 'None',
+            userID: 'no user',
+            parameters: 'none'
+        }//new Types.Simulator.SimulatorState
 
         this.logger.log({
             level: 'info',
@@ -463,6 +478,62 @@ export class Session {
         })
 
         await this.loadGraphState(index + 1)
+    }
+
+    private parseJson(
+        nodes: {[key: string]: any}[],
+        edges: {[key: string]: any}[]) {
+        return {
+            elements: {
+                nodes: nodes.map((node) => {
+                    if (!Object.keys(node).includes('data')) {
+                        node['data'] = {}
+                    }
+
+                    if (Object.keys(node).includes('attributes')) {
+                        node['data'] = node['attributes']
+                    }
+
+                    if (Object.keys(node).includes('id')) {
+                        node['data']['id'] = node['id'].toString()
+                    }
+
+                    return node
+                }),
+                edges: edges.map((edge, index) => {
+                    // IF edge contains data, edgekeys is data, otherwise just edgekeys
+                    const edgeData = (edge['data']) ? {...edge['data']} : {...edge}
+                    const edgeKeys = Object.keys(edgeData)
+
+                    if (!Object.keys(edge).includes('data')) {
+                        edge['data'] = {}
+                    }
+
+                    if (edgeKeys.includes('attributes')) {
+                        edge['data'] = edgeData.attributes
+                        edge['attributes'] = {}
+                    }
+
+                    if (edgeKeys.includes('id')) {
+                        edge['data']['id'] = edgeData.id.toString()
+                    }
+
+                    if (!edgeKeys.includes('id')) {
+                        edge['data']['id'] = `e${index}`
+                    }
+
+                    if (edgeKeys.includes('source')) {
+                        edge['data']['source'] = edgeData.source.toString()
+                    }
+
+                    if (edgeKeys.includes('target')) {
+                        edge['data']['target'] = edgeData.target.toString()
+                    }
+
+                    return edge
+                })
+            }
+        }
     }
 
     /* Load slice into timeline at index. */
@@ -820,6 +891,7 @@ export class Session {
             resolve('')
         } catch(error) {
             console.log(error)
+            this.logger.log('error',error)
             // if (error typeof Error) {
 
             // }
@@ -1049,7 +1121,8 @@ export class Session {
                     break
                 case 'changeWindowSize':
                     const windowMessage = message as MessageTypes.Message<'changeWindowSize'>
-
+                    console.log('did I change the window size?')
+                    console.log(this.users)
                     this.users.forEach((user) => {
                         if (user.userID === windowMessage.senderID) {
                             user.width = windowMessage.payload.width
@@ -1126,6 +1199,7 @@ export class Session {
                 },
                 // TODO: ERROR TYPES
                 (error) => {
+                    console.log(error.stack)
                     // Log an error and close the session.
                     this.logger.log('error', error)
 
@@ -1197,6 +1271,8 @@ export class Session {
         this.pruneSessions()
 
         const graphData = this.cy.json() as Types.CytoGraph
+        console.log('sending graph state')
+        console.log(graphData)
 
         const payload = {
             nodes: graphData.elements.nodes.map((node) => {
@@ -1213,7 +1289,8 @@ export class Session {
             ),
             globals: this.globals,
         }
-
+        console.log('created payload for sending graphdata')
+        console.log(this.users)
         // TODO: id and position checks
         this.users.forEach((user) => {
             const message: MessageTypes.Message<'sendGraphState'> = {
@@ -1226,17 +1303,17 @@ export class Session {
                 sessionID: this.sessionID,
                 timestamp: new Date,
             }
-
+            console.log('created message')
             this.sendMessage(user.socket, message)
+            console.log('message send')
+            // user.headsets.forEach((headset) => {
+            //     if (headset.socket) {
+            //         message.receiverID = headset.headsetID
+            //         message.receiverType = 'headset'
 
-            user.headsets.forEach((headset) => {
-                if (headset.socket) {
-                    message.receiverID = headset.headsetID
-                    message.receiverType = 'headset'
-
-                    this.sendMessage(headset.socket, message)
-                }
-            })
+            //         this.sendMessage(headset.socket, message)
+            //     }
+            // })
         })
     }
 
@@ -1398,10 +1475,12 @@ export class Session {
 
     // Sends session info to all users.
     private sendSessionState() {
+        console.log('pruning sessions')
         this.pruneSessions()
 
         const dateDiff = new Date(this.expirationDate.getTime() - new Date().getTime())
-
+        console.log(this.simState)
+        console.log('looping over users')
         this.users.forEach((user) => {
             const message: MessageTypes.Message<'sendSessionState'> = {
                 type: 'sendSessionState',
@@ -1453,9 +1532,9 @@ export class Session {
                         }
                     }),
                     simState: {
-                        step: this.simState.step,
-                        stepMax: this.simState.stepMax,
-                        name: this.simState.name
+                        step: this.simState.currentStep,
+                        stepMax:this.simState.steps,
+                        name: 'no simulator connected' //this.simState.name | 
                     },
                     sessionURL: this.localAddress,
                     layoutInfo: getAvailableLayouts(),
@@ -1565,8 +1644,10 @@ export class Session {
 
     // Adds a user to the session, giving it a random user ID and username.
     addUser(socket: WebSocket, username: string | null, keys: number, req: IncomingMessage): string {
-        // const userID = uid.sync(4)
+        //const userID = uid.sync(4)
+        console.log('in adduser')
         const userID = req.socket.remoteAddress
+        console.log('userID',userID)
 
         if (userID === undefined) {
             throw new Error('Could not get user ID')
@@ -1599,6 +1680,7 @@ export class Session {
                 state: 'disconnected'
             })
         }
+        console.log('added simulators info in addUser')
 
         this.users.push({
             userID: userID,
@@ -1612,6 +1694,7 @@ export class Session {
             panY: 0,
             panK: 1
         })
+        console.log('added users info in addUser')
 
         const initMessage: MessageTypes.Message<'userInitialization'> = {
             sessionID: this.sessionID,
@@ -1632,12 +1715,13 @@ export class Session {
                 sessionState: this.sessionState,
             }
         }
-
+        console.log('created init message')
         this.sendMessage(socket, initMessage)
-
+        console.log(' Send init message')
         this.sendGraphState()
+        console.log('managed to send grpah data')
         this.sendSessionState()
-
+        console.log('send graph and session state')
         return userID
     }
 

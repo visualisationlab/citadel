@@ -242,6 +242,7 @@ export module Router {
         switch (message.type) {
             case 'sendGraphState':
                 const messageData: BasicGraph = (message as MessageTypes.Message<'sendGraphState'>).payload
+                console.log(messageData)
 
                 const nodes: BasicNode[] = messageData.nodes
 

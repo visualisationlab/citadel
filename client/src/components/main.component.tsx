@@ -186,7 +186,8 @@ export default function Main() {
             <MappingContext.Provider value={{ mappingsState: mappingsState, mappingsDispatch: mappingsDispatch}}>
             <GraphDataContext.Provider value={{ graphState: graphData, graphDispatch: graphDataDispatch }}>
                 <UserDataContext.Provider value={{ state: sessionData, dispatch: sessionDataDispatch}}>
-                        <Navigator disconnected = {sessionData.state === 'disconnected'}/>
+                        <Navigator /> {/* //disconnected = {sessionData.state === 'disconnected'} */}
+
                         <Globals/>
                         <InspectionTab/>
                         <PreProcess/>

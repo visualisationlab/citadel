@@ -67,7 +67,8 @@ interface GraphDataInfo {
     nodeCount: number,
     edgeCount: number,
     lastAccessed: Date | null,
-    size: number
+    size: number,
+    // url: string
 }
 
 interface PreviousSession {
@@ -281,9 +282,9 @@ function renderCreate(
                     }}>
                     {
                         graphList.map((val, index) => {
-                            console.log('graphlist.map in dropdown')
-                            console.log(val)
-                            console.log(index)
+                            // console.log('graphlist.map in dropdown')
+                            // console.log(val)
+                            // console.log(index)
                             // val.name = {val}
                             return (
                                 <Dropdown.Item
@@ -763,7 +764,7 @@ function render(
     setError:React.Dispatch<React.SetStateAction<ErrorMessage>>,
     setLoading:React.Dispatch<React.SetStateAction<boolean>>,
     sessions: SessionStatus[],
-    graphList: GraphDataInfo[],
+    graphList: [],//GraphDataInfo
     menuType: MenuType,
     setMenuType: (type: MenuType) => void,
     currentTime: Date,
@@ -1081,8 +1082,8 @@ export default function Upload() {
             response => {
                 let graphs: GraphDataInfo[] = response.data.graphs
                 let root: string = response.data.root
-                console.log(graphs)
-                console.log(root)
+                // console.log(graphs)
+                // console.log(root)
                 setServerGraphData({graphs: graphs, root: root})
             }
         )

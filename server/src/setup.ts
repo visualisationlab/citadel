@@ -1,5 +1,7 @@
 import { createLogger, format, transports, Logger } from 'winston'
 import express, { Application, RequestHandler, Response } from 'express'
+import { body } from 'express-validator'
+
 import path from 'path'
 
 
@@ -12,7 +14,7 @@ import winston from 'winston'
 import { GraphFormatConverter } from 'graph-format-converter'
 import { checkGraph } from './parser'
 import { Session } from './session.class'
-import { BasicGraph } from 'shared'
+import * as Types from 'shared'
 import * as MessageTypes from './messagetypes'
 
 
@@ -67,8 +69,12 @@ export function configureExpressApp(
                 return
             }
 
-            res.root = "https://" + config.localAddress + ":" + config.serverPort + "/graphs/"
-            res.graphs = graphs
+            // res.root = "https://" + config.localAddress + ":" + config.serverPort + "/graphs/"
+            // res.graphs = graphs
+            res.locals['root'] = "https://" + config.localAddress + ":" + config.serverPort + "/graphs/"
+            res.locals['graphs'] = graphs
+            // console.log(res.root)
+            // console.log(res.graphs)
             // graphs.map((graph) =>{
                 
             // })
@@ -78,7 +84,9 @@ export function configureExpressApp(
     }
 
     app.get('/graphs', getGraphs, (req, res: Response)=> {
-        res.json({graphs: res.graphs, root: res.root})
+        console.log('received graphs call')
+        console.log()
+        res.json({graphs: res.locals['graphs'], root: res.locals['root']})
     })
 
     app.get('/status/:session', (req, res: Response) => {//: Request
@@ -104,10 +112,11 @@ export function configureExpressApp(
         res.send(sessions[req.params.session]?.getKeys(remoteAddress).toString())
     })
 
-    app.post('/urls', (req, res) => {
+    app.post('/urls', body('url').trim().unescape(), (req, res) => {
         // body('url').trim().unescape()
-        // const url = req.content.url
-        const url = req.body.url
+        //const url = req.content.url
+        //const url = req.body.url
+        const url ="https://" + config.localAddress + ":" + config.serverPort + '/graphs/'+ req.body.url
         console.log(url)
 
         if (url === undefined) {
@@ -143,6 +152,7 @@ export function configureExpressApp(
                     new URL(url)
                 } catch (e) {
                     sendGraphError(res, 1, ["URL is not valid"], logger, formatter)
+                    sendGraphError(res,1,[e.message],logger,formatter)
 
                     file.close()
 
@@ -156,6 +166,7 @@ export function configureExpressApp(
                 }
 
                 https.get(url, (response) => {
+                    console.log('https get worked?')
                     let data = ''
 
                     response.on('data', (chunk) => {
@@ -182,22 +193,23 @@ export function configureExpressApp(
                         logger.log('info', `Downloaded ${url} to ${dest}`)
 
                         try {
-                            if (url) {
-                                sendGraphError(res, 1, ["URL is not set"], logger, formatter)
+                            // if (url) {
+                            //     sendGraphError(res, 1, ["URL is not set"], logger, formatter)
 
-                                file.close()
+                            //     file.close()
 
-                                fs.rm(dest, (err) => {
-                                    if (err) {
-                                        sendGraphError(res, 6, [err.message], logger, formatter)
-                                    }
-                                })
-                                return
-                            }
+                            //     fs.rm(dest, (err) => {
+                            //         if (err) {
+                            //             sendGraphError(res, 6, [err.message], logger, formatter)
+                            //         }
+                            //     })
+                            //     return
+                            // }
 
                             let json
 
                             const extension = url.split(/[#?]/)[0]?.split('.').pop()?.trim()
+                            console.log(extension)
 
                             if (extension === 'graphml') {
                                 const graphmlInstance = GraphFormatConverter.fromGraphml(data);
@@ -205,6 +217,8 @@ export function configureExpressApp(
                                 json = graphmlInstance.toJson()
                             } else {
                                 json = JSON.parse(data) as object
+                                // console.log('JSON')
+                                // console.log(json)
                             }
 
                             const validationResult = checkGraph(json)
@@ -227,12 +241,13 @@ export function configureExpressApp(
                                 return
                             }
 
-
+                            console.log(json)
 
                             // Parse globals
                             let globals: {[key: string]: {[key: string]: string}} = {general: {}}
 
                             if (json.attributes) {
+
                                 // Parse globals.
                                 for (const key in json.attributes) {
                                     if (typeof json.attributes[key] === 'object') {
@@ -247,17 +262,20 @@ export function configureExpressApp(
                                     }
                                 }
                             }
+                            console.log('made it this far')
 
                             const session = new Session(sid, ((sid) => {
                                 sessions[sid] = null
-                            }), url, json as BasicGraph, config.localAddress,
+                            }), url, json as Types.Graph.BasicGraph, config.localAddress, // as BasicGraph
                                 String(config.websocketPort), logger)
-
                             sessions[sid] = session
+
 
                         } catch (e) {
                             if (e instanceof Error) {
                                 sendGraphError(res, 4, [e.message], logger, formatter)
+                                console.log(e.stack)
+
                             }
                             else {
                                 sendGraphError(res, 4, ["Unknown error"], logger, formatter)
@@ -410,14 +428,15 @@ export function configureWebsocketServer(
             })
 
             socket.on('message', (data, isBinary) => {
+
                 if (isBinary) {
                     throw new Error(`BINARY! HELP!`)
                 }
 
                 try {
                     // If data is a Buffer, convert to string.
-                    const message: any = JSON.parse(JSON.stringify(data))  //changed unknown into any LAU
-
+                    const message: any = JSON.parse(data)  //changed unknown into any LAU //JSON.stringify(data)
+                    console.log(message)
                     if (message === null) {
                         throw new Error(`Message is null`)
                     }
@@ -439,12 +458,15 @@ export function configureWebsocketServer(
 
                     session.addMessage(message)
                 } catch (e) {
+                    console.log(e.stack)
                     logger.log('error', `Error '${e}' when parsing message`)
 
                     return
                 }
             })
         } catch (e) {
+            logger.log('error',`Websocket closed ${e}`)
+            logger.log('error',e.stack)
             socket.close()
         }
     })
