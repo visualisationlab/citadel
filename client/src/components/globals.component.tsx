@@ -199,6 +199,8 @@ export default function RenderGlobalsEditor() {
         if (!state)
             return
 
+        console.log('stat in render Globals editeor')
+        console.log(state)
         const parents = Object.keys(state.globals)
         const data = parents.map((parent) => {
             return Object.keys(state.globals[parent])

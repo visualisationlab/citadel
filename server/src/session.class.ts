@@ -338,7 +338,9 @@ export class Session {
                 //graph: Types.CytoGraph,//Types.Graph.BasicGraph, //LAU
                 localAddress: string,
                 websocketPort: string,
-                logger: Logger) {
+                logger: Logger,
+                globals:Record<string, Types.Graph.Attribute<Types.Graph.AttributeType>>
+                ) {
 
         this.logger = logger
         this.localAddress = localAddress
@@ -397,7 +399,7 @@ export class Session {
 
         this.currentLayout = null
 
-        // this.globals = globals //COMMENTED BY LAU
+        this.globals = globals //COMMENTED BY LAU
     }
 
     /* Sets session state. */
@@ -633,6 +635,8 @@ export class Session {
         reject: (error: Error) => void)  {
 
         const payload = message.payload
+
+        console.log(message)
 
         const data = this.parseJson(payload.nodes,
             payload.edges)
@@ -933,12 +937,13 @@ export class Session {
 
     private async processMessage<Type extends keyof MessageTypes.MessageTypeMap>(message: MessageTypes.Message<Type>) {
         return await new Promise<() => void>((resolve, reject) => {
+            // console.log(message)
             switch (message.type) {
                 case 'registerSimulator':
                     this.handleRegisterSimulatorMessage(message as MessageTypes.Message<'registerSimulator'>, resolve, reject)
 
                     break
-                case 'getData':  //data LAU
+                case 'simulatorData':  //data LAU chage from getData to 'simulatorData'
                     this.handleSimulatorDataMessage(message as MessageTypes.Message<'simulatorResponse'>, resolve, reject)
                     break
                 case 'setPlayState':

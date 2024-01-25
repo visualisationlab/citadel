@@ -267,7 +267,7 @@ export function configureExpressApp(
                             const session = new Session(sid, ((sid) => {
                                 sessions[sid] = null
                             }), url, json as Types.Graph.BasicGraph, config.localAddress, // as BasicGraph
-                                String(config.websocketPort), logger)
+                                String(config.websocketPort), logger,globals)
                             sessions[sid] = session
 
 

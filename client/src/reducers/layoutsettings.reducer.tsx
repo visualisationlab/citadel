@@ -95,6 +95,7 @@ export function LayoutSettingsReducer(state: LayoutSettingsState, action: Layout
 
             return {
                 selectedLayout: action.currentLayout,
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
                 layouts: action.value.map((layoutInfo, layoutIndex) => {
                     return {

@@ -47,7 +47,7 @@ export function GlobalSettingsReducer(state: GlobalSettingsState, action: Global
                 textScale: 1,
                 stateStack: []
             }
-        case 'undo':
+        case 'undo':{
             let prevState = state.stateStack.pop()
 
             if (prevState === undefined) {
@@ -55,6 +55,7 @@ export function GlobalSettingsReducer(state: GlobalSettingsState, action: Global
             }
 
             return prevState
+        }    
         case 'settingsLoaded':
             return {...action.payload.value,
                 stateStack: []

@@ -816,7 +816,7 @@ function render(
             </Button>
             {renderNotifications(notifications, setNotifications, showNotifications)}
             <Container
-                className="shadow p-3 bg-dark rounded"
+                className="shadow p-3 rounded" //bg-dark
                 style={{
                     position: 'absolute',
                     maxHeight: '100vh',

@@ -116,9 +116,11 @@ export type SessionReducer =
 
 export function SessionDataReducer(state: SessionState, action: SessionReducer): SessionState {
     switch (action.attribute) {
-        case 'all':
+        case 'all':{
             const message = action.value
-            const payload = message.payload
+            const payload = message.payload//! ? message.payload: {}
+            console.log('payload in sessionDataReducer')
+            console.log(payload)
 
             return {
                 globals: payload.globals,
@@ -178,6 +180,7 @@ export function SessionDataReducer(state: SessionState, action: SessionReducer):
                 },
                 playmode: payload.playmode
             }
+        }
         case 'state':
             state.state = action.value
 

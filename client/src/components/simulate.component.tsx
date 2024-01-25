@@ -25,7 +25,7 @@ function renderSimItem<T extends ParamType>(param: SimulatorParam<T>, index: num
     let inputField = <></>
 
     switch (param.type) {
-        case 'boolean':
+        case 'boolean':{
             const boolParam = param as SimulatorParam<'boolean'>
 
             // Booleans are rendered as a dropdown menu.
@@ -52,7 +52,8 @@ function renderSimItem<T extends ParamType>(param: SimulatorParam<T>, index: num
                 </Col>
             )
             break
-        case 'integer':
+        }
+        case 'integer':{
             const integerParam = param as SimulatorParam<'integer'>
 
             if (integerParam.limits.min === 0 && integerParam.limits.max === 0) {
@@ -136,7 +137,8 @@ function renderSimItem<T extends ParamType>(param: SimulatorParam<T>, index: num
             }
 
             break
-        case 'float':
+        }   
+        case 'float':{
             const floatParam = param as SimulatorParam<'float'>
             if (floatParam.limits.min === 0 && floatParam.limits.max === 0) {
 
@@ -223,7 +225,8 @@ function renderSimItem<T extends ParamType>(param: SimulatorParam<T>, index: num
                 )
             }
             break
-        case 'string':
+        }
+        case 'string':{
             const stringParam = param as SimulatorParam<'string'>
             // Strings are rendered as a text input field.
             inputField = (
@@ -250,7 +253,7 @@ function renderSimItem<T extends ParamType>(param: SimulatorParam<T>, index: num
                 </Col>
             )
             break
-
+        }
         default:
             break
     }
@@ -760,7 +763,7 @@ export function SimulatorTab() {
         </Row>
     )
 
-    var playbutton = (<></>)
+    let playbutton = (<></>)
 
     // Renders the play/pause button.
     if (state.playmode) {

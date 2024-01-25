@@ -116,6 +116,7 @@ function renderSettings(
                                 if (window.isSecureContext && navigator.clipboard) {
                                     navigator.clipboard.writeText(sid)
                                 } else {
+                                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                                     // @ts-ignore
                                     sessionRef.current.select()
 
@@ -139,6 +140,7 @@ function renderSettings(
                                 if (window.isSecureContext && navigator.clipboard) {
                                     navigator.clipboard.writeText(graphURL)
                                 } else {
+                                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                                     // @ts-ignore
                                     graphRef.current.select()
 

@@ -76,10 +76,11 @@ export function SelectionDataReducer(state: SelectionDataState, action: Selectio
     switch (action.type) {
         case 'selection/added':
             return setState(action.payload.attribute, addID(state.selectedIDs, action.payload.value), 'multi')
-        case 'selection/removed':
+        case 'selection/removed':{
             let newIDs = removeID(state.selectedIDs, action.payload.value)
 
             return setState(action.payload.attribute, newIDs, newIDs.length > 0 ? 'multi' : 'single')
+        }
         case 'selection/set':
             if (state.selectedIDs.length === 0 && action.payload.value.length === 0) {
                 return state
@@ -94,7 +95,7 @@ export function SelectionDataReducer(state: SelectionDataState, action: Selectio
             return setState(action.payload.attribute, [action.payload.id], 'single')
         case 'selection/longClick':
             return setState(action.payload.attribute, addID(state.selectedIDs, action.payload.id), 'multi')
-        case 'selection/clean':
+        case 'selection/clean':{
             let newSelectedIDs = state.selectedIDs.filter(id => {
                 if (state.objectType === 'node') {
                     return action.payload.nodeIDs.includes(id)
@@ -104,6 +105,7 @@ export function SelectionDataReducer(state: SelectionDataState, action: Selectio
             })
 
             return setState(state.objectType, newSelectedIDs, newSelectedIDs.length > 1 ? 'multi' : 'single')
+        }
         default:
             return state
     }

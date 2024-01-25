@@ -19,10 +19,10 @@ export default function App() {
     // Get <html> element
     const html = document.getElementsByTagName('html')[0]
 
-    if (html) {
-      // Set data-bs-theme to dark
-      html.setAttribute('data-bs-theme', 'dark')
-    }
+    // if (html) {
+    //   // Set data-bs-theme to dark
+    //   html.setAttribute('data-bs-theme', 'dark')
+    // }
 
     return (
       <div>

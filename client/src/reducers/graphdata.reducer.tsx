@@ -131,14 +131,16 @@ function calculateMetadata(data: BasicNode[] | BasicEdge[])
                 const numValue = Number(value)
 
                 nodeMetadata[attribute].type = 'ordered'
-
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
                 nodeMetadata[attribute].min = Math.min(nodeMetadata[attribute].min, numValue)
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
                 nodeMetadata[attribute].max = Math.max(nodeMetadata[attribute].max, numValue)
-
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
                 nodeMetadata[attribute].average += numValue
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
                 nodeMetadata[attribute].count += 1
             }
@@ -155,6 +157,7 @@ function calculateMetadata(data: BasicNode[] | BasicEdge[])
 
     for (const attribute of Object.keys(nodeMetadata)) {
         if (nodeMetadata[attribute].type === 'ordered') {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             nodeMetadata[attribute].average /= nodeMetadata[attribute].count
         }
@@ -200,7 +203,7 @@ function setData(state: GraphDataState, action: GraphDataReducerAction): GraphDa
 }
 
 export function GraphDataReducer(state: GraphDataState, action: GraphDataReducerAction): GraphDataState {
-    var newState
+    let newState
     switch (action.type) {
         case 'set':
             newState = setData(state, action)

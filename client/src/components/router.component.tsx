@@ -105,8 +105,8 @@ export module MessageTypes {
         'changeWindowSize': WindowSizePayload,
         'getData': ServerDataType,
         'startSimulator': StartSimulatorPayload,
-        'createSimulator': {},
-        'stopSimulator': {},
+        'createSimulator': NonNullable<unknown>,//{},//LAU
+        'stopSimulator': NonNullable<unknown>,//{},
         'sendSessionState': SessionStatePayload,
         'sendGraphState': BasicGraph,
         'headsetConnected': {headsetID: string, connected: boolean},
@@ -115,10 +115,10 @@ export module MessageTypes {
         'generateLayout': {layout: LayoutSettings},
         'setGraphState': BasicGraph,
         'setSliceIndex': {index: number},
-        'addHeadset': {},
+        'addHeadset': NonNullable<unknown>,//{},
         'userInitialization': UserInitializationPayload,
         'setGlobal': {key: string, param: string, value: string},
-        'createTestSimulator': {},
+        'createTestSimulator': NonNullable<unknown>,//{},
     }
 
     type SimulatorDataPayload = {
@@ -238,9 +238,10 @@ export module Router {
         if (!sessionDataDispatch || !graphDataDispatch || !selectionDataDispatch) {
             return
         }
+        console.log(message)
 
         switch (message.type) {
-            case 'sendGraphState':
+            case 'sendGraphState':{
                 const messageData: BasicGraph = (message as MessageTypes.Message<'sendGraphState'>).payload
                 console.log(messageData)
 
@@ -279,6 +280,7 @@ export module Router {
                 }})
 
                 break
+            }
             case 'sendSessionState':
                 sessionDataDispatch({attribute: 'all', value: (message as MessageTypes.Message<'sendSessionState'>)})
                 break

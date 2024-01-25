@@ -144,7 +144,7 @@ function SchemeReducer(state: MappingsState, action: MappingsReducerAction): Map
             state.schemes = action.state
 
             return state
-        case 'rename':
+        case 'rename':{
             let oldName = state.schemes.get(action.oldName)
             if (oldName === undefined) {
                 console.log('Renaming scheme: Scheme does not exist')
@@ -159,7 +159,7 @@ function SchemeReducer(state: MappingsState, action: MappingsReducerAction): Map
             localStorage.setItem('schemes', JSON.stringify(state.schemes.toJS()))
 
             return state
-
+        }
         default:
             return state
     }
@@ -199,7 +199,7 @@ export function MappingsReducer(state: MappingsState, action: MappingsReducerAct
     switch(action.type) {
         case 'selection':
             switch (action.action) {
-                case 'add':
+                case 'add':{
                     const emptyRow = Map({
                         mappingName: 'none',
                         mappingType: 'categorical',
@@ -215,6 +215,7 @@ export function MappingsReducer(state: MappingsState, action: MappingsReducerAct
                     state.selectedMappings = state.selectedMappings.add(emptyRow)
 
                     return {...state}
+                }
                 case 'remove':
                     state.selectedMappings = state.selectedMappings.delete(Map(action.mapping))
 

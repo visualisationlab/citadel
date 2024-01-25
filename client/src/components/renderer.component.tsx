@@ -1,6 +1,6 @@
 
 import * as PIXI from "pixi.js"
-// import { InteractionEvent } from '@pixi/interaction'
+import { InteractionEvent } from '@pixi/interaction'
 import * as d3 from "d3"
 
 // import { VisGraph } from '../types'
@@ -8,6 +8,7 @@ import { SelectionDataReducerAction, SelectionDataState } from "../reducers/sele
 
 import { API } from '../services/api.service'
 import { ExtendedNode, ExtendedEdge, Shape } from "./preprocess.component"
+import { compositionDependencies } from "mathjs"
 
 // Create and load bitmap font.
 PIXI.BitmapFont.from('font', {
@@ -46,9 +47,9 @@ interface RendererProps {
 export type EdgeCallback = (edge: ExtendedEdge, selectionState: SelectionDataState) => number
 
 
-// interface FederatedPointerEvent {
-//     OnRewards: CustomEvent
-// }
+interface FederatedPointerEvent {
+    OnRewards: CustomEvent
+}
 
 // PIXI.settings.GC_MAX_IDLE = 100000;
 PIXI.settings.PREFER_ENV = PIXI.ENV.WEBGL2
@@ -129,7 +130,7 @@ class SpriteCache {
                 return new PIXI.Sprite(PIXI.Texture.WHITE)
             }
 
-            return new PIXI.Sprite(PIXI.Texture.from(`${process.env.REACT_APP_SPRITE_ORIGIN}/${shape}.png`))// process.env.REACT_APP_SPRITE_ORIGIN modified by LAU
+            return new PIXI.Sprite(PIXI.Texture.from(`${process.env['REACT_APP_SPRITE_ORIGIN']}/${shape}.png`))// process.env.REACT_APP_SPRITE_ORIGIN modified by LAU
         }
 
         return this.cache[shapeString].pop()!
@@ -155,8 +156,10 @@ function setTransformCallback(transformUpdate: () => void) {
     }
 
     transformHandler = (event: any) => {
+        console.log('panning in transformhandeler')
         if (!panEnabled && prevTransform) {
             if (selectionRect) {
+                console.log('some nodes being destroyed?')
                 app.stage.removeChild(selectionRect)
                 selectionRect.destroy()
             }
@@ -183,6 +186,7 @@ function setTransformCallback(transformUpdate: () => void) {
             return
         }
 
+        console.log('actually assiggin the new coordinats')
         transformX = event.transform.x
         transformY = event.transform.y
         transformK = event.transform.k
@@ -291,6 +295,7 @@ function setupRendering() {
 }
 
 function moveRenderedNode(node: RenderedNode, x: number, y: number) {
+    console.log('moveRenderedNode')
     node.currentX = x * transformK + transformX
     node.currentY = y * transformK + transformY
 
@@ -322,7 +327,7 @@ function renderBackground(stage: PIXI.Container,
 
     stage.addChild(background)
 
-    var multiSelectTimer: ReturnType<typeof setTimeout> | null = null
+    let multiSelectTimer: ReturnType<typeof setTimeout> | null = null
 
     // Pointer down event.
     background.on(('pointerdown'), (event: any) => {
@@ -342,7 +347,7 @@ function renderBackground(stage: PIXI.Container,
 
             selectionBox.x0 = event.data.global.x
             selectionBox.y0 = event.data.global.y
-
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             prevTransform = d3.zoomTransform(d3.select('.render').node())
         }, multiSelectDelay)
@@ -523,7 +528,9 @@ function updateNodePositions(nodes: ExtendedNode[]) {
 }
 
 function updateTransform() {
+    console.log('updateTransform')
     if (renderedNodes.length === 0) {
+        console.log('no nodes found')
         return
     }
 
@@ -535,6 +542,7 @@ function updateTransform() {
     })
 
     renderedEdges.forEach((edge, index) => {
+        console.log('moving edgees')
         if (edge.gfx === null) {
             return
         }
@@ -749,9 +757,11 @@ export function Renderer({
     selectionDispatch
     }: RendererProps) {
 
-    // container.appendChild(app.view) LAU
+    container.appendChild(app.view) //LAU
+    console.log('Rendering network visualization')
 
     if (!startupFlag) {
+        console.log('start up render')
         setupRendering()
 
         PIXI.Ticker.shared.autoStart = false
@@ -777,7 +787,10 @@ export function Renderer({
     nodeDict = {}
 
     /* Update node gfx. */
-    var multiSelectTimer: ReturnType<typeof setTimeout> | null = null
+    let multiSelectTimer: ReturnType<typeof setTimeout> | null = null
+
+    console.log('looping over nodes to render')
+    console.log(nodes)
 
     renderedNodes = nodes.map((node, index) => {
         const nodeX = node.visualAttributes.x
@@ -918,8 +931,11 @@ export function Renderer({
     })
 
     if (selectionDispatch) {
+        console.log('rendering background')
         renderBackground(app.stage, selectionDispatch, renderedNodes, selectionDispatch)
     }
+
+    console.log('rendering edges')
 
     renderedEdges = edges.map((edge) => {
         const gfx = getSprite('line')
@@ -940,6 +956,9 @@ export function Renderer({
 
     /* If there are still rendered nodes, only update the positions. */
     if (renderedNodes.length !== 0) {
+        console.log(
+            'updating position of already rendere nodes'
+        )
         updateNodePositions(nodes)
 
         PIXI.Ticker.shared.start()
