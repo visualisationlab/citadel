@@ -84,7 +84,7 @@ function renderLayoutSettings(
                                                 setting.autoEnabled &&
                                                 <>
                                                     <InputGroup.Text>auto</InputGroup.Text>
-                                                    <InputGroup.Checkbox checked={setting.auto} //label='auto' COMMENTED BY LAU
+                                                    <InputGroup.Checkbox label='auto' checked={setting.auto} //label='auto' COMMENTED BY LAU
                                                         onChange={() => {
                                                             layoutSettingsDispatch({
                                                                 attribute: 'setAuto',

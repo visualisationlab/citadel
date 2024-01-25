@@ -8,7 +8,7 @@ import { SelectionDataReducerAction, SelectionDataState } from "../reducers/sele
 
 import { API } from '../services/api.service'
 import { ExtendedNode, ExtendedEdge, Shape } from "./preprocess.component"
-import { compositionDependencies } from "mathjs"
+// import { compositionDependencies } from "mathjs"
 
 // Create and load bitmap font.
 PIXI.BitmapFont.from('font', {
@@ -296,11 +296,14 @@ function setupRendering() {
 
 function moveRenderedNode(node: RenderedNode, x: number, y: number) {
     console.log('moveRenderedNode')
+    console.log(x,transformK,transformX)
     node.currentX = x * transformK + transformX
     node.currentY = y * transformK + transformY
 
     node.nodesprite.x = node.currentX
     node.nodesprite.y = node.currentY
+
+    console.log('node coordinates : ',node.nodesprite.x,node,node.nodesprite.y)
 
     node.textsprite.x = node.currentX - node.textsprite.textWidth / 2 * (node.visualAttributes.textScale)
     node.textsprite.y = node.currentY - node.textsprite.textHeight / 2 * (node.visualAttributes.textScale)
@@ -497,8 +500,10 @@ function updateNodePositions(nodes: ExtendedNode[]) {
     let nodeDict: {[key: string]: ExtendedNode} = {}
 
     renderedNodes.forEach((renderedNode, index) => {
-        renderedNode['x'] = nodes[index]['x']     //renderedNode.x = nodes[index].x
-        renderedNode['y'] = nodes[index]['y']
+        renderedNode['x'] = nodes[index].position['x']     //renderedNode.x = nodes[index].x
+        renderedNode['y'] = nodes[index].position['y']
+        // renderedNode['x'] = nodes[index]['x']     //renderedNode.x = nodes[index].x
+        // renderedNode['y'] = nodes[index]['y']
 
         renderedNode.nodesprite.scale.x = ((renderedNode.visualAttributes.radius) / 16  * transformK ) / SPRITESCALE
         renderedNode.nodesprite.scale.y = ((renderedNode.visualAttributes.radius) / 16  * transformK ) / SPRITESCALE
@@ -535,6 +540,7 @@ function updateTransform() {
     }
 
     renderedNodes.forEach((renderedNode) => {
+        console.log('Renderede node x',renderedNode['x'])
         moveRenderedNode(renderedNode, renderedNode['x'], renderedNode['y'])
 
         renderedNode.nodesprite.scale.x = ((renderedNode.visualAttributes.radius) / 16 * transformK) / SPRITESCALE
@@ -793,8 +799,10 @@ export function Renderer({
     console.log(nodes)
 
     renderedNodes = nodes.map((node, index) => {
+        console.log('aaaaahhhhh rendered node how does this visaulatributes x gonna changeee')
         const nodeX = node.visualAttributes.x
         const nodeY = node.visualAttributes.y
+        console.log(nodeX,nodeY)
 
         const nodeSprite = getSprite(node.visualAttributes.shape)
 
@@ -819,7 +827,7 @@ export function Renderer({
         app.stage.addChild(text)
 
         const id = node.id
-        nodeSprite.on(('mousedown'), () => {//event: InteractionEvent
+        nodeSprite.on(('mousedown'), (event:PIXI.InteractionEvent) => {//event: InteractionEvent
             if (selectionDispatch === null) {
                 return
             }
@@ -842,7 +850,7 @@ export function Renderer({
             })}, 250)
         })
 
-        nodeSprite.on(('pointertap'), () => {//event: PIXI.InteractionEvent
+        nodeSprite.on(('pointertap'), (event: PIXI.InteractionEvent) => {//event: PIXI.InteractionEvent
             if (selectionDispatch === null) {
                 return
             }
@@ -863,7 +871,7 @@ export function Renderer({
             })
         })
 
-        nodeSprite.on(('pointerup'), () => {//event: PIXI.InteractionEvent
+        nodeSprite.on(('pointerup'), (event: PIXI.InteractionEvent) => {//event: PIXI.InteractionEvent
             if (selectionDispatch === null) {
                 return
             }
@@ -878,7 +886,7 @@ export function Renderer({
             }
         })
 
-        nodeSprite.on(('pointerupoutside'), (event: PIXI.FederatedPointerEvent) => {// used to be PIXI.InteractionEvent
+        nodeSprite.on(('pointerupoutside'), (event: PIXI.InteractionEvent) => {// used to be PIXI.InteractionEvent
             if (event.target === null) {
                 return
             }
@@ -960,6 +968,7 @@ export function Renderer({
         console.log(
             'updating position of already rendere nodes'
         )
+        console.log(nodes)
         updateNodePositions(nodes)
 
         PIXI.Ticker.shared.start()

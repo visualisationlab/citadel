@@ -122,7 +122,9 @@ export default function PreProcess() {
                     if (attributeData.type === 'ordered') {
                         try {
                             let val = (newNode[mapJS.attributeName] - attributeData.min) / (attributeData.max - attributeData.min)
+                            console.log('maping node poosicition??')
                             newNode.visualAttributes.x = ScaleToInterval(val, 0, 1000)
+                            console.log(newNode.visualAttributes.x)
                         }
                         catch (e) {
                         }
