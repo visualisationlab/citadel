@@ -542,10 +542,10 @@ function updateTransform() {
     })
 
     renderedEdges.forEach((edge, index) => {
-        console.log('moving edgees')
         if (edge.gfx === null) {
             return
         }
+        console.log('moving edgees')
 
         const source = edge.sourceNode
 
@@ -938,6 +938,7 @@ export function Renderer({
     console.log('rendering edges')
 
     renderedEdges = edges.map((edge) => {
+        console.log('get edge ssprit')
         const gfx = getSprite('line')
 
         const source = nodeDict[edge.source]
