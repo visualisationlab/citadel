@@ -24,7 +24,7 @@ import {
 import { Bar } from 'react-chartjs-2'
 
 import './home.component.css'
-import './inspection.stylesheet.scss'
+import '../scss/inspection.stylesheet.scss'
 import { BasicNode, BasicEdge } from './router.component'
 
 ChartJS.register(

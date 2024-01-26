@@ -33,10 +33,15 @@ import {
     ToastContainer
     // Table, Spinner, DropdownButton, InputGroup, Dropdown
  } from 'react-bootstrap'
+
+import Toggle from "react-toggle";
+import "../scss/darkmode.stylesheet.scss" // for ES6 modules
+
 import { userService } from '../services/user.service'
 // import { round } from 'mathjs'
 
 import './home.component.css'
+import {themeContext} from './darkmode.component'
 
 const BACKGROUND_ID = 'backgroundRendering'
 
@@ -768,7 +773,9 @@ function render(
     menuType: MenuType,
     setMenuType: (type: MenuType) => void,
     currentTime: Date,
-    history:RouteComponentProps["history"]
+    history:RouteComponentProps["history"],
+    theme:string,
+    toggleTheme:() => void
 ) {
     let content = <></>
 
@@ -801,89 +808,113 @@ function render(
 
 
     return (
-        <>
-            <Button
-                style={{
-                    position: 'absolute',
-                    marginLeft: '85vw',
-                    marginTop: '90vh'
-                }}
-                onClick={() => {
-                    setShowNotifications(!showNotifications)
-                }}
-                >
-                    {showNotifications ? 'hide' : 'show'} Notifications
-            </Button>
-            {renderNotifications(notifications, setNotifications, showNotifications)}
-            <Container
-                className="shadow p-3 rounded" //bg-dark
-                style={{
-                    position: 'absolute',
-                    maxHeight: '100vh',
-                    maxWidth: '70vw',
-                    overflowY: 'auto',
-                    left: '15%',
-                    marginTop: '20px'
-                }}
-                >
-                {renderHeader()}
-                <Row>
-                    <Col>
-                        <Nav
-                            variant='underline'
-                            defaultActiveKey={'create'}
-                            onSelect={(selectedKey) => {
-                                setMenuType(selectedKey as MenuType)
-                            }}
-                        >
-                            <Nav.Item>
-                                <Nav.Link eventKey='create'>
-                                    Create Session
-                                </Nav.Link>
-                            </Nav.Item>
-                            <Nav.Item>
-                                <Nav.Link eventKey='join active'>
-                                    Join Active Session ({activeSessionCount})
-                                </Nav.Link>
-                            </Nav.Item>
-                            <Nav.Item>
-                                <Nav.Link eventKey='join manual'>
-                                    Join Session (Manual URL)
-                                </Nav.Link>
-                            </Nav.Item>
-                            <Nav.Item>
-                                <Nav.Link eventKey='history'>
-                                    Session History
-                                </Nav.Link>
-                            </Nav.Item>
-                            <Nav.Item>
-                                <Nav.Link eventKey='faq'>
-                                    FAQ
-                                </Nav.Link>
-                            </Nav.Item>
-                            <Nav.Item>
-                                <Nav.Link eventKey='server status'>
-                                    Server Status
-                                </Nav.Link>
-                            </Nav.Item>
-                        </Nav>
-                    </Col>
-                </Row>
-                <Row>
-                    <Col>
-                        <br></br>
-                    </Col>
-                </Row>
-                <Row>
-                    <Col>
-                        {
-                            content
-                        }
-                    </Col>
-                </Row>
-            </Container>
-                {renderAnimatedBackground()}
-        </>
+        <themeContext.Provider value={{ theme, toggleTheme }}>
+            <>
+                <Button
+                    style={{
+                        position: 'absolute',
+                        marginLeft: '85vw',
+                        marginTop: '90vh'
+                    }}
+                    onClick={() => {
+                        setShowNotifications(!showNotifications)
+                    }}
+                    >
+                        {showNotifications ? 'hide' : 'show'} Notifications
+                </Button>
+                {renderNotifications(notifications, setNotifications, showNotifications)}
+                <Container
+                    className="shadow p-3 rounded" //bg-dark
+                    style={{
+                        position: 'absolute',
+                        maxHeight: '100vh',
+                        maxWidth: '70vw',
+                        overflowY: 'auto',
+                        left: '15%',
+                        marginTop: '20px'
+                    }}
+                    >
+                    {renderHeader()}
+                    <Row>
+                        <Col>
+                            <Nav
+                                variant='underline'
+                                defaultActiveKey={'create'}
+                                onSelect={(selectedKey) => {
+                                    setMenuType(selectedKey as MenuType)
+                                }}
+                            >
+                                <Nav.Item>
+                                    <Nav.Link eventKey='create'>
+                                        Create Session
+                                    </Nav.Link>
+                                </Nav.Item>
+                                <Nav.Item>
+                                    <Nav.Link eventKey='join active'>
+                                        Join Active Session ({activeSessionCount})
+                                    </Nav.Link>
+                                </Nav.Item>
+                                <Nav.Item>
+                                    <Nav.Link eventKey='join manual'>
+                                        Join Session (Manual URL)
+                                    </Nav.Link>
+                                </Nav.Item>
+                                <Nav.Item>
+                                    <Nav.Link eventKey='history'>
+                                        Session History
+                                    </Nav.Link>
+                                </Nav.Item>
+                                <Nav.Item>
+                                    <Nav.Link eventKey='faq'>
+                                        FAQ
+                                    </Nav.Link>
+                                </Nav.Item>
+                                <Nav.Item>
+                                    <Nav.Link eventKey='server status'>
+                                        Server Status
+                                    </Nav.Link>
+                                </Nav.Item>
+                                <Nav.Item>
+                                    <Toggle
+                                        checked={theme=='light'}
+                                        onChange={toggleTheme}
+                                        icons={{ unchecked: "🌙", checked: "🔆" }}
+                                        aria-label="Dark mode toggle"
+                                    />
+                                </Nav.Item>
+                            </Nav>
+
+                            {/* <Form>
+                                <Form.Check // prettier-ignore
+                                    type="switch"
+                                    id="custom-switch"
+                                    label="Check this switch"
+                                />
+                                <Form.Check // prettier-ignore
+                                    disabled
+                                    type="switch"
+                                    label="disabled switch"
+                                    id="disabled-custom-switch"
+                                />
+                            </Form> */}
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col>
+                            <br></br>
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col>
+                            {
+                                content
+                            }
+                        </Col>
+                    </Row>
+                </Container>
+                    {renderAnimatedBackground()}
+            </>
+        </themeContext.Provider>
     )
 }
 
@@ -1042,6 +1073,18 @@ export default function Upload() {
     const [notifications, setNotifications] = useReducer(notificationReducer, testNotifications)
     const [currentTime, setCurrentTime] = useState(new Date())
     const [showNotifications, setShowNotifications] = useState(false)
+    const [theme, setTheme] = useState('light');
+
+    const toggleTheme = () => {
+        setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
+        // Get <html> element
+        const html = document.getElementsByTagName('html')[0]
+
+        if (html) {
+        // Set data-bs-theme to dark
+            html.setAttribute('data-bs-theme', theme)
+        }
+    };
 
     useEffect(() => {
         const intervalId = setInterval(() => {
@@ -1131,5 +1174,7 @@ export default function Upload() {
         menuType,
         setMenuType,
         currentTime,
-        history)
+        history,
+        theme,
+        toggleTheme)
 }

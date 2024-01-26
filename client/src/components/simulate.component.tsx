@@ -17,7 +17,7 @@ import { ParamType, ServerState, SimulatorParam } from '../reducers/sessiondata.
 import { Router } from './router.component'
 import { SimulatorState } from '../services/websocket.service'
 
-import './simulate.component.scss'
+import '../scss/simulate.component.scss'
 
 // Renders sim item in simulator list.
 function renderSimItem<T extends ParamType>(param: SimulatorParam<T>, index: number, key: string,

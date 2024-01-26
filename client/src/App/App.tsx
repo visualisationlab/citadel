@@ -12,12 +12,15 @@ import '../scss/custom.scss';
 
 import Upload from '../components/upload.component'
 import Main from '../components/main.component'
+// import ThemeContext from '../components/darkmode.component'
 
 export default function App() {
     document.title = "Citadel"
 
-    // Get <html> element
-    const html = document.getElementsByTagName('html')[0]
+
+
+    // // Get <html> element
+    // const html = document.getElementsByTagName('html')[0]
 
     // if (html) {
     //   // Set data-bs-theme to dark
