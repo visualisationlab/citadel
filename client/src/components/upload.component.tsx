@@ -805,7 +805,19 @@ function render(
             content = renderServerStatus(testServerInfo)
             break
     }
+    // toggleTheme()
 
+    const toggleDarkMode = () => {
+        console.log(theme)
+        toggleTheme()
+        console.log(theme)
+        const html = document.getElementsByTagName('html')[0]
+
+        if (html) {
+        // Set data-bs-theme to dark
+            html.setAttribute('data-bs-theme', theme)
+        }
+    }
 
     return (
         <themeContext.Provider value={{ theme, toggleTheme }}>
@@ -877,7 +889,7 @@ function render(
                                 <Nav.Item>
                                     <Toggle
                                         checked={theme=='light'}
-                                        onChange={toggleTheme}
+                                        onChange={toggleDarkMode}
                                         icons={{ unchecked: "🌙", checked: "🔆" }}
                                         aria-label="Dark mode toggle"
                                     />
@@ -1073,18 +1085,13 @@ export default function Upload() {
     const [notifications, setNotifications] = useReducer(notificationReducer, testNotifications)
     const [currentTime, setCurrentTime] = useState(new Date())
     const [showNotifications, setShowNotifications] = useState(false)
-    const [theme, setTheme] = useState('light');
+    const [theme, setTheme] = useState('dark');
 
     const toggleTheme = () => {
-        setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
-        // Get <html> element
-        const html = document.getElementsByTagName('html')[0]
 
-        if (html) {
-        // Set data-bs-theme to dark
-            html.setAttribute('data-bs-theme', theme)
-        }
-    };
+        setTheme(prevTheme => prevTheme ===  'dark' ? 'light' : 'dark');
+    }
+
 
     useEffect(() => {
         const intervalId = setInterval(() => {

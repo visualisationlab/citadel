@@ -908,7 +908,8 @@ export class Session {
                 return
             }
 
-            const worker = new Worker('./lib/workers/layout.worker.js')
+            //const worker = new Worker('./lib/workers/layout.worker.js')
+            const worker = new Worker('./dist/src/workers/layout.worker.js')
             const ac = new AbortController()
 
             this.layoutTimer(layoutResolve, worker, ac.signal).finally(() => {

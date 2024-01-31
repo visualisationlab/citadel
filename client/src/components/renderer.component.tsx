@@ -64,7 +64,7 @@ const app = new PIXI.Application({
     sharedTicker: true,
 })
 
-const SPRITESCALE = 2.5
+const SPRITESCALE = 1.5
 
 let nodeDict: {[key: string]: ExtendedNode} = {}
 

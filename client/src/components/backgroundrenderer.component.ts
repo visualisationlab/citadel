@@ -187,7 +187,7 @@ export async function loadBackgroundRendering(id: string) {
 
     app.stage.filters = []
 
-    const texture = await Assets.load<Texture>({alias: 'image', src: 'https://dev.citadel:3001/images/circle.png'})
+    const texture = await Assets.load<Texture>({alias: 'image', src: 'https://dev.citadel:3001/images/circle2.png'})
     objectList = []
     particleContainer = new Container(
     )
