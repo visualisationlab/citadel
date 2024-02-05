@@ -7,7 +7,7 @@
  * It also contains information about the project.
  */
 
-import { useEffect,  useReducer, useState } from 'react'
+import { useEffect,  useReducer, useState, useContext } from 'react'
 // useLayoutEffect,
 // import {
 //     loadBackgroundRendering
@@ -30,7 +30,8 @@ import {
     Popover,
     OverlayTrigger,
     Toast,
-    ToastContainer
+    ToastContainer,
+    // ThemeProvider
     // Table, Spinner, DropdownButton, InputGroup, Dropdown
  } from 'react-bootstrap'
 
@@ -41,7 +42,7 @@ import { userService } from '../services/user.service'
 // import { round } from 'mathjs'
 
 import './home.component.css'
-import {themeContext} from './darkmode.component'
+import {themeContext,Theme} from './darkmode.component'
 
 const BACKGROUND_ID = 'backgroundRendering'
 
@@ -774,8 +775,8 @@ function render(
     setMenuType: (type: MenuType) => void,
     currentTime: Date,
     history:RouteComponentProps["history"],
-    theme:string,
-    toggleTheme:() => void
+    theme:Theme,
+    setTheme:React.Dispatch<React.SetStateAction<Theme>>
 ) {
     let content = <></>
 
@@ -806,12 +807,25 @@ function render(
             break
     }
     // toggleTheme()
+    // const providedThemeContext = useContext(themeContext);
+
+    // const { theme, setTheme } = providedThemeContext
+
+    const toggleTheme = () => {
+
+        setTheme(prevTheme => prevTheme ===  'dark' ? 'light' : 'dark');
+    }
 
     const toggleDarkMode = () => {
-        console.log(theme)
+        // console.log(theme)
         toggleTheme()
-        console.log(theme)
+        // console.log(theme)
         const html = document.getElementsByTagName('html')[0]
+
+
+        //let config = JSON.parse(localStorage.getItem('config') || '')
+        localStorage.setItem('theme',theme)
+
 
         if (html) {
         // Set data-bs-theme to dark
@@ -820,7 +834,7 @@ function render(
     }
 
     return (
-        <themeContext.Provider value={{ theme, toggleTheme }}>
+        // <themeContext.Provider value={{ theme, setTheme }}>
             <>
                 <Button
                     style={{
@@ -926,7 +940,7 @@ function render(
                 </Container>
                     {renderAnimatedBackground()}
             </>
-        </themeContext.Provider>
+        // </themeContext.Provider>
     )
 }
 
@@ -1085,12 +1099,12 @@ export default function Upload() {
     const [notifications, setNotifications] = useReducer(notificationReducer, testNotifications)
     const [currentTime, setCurrentTime] = useState(new Date())
     const [showNotifications, setShowNotifications] = useState(false)
-    const [theme, setTheme] = useState('dark');
+    const [theme, setTheme] = useState<Theme>('dark');
 
-    const toggleTheme = () => {
+    // const toggleTheme = () => {
 
-        setTheme(prevTheme => prevTheme ===  'dark' ? 'light' : 'dark');
-    }
+    //     setTheme(prevTheme => prevTheme ===  'dark' ? 'light' : 'dark');
+    // }
 
 
     useEffect(() => {
@@ -1160,28 +1174,36 @@ export default function Upload() {
         })
     }, [parsedPreviousSessions])
 
+    // console.log(theme,setTheme)
+
 
     // useLayoutEffect(() => {
     //     void loadBackgroundRendering(BACKGROUND_ID)
     // }, [])
 
     // Render the component.
-    return render(
-        notifications,
-        setNotifications,
-        showNotifications,
-        setShowNotifications,
-        loading,
-        url,
-        setURL,
-        setError,
-        setLoading,
-        sessions,
-        serverGraphData.graphs,
-        menuType,
-        setMenuType,
-        currentTime,
-        history,
-        theme,
-        toggleTheme)
+    return <>
+            <themeContext.Provider value={{ theme, setTheme }}>
+                {render(
+                notifications,
+                setNotifications,
+                showNotifications,
+                setShowNotifications,
+                loading,
+                url,
+                setURL,
+                setError,
+                setLoading,
+                sessions,
+                serverGraphData.graphs,
+                menuType,
+                setMenuType,
+                currentTime,
+                history,
+                theme,
+                setTheme
+                )}
+            </themeContext.Provider>
+
+        </>
 }

@@ -10,6 +10,7 @@ import { GraphDataReducerAction, GraphDataState, GraphDataReducer } from '../red
 import { SelectionDataReducerAction, SelectionDataState, SelectionDataReducer } from '../reducers/selection.reducer'
 import { MappingsReducer, MappingsReducerAction, MappingsState } from '../reducers/selectedmappings.reducer'
 import { GlobalSettingsReducer, GlobalSettingsState, GlobalSettingsReducerAction } from '../reducers/globalsettings.reducer'
+import {themeContext,Theme} from './darkmode.component'
 
 import { websocketService } from '../services/websocket.service'
 
@@ -49,6 +50,16 @@ export const GlobalSettingsContext = createContext({
 
 
 export default function Main() {
+    // let currentTheme = localStorage.getItem('theme') || 'dark'
+
+    const [theme, setTheme] = useState<Theme>('dark');
+
+    // const toggleTheme = () => {
+
+    //     setTheme(prevTheme => prevTheme ===  'dark' ? 'light' : 'dark');
+    // }
+
+
     let [mappingsState, mappingsDispatch] = useReducer<Reducer<MappingsState, MappingsReducerAction>>(MappingsReducer,
         {
             // Add default colour scheme
@@ -181,6 +192,7 @@ export default function Main() {
 
     return (
         <>
+            <themeContext.Provider value={{ theme, setTheme }}>
             <GlobalSettingsContext.Provider value={{ globalSettingsState: globalSettingsState, globalSettingsDispatch: globalSettingsDispatch}}>
             <SelectionDataContext.Provider value={{ selectionState: selectionData, selectionDispatch: selectionDataDispatch}}>
             <MappingContext.Provider value={{ mappingsState: mappingsState, mappingsDispatch: mappingsDispatch}}>
@@ -197,6 +209,8 @@ export default function Main() {
             </MappingContext.Provider>
             </SelectionDataContext.Provider>
             </GlobalSettingsContext.Provider>
+            </themeContext.Provider>
+
         </>
     )
 }

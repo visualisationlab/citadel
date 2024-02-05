@@ -1,9 +1,12 @@
 import React, {useState, memo} from 'react'
+import Toggle from "react-toggle";
+
 import { Navbar, Container, Button, Row, Col, Nav } from 'react-bootstrap'
 import MappingTab from './mapping.component'
 import SessionTab from './session.component'
 import { SimulatorTab } from './simulate.component'
 import SearchTab from './searchtab.component'
+import {themeContext,Theme} from './darkmode.component'
 
 import './home.component.css'
 import { ResizeBar } from './inspection.component'
@@ -12,6 +15,34 @@ const Navigator = memo(function Navigator() {
     const [ hidden, setHidden ] = useState(false)
     const [ width, setWidth ] = useState(500)
     const [ activeTab, setActiveTab ] = useState('mapping')
+    let { theme, setTheme } = React.useContext(themeContext)
+
+    // check for them in locastorage : 
+    let storedTheme = localStorage.getItem('theme');
+    let themeItem: Theme = 'dark'; // default value
+    
+    if (storedTheme === 'light' || storedTheme === 'dark') {
+    //   storedTheme = themeItem as Theme;
+      themeItem = storedTheme
+      theme = storedTheme
+    }
+
+
+    const toggleTheme = () => {
+        setTheme(prevTheme => prevTheme ===  'dark' ? 'light' : 'dark');
+    }
+
+
+    const toggleDarkMode = () => {
+        toggleTheme()
+        const html = document.getElementsByTagName('html')[0]
+        // localStorage.setItem('theme',theme)
+        console.log('theme in toggleDarkmode',theme)
+        if (html) {
+        // Set data-bs-theme to dark
+            html.setAttribute('data-bs-theme', theme)
+        }
+    }
 
     if (hidden) {
         return (
@@ -92,6 +123,14 @@ const Navigator = memo(function Navigator() {
                                         setActiveTab('settings')
                                     }
                                 }>Settings</Nav.Link>
+                                <Nav.Item>
+                                    <Toggle
+                                        checked={theme=='light'}
+                                        onChange={toggleDarkMode}
+                                        icons={{ unchecked: "🌙", checked: "🔆" }}
+                                        aria-label="Dark mode toggle"
+                                    />
+                                </Nav.Item>
                             </Nav>
                         </Navbar>
                     </Col>
