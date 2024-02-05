@@ -52,7 +52,7 @@ export const GlobalSettingsContext = createContext({
 export default function Main() {
     // let currentTheme = localStorage.getItem('theme') || 'dark'
 
-    const [theme, setTheme] = useState<Theme>('dark');
+    let [theme, setTheme] = useState<Theme>('dark');
 
     // const toggleTheme = () => {
 
@@ -181,6 +181,19 @@ export default function Main() {
             console.log('failed to load config from localstorage')
             console.log(e)
         }
+
+            // // // check for them in locastorage : 
+        // useEffect(() => {
+        let storedTheme = localStorage.getItem('theme');
+        let themeItem: Theme = 'dark'; // default value
+        
+        if (storedTheme === 'light' || storedTheme === 'dark') {
+        //   storedTheme = themeItem as Theme;
+            themeItem = storedTheme
+            theme = storedTheme
+        }
+        console.log('theme in initial Naviagtor render',theme)
+        // })
     }, [])
 
     // If we have a QR code, display it.

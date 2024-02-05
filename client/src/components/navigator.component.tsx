@@ -1,4 +1,4 @@
-import React, {useState, memo} from 'react'
+import React, {useState, memo, useEffect} from 'react'
 import Toggle from "react-toggle";
 
 import { Navbar, Container, Button, Row, Col, Nav } from 'react-bootstrap'
@@ -16,19 +16,26 @@ const Navigator = memo(function Navigator() {
     const [ width, setWidth ] = useState(500)
     const [ activeTab, setActiveTab ] = useState('mapping')
     let { theme, setTheme } = React.useContext(themeContext)
+    console.log(theme)
+    console.log(setTheme)
 
-    // check for them in locastorage : 
-    let storedTheme = localStorage.getItem('theme');
-    let themeItem: Theme = 'dark'; // default value
-    
-    if (storedTheme === 'light' || storedTheme === 'dark') {
-    //   storedTheme = themeItem as Theme;
-      themeItem = storedTheme
-      theme = storedTheme
-    }
+    // // // check for them in locastorage : 
+    // useEffect(() => {
+    //     let storedTheme = localStorage.getItem('theme');
+    //     let themeItem: Theme = 'dark'; // default value
+        
+    //     if (storedTheme === 'light' || storedTheme === 'dark') {
+    //     //   storedTheme = themeItem as Theme;
+    //       themeItem = storedTheme
+    //       theme = storedTheme
+    //     }
+    //     console.log('theme in initial Naviagtor render',theme)
+    // })
+
 
 
     const toggleTheme = () => {
+        console.log('thogling them',theme)
         setTheme(prevTheme => prevTheme ===  'dark' ? 'light' : 'dark');
     }
 
@@ -77,10 +84,12 @@ const Navigator = memo(function Navigator() {
             break
     }
 
+    let bgColor : string = theme === 'dark' ? "shadow bg-white" : "shadow bg-dark";
+
     return (
         <>
             <Container
-                className="shadow bg-white"
+                className={bgColor}
                 style={{
                     width: width + 'px',
                     height: '100vh',

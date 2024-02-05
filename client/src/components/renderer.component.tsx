@@ -156,10 +156,10 @@ function setTransformCallback(transformUpdate: () => void) {
     }
 
     transformHandler = (event: any) => {
-        console.log('panning in transformhandeler')
+        //console.log('panning in transformhandeler')
         if (!panEnabled && prevTransform) {
             if (selectionRect) {
-                console.log('some nodes being destroyed?')
+                //console.log('some nodes being destroyed?')
                 app.stage.removeChild(selectionRect)
                 selectionRect.destroy()
             }
@@ -186,7 +186,7 @@ function setTransformCallback(transformUpdate: () => void) {
             return
         }
 
-        console.log('actually assiggin the new coordinats')
+        //console.log('actually assiggin the new coordinats')
         transformX = event.transform.x
         transformY = event.transform.y
         transformK = event.transform.k
@@ -295,15 +295,15 @@ function setupRendering() {
 }
 
 function moveRenderedNode(node: RenderedNode, x: number, y: number) {
-    console.log('moveRenderedNode')
-    console.log(x,transformK,transformX)
+    //console.log('moveRenderedNode')
+    //console.log(x,transformK,transformX)
     node.currentX = x * transformK + transformX
     node.currentY = y * transformK + transformY
 
     node.nodesprite.x = node.currentX
     node.nodesprite.y = node.currentY
 
-    console.log('node coordinates : ',node.nodesprite.x,node,node.nodesprite.y)
+    //console.log('node coordinates : ',node.nodesprite.x,node,node.nodesprite.y)
 
     node.textsprite.x = node.currentX - node.textsprite.textWidth / 2 * (node.visualAttributes.textScale)
     node.textsprite.y = node.currentY - node.textsprite.textHeight / 2 * (node.visualAttributes.textScale)
@@ -459,7 +459,7 @@ function renderBackground(stage: PIXI.Container,
 }
 
 function cleanMemory() {
-    console.log(`Cleaning stage (${app.stage.children.length} objects)`)
+    //console.log(`Cleaning stage (${app.stage.children.length} objects)`)
 
     selectionRect?.destroy()
     selectionRect = null
@@ -489,7 +489,7 @@ function cleanMemory() {
     // app.stage.destroy({
     //     children: true,
     // })
-    console.log('Cleaned Memory')
+    //console.log('Cleaned Memory')
 
     startupFlag = false
 
@@ -533,14 +533,14 @@ function updateNodePositions(nodes: ExtendedNode[]) {
 }
 
 function updateTransform() {
-    console.log('updateTransform')
+    //console.log('updateTransform')
     if (renderedNodes.length === 0) {
-        console.log('no nodes found')
+        //console.log('no nodes found')
         return
     }
 
     renderedNodes.forEach((renderedNode) => {
-        console.log('Renderede node x',renderedNode['x'])
+        //console.log('Renderede node x',renderedNode['x'])
         moveRenderedNode(renderedNode, renderedNode['x'], renderedNode['y'])
 
         renderedNode.nodesprite.scale.x = ((renderedNode.visualAttributes.radius) / 16 * transformK) / SPRITESCALE
@@ -551,7 +551,7 @@ function updateTransform() {
         if (edge.gfx === null) {
             return
         }
-        console.log('moving edgees')
+        //console.log('moving edgees')
 
         const source = edge.sourceNode
 
@@ -767,7 +767,7 @@ export function Renderer({
     console.log('Rendering network visualization')
 
     if (!startupFlag) {
-        console.log('start up render')
+        //console.log('start up render')
         setupRendering()
 
         PIXI.Ticker.shared.autoStart = false
@@ -795,14 +795,14 @@ export function Renderer({
     /* Update node gfx. */
     let multiSelectTimer: ReturnType<typeof setTimeout> | null = null
 
-    console.log('looping over nodes to render')
-    console.log(nodes)
+    //console.log('looping over nodes to render')
+    //console.log(nodes)
 
     renderedNodes = nodes.map((node, index) => {
-        console.log('aaaaahhhhh rendered node how does this visaulatributes x gonna changeee')
+        //console.log('aaaaahhhhh rendered node how does this visaulatributes x gonna changeee')
         const nodeX = node.visualAttributes.x
         const nodeY = node.visualAttributes.y
-        console.log(nodeX,nodeY)
+        //console.log(nodeX,nodeY)
 
         const nodeSprite = getSprite(node.visualAttributes.shape)
 
@@ -946,7 +946,7 @@ export function Renderer({
     console.log('rendering edges')
 
     renderedEdges = edges.map((edge) => {
-        console.log('get edge ssprit')
+        //console.log('get edge ssprit')
         const gfx = getSprite('line')
 
         const source = nodeDict[edge.source]
@@ -965,10 +965,7 @@ export function Renderer({
 
     /* If there are still rendered nodes, only update the positions. */
     if (renderedNodes.length !== 0) {
-        console.log(
-            'updating position of already rendere nodes'
-        )
-        console.log(nodes)
+        //console.log(nodes)
         updateNodePositions(nodes)
 
         PIXI.Ticker.shared.start()
