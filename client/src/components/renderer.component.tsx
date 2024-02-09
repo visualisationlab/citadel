@@ -316,17 +316,21 @@ let background: null | PIXI.Sprite = null
 function renderBackground(stage: PIXI.Container,
     theme:Theme,
     dispatch: React.Dispatch<SelectionDataReducerAction> | null,
-    nodes: RenderedNode[], selectionDispatch: React.Dispatch<SelectionDataReducerAction>) {
+    nodes: RenderedNode[], 
+    selectionDispatch: React.Dispatch<SelectionDataReducerAction>) {
 
     if (background) {
         app.stage.removeChild(background)
         background.destroy()
     }
-    console.log('them in background render',theme)
+    //console.log('them in background render',theme)
     background = new PIXI.Sprite(PIXI.Texture.WHITE)
+    // I think what happens here is we have 2 backgrounds, one itially from pixi.js, another extra one that is made interactve
     if (theme == 'dark'){
-        background.tint =0x212529 //'#4D4D4D'0x4D4D4D
+        background.tint = 0x212529
+        app.backgroundColor=0x212529 //'#4D4D4D'0x4D4D4D
     } else {
+        app.backgroundColor=0xffffff
         background.tint = 0xffffff//0xfff
     }
 

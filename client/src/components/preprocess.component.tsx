@@ -94,6 +94,10 @@ export default function PreProcess() {
         let nodeMetadata = graphState.nodes.metadata
         let edgeMetadata = graphState.edges.metadata
 
+        let NODESATURATION = theme ==='light'? DEFAULTNODESATURATION : .3
+
+
+
         let extendedNodes: ExtendedNode[] = newNodes.map((node) => {
             let newNode: ExtendedNode = {
                 ...node,
@@ -104,7 +108,7 @@ export default function PreProcess() {
                     hue: DEFAULTNODEHUE,
                     prevShape: DEFAULTNODESHAPE,
                     lightness: DEFAULTNODELIGHTNESS,
-                    saturation: DEFAULTNODESATURATION,
+                    saturation: NODESATURATION,
                     shape: DEFAULTNODESHAPE,
                     textScale: 1,
                     x: node.position.x,
@@ -306,6 +310,10 @@ export default function PreProcess() {
             return newNode
         })
 
+        // Adapt default hue due to darkmode or not:#84a2d9
+        let EDGESATURATION = theme === 'light'? 1 : .82
+        let EDGELIGHTNESS = theme === 'light'? .25 : .82
+
         let extendedEdges: ExtendedEdge[] = graphState.edges.data.map((edge) => {
             let newEdge: ExtendedEdge = {
                 ...edge,
@@ -313,7 +321,7 @@ export default function PreProcess() {
                     alpha: 1.0,
                     hue: DEFAULTEDGEHUE,
                     lightness: 0.25,
-                    saturation: 1,
+                    saturation: EDGESATURATION,
                     text: '',
                     width: DEFAULTEDGEWIDTH,
                 },

@@ -50,33 +50,9 @@ export const GlobalSettingsContext = createContext({
 
 
 export default function Main() {
-    let currentTheme = localStorage.getItem('theme') || 'dark'
+    let currentTheme:Theme = localStorage.getItem('theme') || 'dark'
 
     let [theme, setTheme] = useState<Theme>(currentTheme);
-
-    // const initTheme () => {
-    //     setTheme(theme => theme)
-    // }
-
-    // const toggleTheme = () => {
-
-    //     setTheme(prevTheme => prevTheme ===  'dark' ? 'light' : 'dark');
-
-    //     console.log('thogling them',theme)
-    //     const html = document.getElementsByTagName('html')[0]
-    //     // localStorage.setItem('theme',theme)
-    //     console.log('theme in toggleDarkmode',theme)
-    //     if (html) {
-    //     // Set data-bs-theme to dark
-    //         html.setAttribute('data-bs-theme', theme)
-    //     }
-
-    // }
-
-    // const toggleTheme = () => {
-
-    //     setTheme(prevTheme => prevTheme ===  'dark' ? 'light' : 'dark');
-    // }
 
 
     let [mappingsState, mappingsDispatch] = useReducer<Reducer<MappingsState, MappingsReducerAction>>(MappingsReducer,
