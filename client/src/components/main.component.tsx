@@ -50,9 +50,28 @@ export const GlobalSettingsContext = createContext({
 
 
 export default function Main() {
-    // let currentTheme = localStorage.getItem('theme') || 'dark'
+    let currentTheme = localStorage.getItem('theme') || 'dark'
 
-    let [theme, setTheme] = useState<Theme>('dark');
+    let [theme, setTheme] = useState<Theme>(currentTheme);
+
+    // const initTheme () => {
+    //     setTheme(theme => theme)
+    // }
+
+    // const toggleTheme = () => {
+
+    //     setTheme(prevTheme => prevTheme ===  'dark' ? 'light' : 'dark');
+
+    //     console.log('thogling them',theme)
+    //     const html = document.getElementsByTagName('html')[0]
+    //     // localStorage.setItem('theme',theme)
+    //     console.log('theme in toggleDarkmode',theme)
+    //     if (html) {
+    //     // Set data-bs-theme to dark
+    //         html.setAttribute('data-bs-theme', theme)
+    //     }
+
+    // }
 
     // const toggleTheme = () => {
 
@@ -182,18 +201,19 @@ export default function Main() {
             console.log(e)
         }
 
-            // // // check for them in locastorage : 
-        // useEffect(() => {
-        let storedTheme = localStorage.getItem('theme');
-        let themeItem: Theme = 'dark'; // default value
+        // let storedTheme = localStorage.getItem('theme');
+        // //let themeItem: Theme = 'dark'; // default value
         
-        if (storedTheme === 'light' || storedTheme === 'dark') {
-        //   storedTheme = themeItem as Theme;
-            themeItem = storedTheme
-            theme = storedTheme
-        }
+        // if (storedTheme === 'light' || storedTheme === 'dark') {
+        //     console.log('gettting theme from localstorage:',storedTheme)
+
+        // //   storedTheme = themeItem as Theme;
+        //     //themeItem = storedTheme
+        //     //theme = storedTheme
+        // }
         console.log('theme in initial Naviagtor render',theme)
-        // })
+
+
     }, [])
 
     // If we have a QR code, display it.
@@ -202,6 +222,8 @@ export default function Main() {
             <img style={{margin: '10px'}} src={qrCode} alt='QRcode'></img>
         )
     }
+
+    console.log('theme about to given to context provider : ',theme)
 
     return (
         <>

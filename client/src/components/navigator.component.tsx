@@ -31,17 +31,20 @@ const Navigator = memo(function Navigator() {
     //     }
     //     console.log('theme in initial Naviagtor render',theme)
     // })
-
-
-
-    const toggleTheme = () => {
-        console.log('thogling them',theme)
-        setTheme(prevTheme => prevTheme ===  'dark' ? 'light' : 'dark');
+    const html = document.getElementsByTagName('html')[0]
+    // localStorage.setItem('theme',theme)
+    console.log('theme in toggleDarkmode',theme)
+    if (html) {
+    // Set data-bs-theme to dark
+        html.setAttribute('data-bs-theme', theme)
     }
 
 
-    const toggleDarkMode = () => {
-        toggleTheme()
+    const toggleTheme = () => {
+
+        setTheme(prevTheme => prevTheme ===  'dark' ? 'light' : 'dark');
+
+        console.log('thogling them',theme)
         const html = document.getElementsByTagName('html')[0]
         // localStorage.setItem('theme',theme)
         console.log('theme in toggleDarkmode',theme)
@@ -49,11 +52,29 @@ const Navigator = memo(function Navigator() {
         // Set data-bs-theme to dark
             html.setAttribute('data-bs-theme', theme)
         }
+
+    }
+
+
+    // const toggleDarkMode = () => {
+    //     //toggleTheme()
+    //     const html = document.getElementsByTagName('html')[0]
+    //     // localStorage.setItem('theme',theme)
+    //     console.log('theme in toggleDarkmode',theme)
+    //     if (html) {
+    //     // Set data-bs-theme to dark
+    //         html.setAttribute('data-bs-theme', theme)
+    //     }
+    // }
+    let buttonVariant = 'outline-secondary'
+    if (theme =='dark'){
+        buttonVariant = 'outline-primary'
     }
 
     if (hidden) {
         return (
             <Button
+                variant={buttonVariant}
                 onClick={() => {setHidden(false)}}
                 style={{
                     position: 'absolute',
@@ -84,7 +105,8 @@ const Navigator = memo(function Navigator() {
             break
     }
 
-    let bgColor : string = theme === 'dark' ? "shadow bg-white" : "shadow bg-dark";
+    let bgColor : string = theme === 'light' ? "shadow bg-white" : "shadow bg-dark";
+    let button = theme === 'light'? 'primary' : 'secondary'
 
     return (
         <>
@@ -134,8 +156,8 @@ const Navigator = memo(function Navigator() {
                                 }>Settings</Nav.Link>
                                 <Nav.Item>
                                     <Toggle
-                                        checked={theme=='light'}
-                                        onChange={toggleDarkMode}
+                                        checked={theme=='dark'}
+                                        onChange={toggleTheme}
                                         icons={{ unchecked: "🌙", checked: "🔆" }}
                                         aria-label="Dark mode toggle"
                                     />
@@ -147,7 +169,9 @@ const Navigator = memo(function Navigator() {
                         paddingBottom: '10px',
 
                     }}>
-                        <Button style={{
+                        <Button 
+                        variant={button}
+                        style={{
                             float: 'right'
                         }}
                             onClick={() => {setHidden(true)}}>

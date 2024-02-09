@@ -5,6 +5,7 @@ import { SelectionDataContext, UserDataContext } from '../components/main.compon
 import { GraphDataContext } from '../components/main.component'
 import { GraphDataReducerAction, GraphDataState } from '../reducers/graphdata.reducer'
 import { SelectionDataReducerAction } from '../reducers/selection.reducer'
+import {themeContext} from './darkmode.component'
 import { API } from '../services/api.service'
 
 import { min, max, mean, median } from 'mathjs'
@@ -53,6 +54,10 @@ function ClusterTab(
         selectedAttribute: string,
         setSelectedAttribute: React.Dispatch<React.SetStateAction<string>>
         ) {
+
+    const { theme } = useContext(themeContext)
+    let button = theme === 'light'? 'primary' : 'secondary'
+    let outline = theme === 'light'? 'outline' : ''
 
     const attributeList: string[] = clusterAttributes.map((attributes) => {
         return attributes[selectedAttribute]
@@ -252,7 +257,7 @@ function ClusterTab(
                     width: '100%'
                 }}>
                 <Col>
-                    <Button variant='outline-secondary'
+                    <Button variant={outline + 'secondary'}
                         onClick={() => {
                         console.log('here');
                         selectionDispatch({
@@ -278,7 +283,10 @@ function ObjectTab(
 
     showHidden: boolean,
     setShowHidden: React.Dispatch<React.SetStateAction<boolean>>) : JSX.Element {
-
+    
+    const { theme } = useContext(themeContext)
+    let button = theme === 'light'? 'primary' : 'secondary'
+    let outline = theme === 'light'? 'outline' : ''
     return (
         <Stack>
             <h4>
@@ -400,7 +408,7 @@ function ObjectTab(
                     width: '100%'
                 }}>
                     <Col>
-                        <Button variant='outline-danger'
+                        <Button variant={outline + 'danger'}
                             onClick={() => {
                                 if (objectType === 'node') {
                                     API.removeNode(id, graphState)
@@ -414,6 +422,7 @@ function ObjectTab(
                     </Col>
                     <Col>
                         <Button
+                            variant={button}
                             style={{
                                 float: 'right'
                             }}
@@ -446,7 +455,8 @@ export function ResizeBar(props: {
     minWidth: number,
 }) {
     const [dragging, setDragging] = useState(false)
-
+    const {theme} = useContext(themeContext)
+    const bgColor : string = theme === 'light' ? "white" : "gray";
     return (
         <div
             style={{
@@ -503,9 +513,9 @@ export function ResizeBar(props: {
                     width: 10,
                     height: '100%',
                     zIndex: 1000,
-                    backgroundColor: 'white',
-                    borderLeft: (props.position === 'right' ? '1px solid #e0e0e0' : 'none'),
-                    borderRight: (props.position === 'left' ? '1px solid #e0e0e0' : 'none'),
+                    backgroundColor: bgColor,
+                    // borderLeft: (props.position === 'right' ? '1px solid #e0e0e0' : 'none'),
+                    // borderRight: (props.position === 'left' ? '1px solid #e0e0e0' : 'none'),
                     cursor: dragging ? 'grabbing' : 'grab',
                 }}
             />
@@ -520,6 +530,8 @@ export default function InspectionTab(): JSX.Element {
 
     const { selectionState, selectionDispatch } = useContext(SelectionDataContext)
 
+    const { theme } = useContext(themeContext)
+
     const [ attributes, setAttributes ] = useState<{[id: string]: any}>({})
 
     const [ clusterAttributes, setClusterAttributes ] = useState<{[id: string]: any}[]>([])
@@ -533,6 +545,8 @@ export default function InspectionTab(): JSX.Element {
     const [ width, setWidth ] = useState(300)
 
     const [ showHidden, setShowHidden ] = useState(false)
+
+    let buttonVariant = theme === 'light'? 'primary' : 'secondary'
 
     useEffect(() => {
         if (selectionState === null || graphState === null) {
@@ -602,7 +616,9 @@ export default function InspectionTab(): JSX.Element {
                     right: '10px',
                 }}
             >
-                <Button disabled={true}>Nothing selected</Button>
+                <Button 
+                variant={buttonVariant}
+                disabled={true}>Nothing selected</Button>
             </div>
         )
     }
@@ -616,7 +632,9 @@ export default function InspectionTab(): JSX.Element {
                     right: '10px',
                 }}
             >
-                <Button onClick={() => {setHidden(false)}}>Show details</Button>
+                <Button 
+                variant={buttonVariant}
+                onClick={() => {setHidden(false)}}>Show details</Button>
             </div>
         )
     }
@@ -650,6 +668,9 @@ export default function InspectionTab(): JSX.Element {
     const header = selectionState.selectedIDs.length > 1 ?
         selectionState.objectType.charAt(0).toUpperCase() + selectionState.objectType.slice(1) + ' Cluster' : 'Details'
 
+    let bgColor : string = theme === 'light' ? "shadow bg-white" : "shadow bg-dark";
+    let button = theme === 'light'? 'primary' : 'secondary'
+
     return (
         <>
             <ResizeBar
@@ -663,7 +684,7 @@ export default function InspectionTab(): JSX.Element {
                 position={'right'}
             />
             <Container
-                className="shadow bg-white"
+                className={bgColor}
                 style={{
                     width: `${width}px`,
                     height: '100%',
@@ -687,6 +708,7 @@ export default function InspectionTab(): JSX.Element {
                         paddingLeft: 0
                     }}>
                         <Button
+                            variant={button}
                             style={{
                                 float: 'right',
                             }}

@@ -18,7 +18,7 @@
         "devaddress": "dev.citadel"
     },
     "scripts": {
-        "start": "concurrently \"npm run start-server\" \"npm run start-client\" \"tsc -b client server --watch \"",
+        "start": "concurrently \"npm run start-server\" \"npm run start-client\" ",
         "start-server": "cd server && npm run start",
         "start-client": "cd client && npm run start",
         "lint": "eslint utility --ext .ts",

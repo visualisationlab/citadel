@@ -10,6 +10,7 @@ import { Button, Container, Row, Col, Stack, Form } from 'react-bootstrap'
 import { API } from '../services/api.service'
 import { UserDataContext } from './main.component'
 import { SessionState } from '../reducers/sessiondata.reducer'
+import { themeContext } from './darkmode.component'
 
 function renderFull(
     setHidden: React.Dispatch<React.SetStateAction<boolean>>,
@@ -18,11 +19,14 @@ function renderFull(
     setQuery:React.Dispatch<React.SetStateAction<string>>,
     showHidden:boolean,
     setShowHidden:React.Dispatch<React.SetStateAction<boolean>>,
-    searchResult:{parents: string[], data: string[]}
-) {
+    searchResult:{parents: string[], data: string[]},
+    bgClasslist:string,
+) { 
+    const { theme } = useContext(themeContext)
+    let button = theme === 'light'? 'primary' : 'secondary'
     return (
         <Container
-            className="shadow bg-white"
+            className={bgClasslist}//"shadow bg-white"
             style={{
                 width: '500px',
                 height: '80vh',
@@ -46,6 +50,7 @@ function renderFull(
                     paddingLeft: 0
                 }}>
                     <Button
+                        variant={button}
                         style={{
                             float: 'right',
                         }}
@@ -170,8 +175,11 @@ function renderHidden(
     setHidden: React.Dispatch<React.SetStateAction<boolean>>,
     state: SessionState
 ) {
+    const { theme } = useContext(themeContext)
+    let button = theme === 'light'? 'primary' : 'secondary'
     return (
         <Button
+            variant={button}
             onClick={() => {setHidden(false)}}
             style={{
                 position: 'absolute',
@@ -194,6 +202,8 @@ export default function RenderGlobalsEditor() {
         {parents: [], data: []})
 
     const { state } = useContext(UserDataContext)
+
+    const { theme } = useContext(themeContext)
 
     useEffect(() => {
         if (!state)
@@ -244,6 +254,7 @@ export default function RenderGlobalsEditor() {
         return renderHidden(setHidden, state)
     }
 
+    let bgClasslist : string = theme === 'light' ? "shadow bg-white" : "shadow bg-dark";
     return renderFull(
         setHidden,
         state,
@@ -251,6 +262,7 @@ export default function RenderGlobalsEditor() {
         setQuery,
         showHidden,
         setShowHidden,
-        searchResult
+        searchResult,
+        bgClasslist
         )
 }

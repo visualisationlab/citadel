@@ -13,6 +13,8 @@ import { SelectionDataContext, GlobalSettingsContext } from "./main.component"
 import { MappingContext } from './main.component'
 import { MappingType } from '../reducers/selectedmappings.reducer';
 import { BasicEdge, BasicNode } from './router.component';
+import {themeContext} from './darkmode.component'
+
 
 export type Shape =
         | 'circle'
@@ -54,14 +56,14 @@ function ScaleToInterval(val: number, min: number, max: number) {
 }
 
 const DEFAULTNODEHUE = 50
-const DEFAULTNODERADIUS = 16
+const DEFAULTNODERADIUS = 12
 const DEFAULTNODEALPHA = 1
 const DEFAULTNODELIGHTNESS = 0.5
 const DEFAULTNODESATURATION = 1
 const DEFAULTNODESHAPE = 'circle'
 
 const DEFAULTEDGEHUE = 219
-const DEFAULTEDGEWIDTH = 2
+const DEFAULTEDGEWIDTH = 1.5
 
 /**
  * Returns a container, which is updated by reference to contain the graph.
@@ -73,6 +75,9 @@ export default function PreProcess() {
     const { selectionState, selectionDispatch } = useContext(SelectionDataContext)
     const { mappingsState } = useContext(MappingContext)
     const { globalSettingsState } = useContext(GlobalSettingsContext)
+    const { theme } = useContext(themeContext)
+
+    console.log('theme in preprocees : ',theme)
 
     const containerRef = useRef(null)
 
@@ -426,6 +431,7 @@ export default function PreProcess() {
 
         const { destroy } = Renderer({
             container: containerRef.current!,
+            theme:theme,
             nodes: extendedNodes,
             edges: extendedEdges,
             directed: graphState.directed,
@@ -437,7 +443,9 @@ export default function PreProcess() {
         selectionDispatch,
         selectionState,
         mappingsState,
-        globalSettingsState])
+        globalSettingsState,
+        theme,
+    ])
 
     return <div ref={containerRef} className="render" />
 }

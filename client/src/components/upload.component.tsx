@@ -238,8 +238,16 @@ function renderCreate(
     setError:React.Dispatch<React.SetStateAction<ErrorMessage>>,
     setLoading:React.Dispatch<React.SetStateAction<boolean>>,
     graphList: [],//GraphDataInfo
-    history:RouteComponentProps["history"]
+    history:RouteComponentProps["history"],
+    theme:Theme
 ) {
+    // Get theme 
+    // const {theme} = useContext(themeContext)
+    let buttonVariant = 'outline-secondary'
+    if (theme =='dark'){
+        buttonVariant = 'outline-primary'
+    }
+
     // Renders the start session button in the second panel.
     const startSessionButton = !loading ? (
         <Button variant='primary'
@@ -269,16 +277,18 @@ function renderCreate(
         </Popover>
     )
 
+    // const buttonVariant='light'"hover",
+
     const graphListDropdown = graphList.length === 0 ? <></>
         : (
         <OverlayTrigger
-            trigger={["hover", "focus"]}
+            trigger={["focus"]}
             placement="top"
             overlay={graphListInfoOver}
             key={'a'}>
             <span>
                 <DropdownButton
-                    variant="outline-primary"
+                    variant={buttonVariant}//"outline-primary"
                     title="Graph URLs"
                     id="input-group-dropdown-1"
                 >
@@ -306,7 +316,7 @@ function renderCreate(
                     </div>
                 </DropdownButton>
             </span>
-        </OverlayTrigger>
+       </OverlayTrigger>
     )
 
     const graphIndex = graphList.findIndex((graph) => {
@@ -788,7 +798,7 @@ function render(
 
     switch (menuType) {
         case 'create':
-            content = renderCreate(loading, url, setUrl,setError,setLoading, graphList,history)
+            content = renderCreate(loading, url, setUrl,setError,setLoading, graphList,history,theme)
             break
         case 'join active':
             content = renderJoinActive(sessions, setNotifications)

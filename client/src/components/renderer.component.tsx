@@ -8,6 +8,7 @@ import { SelectionDataReducerAction, SelectionDataState } from "../reducers/sele
 
 import { API } from '../services/api.service'
 import { ExtendedNode, ExtendedEdge, Shape } from "./preprocess.component"
+import {Theme} from './darkmode.component'
 // import { compositionDependencies } from "mathjs"
 
 // Create and load bitmap font.
@@ -37,6 +38,7 @@ export interface RenderedEdge extends ExtendedEdge  {
 
 interface RendererProps {
     container: Node,
+    theme: Theme,
     nodes: ExtendedNode[],
     edges: ExtendedEdge[],
     directed: boolean,
@@ -312,6 +314,7 @@ function moveRenderedNode(node: RenderedNode, x: number, y: number) {
 let background: null | PIXI.Sprite = null
 
 function renderBackground(stage: PIXI.Container,
+    theme:Theme,
     dispatch: React.Dispatch<SelectionDataReducerAction> | null,
     nodes: RenderedNode[], selectionDispatch: React.Dispatch<SelectionDataReducerAction>) {
 
@@ -319,8 +322,13 @@ function renderBackground(stage: PIXI.Container,
         app.stage.removeChild(background)
         background.destroy()
     }
-
+    console.log('them in background render',theme)
     background = new PIXI.Sprite(PIXI.Texture.WHITE)
+    if (theme == 'dark'){
+        background.tint =0x212529 //'#4D4D4D'0x4D4D4D
+    } else {
+        background.tint = 0xffffff//0xfff
+    }
 
     background.width = window.innerWidth
     background.height = window.innerHeight
@@ -756,6 +764,7 @@ const hsltorgb = (h: number, s: number, l: number) => {
 
 export function Renderer({
     container,
+    theme,
     nodes,
     edges,
     directed,
@@ -940,7 +949,7 @@ export function Renderer({
 
     if (selectionDispatch) {
         console.log('rendering background')
-        renderBackground(app.stage, selectionDispatch, renderedNodes, selectionDispatch)
+        renderBackground(app.stage,theme, selectionDispatch, renderedNodes, selectionDispatch)
     }
 
     console.log('rendering edges')

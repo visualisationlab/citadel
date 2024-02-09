@@ -28,6 +28,7 @@ import { GraphDataContext } from '../components/main.component'
 import { MappingContext } from '../components/main.component'
 import { GraphDataState } from '../reducers/graphdata.reducer'
 import { ServerState } from '../reducers/sessiondata.reducer'
+import { themeContext } from './darkmode.component'
 
 import { LayoutSettingsReducer, LayoutSettingsState, LayoutSettingsReducerAction, AvailableLayout, LayoutState } from '../reducers/layoutsettings.reducer'
 import { MappingsReducerAction, MappingsState, mappingProperties, MappingChannel, MappingType } from '../reducers/selectedmappings.reducer'
@@ -1014,9 +1015,14 @@ export default function MappingTab() {
     const [ layoutSettingsState, layoutSettingsReducer ] = useReducer(LayoutSettingsReducer, null)
     const [ settingsType, setSettingsType ] = useState<MappingType | 'palette' | null>(null)
     const [ mappingMenuType, setMappingMenuType ] = useState<'layout' | 'visual'>('visual')
+    const { theme } = useContext(themeContext)
 
     let layouts = state?.layouts
     let currentLayout = state?.currentLayout
+    let buttonVariant = 'primary'
+    if(theme=='dark'){
+        buttonVariant = 'secondary'
+    }
 
     useEffect(() => {
         if (layouts === undefined) {
@@ -1098,7 +1104,7 @@ export default function MappingTab() {
 
     let addButton = (
         <Button
-            variant='outline-success'
+            variant={'outline-' + buttonVariant}//success'
             disabled={mappingsState.selectedMappings.has(Map(newItem))}
             onClick={() => {
                 mappingsDispatch({
@@ -1117,7 +1123,7 @@ export default function MappingTab() {
 
     let editPaletteButton = (
         <Button
-            variant='outline-primary'
+            variant={'outline-' + buttonVariant}
             disabled={mappingsState.selectedMappings.has(Map(newItem))}
             onClick={() => {setSettingsType('palette')}}
             style={{
@@ -1176,13 +1182,13 @@ export default function MappingTab() {
                         float: 'right'
                     }}>
                         <Button
-                            variant={mappingMenuType === 'visual' ? 'primary' : 'outline-primary'}
+                            variant={mappingMenuType === 'visual' ? buttonVariant : 'outline-' + buttonVariant}
                             onClick={() => {setMappingMenuType('visual')}}
                         >
                             Visual
                         </Button>
                         <Button
-                            variant={mappingMenuType === 'layout' ? 'primary' : 'outline-primary'}
+                            variant={mappingMenuType === 'visual' ? buttonVariant : 'outline-' + buttonVariant}
                             onClick={() => {setMappingMenuType('layout')}}
                         >
                             Layout
