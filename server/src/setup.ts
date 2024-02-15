@@ -436,7 +436,7 @@ export function configureWebsocketServer(
                 try {
                     // If data is a Buffer, convert to string.
                     const message: any = JSON.parse(data)  //changed unknown into any LAU //JSON.stringify(data)
-                    console.log(message)
+                    //console.log(message)
                     if (message === null) {
                         throw new Error(`Message is null`)
                     }

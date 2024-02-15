@@ -7,6 +7,7 @@ from jsonschema import validate
 from jsonschema import exceptions
 import jsonschema
 import types
+import traceback
 
 LOGTYPES = 'log', 'warning'
 MESSAGE_MAXLENGTH = 100
@@ -299,7 +300,7 @@ async def connect(url: str,
         raise ValueError("Title must be at least 1 character")
 
     # Check if startParams is valid.
-    validate_params_schema(startParams)
+    #validate_params_schema(startParams)
 
     # Filter globals
     fun = types.FunctionType(simulatefun.__code__, simulatefun.__globals__,

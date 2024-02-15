@@ -677,6 +677,8 @@ export class Session {
             fs.writeFileSync(`./logs/graphs/${this.sessionID}_${this.graphHistory.length}_${runID}.json`,
                 JSON.stringify(this.cy.json()))
 
+                // this.changeGraphState(this.parseJson(data.elements.nodes, data.elements.edges))
+
             // Append new slice.
             this.appendGraphState(JSON.stringify(data), this.currentLayout).then(() => {
                 this.graphIndex = this.graphHistory.length - 1
@@ -685,7 +687,10 @@ export class Session {
 
                 this.globalsGeneratedOn = this.graphIndex
 
-                this.changeGraphState(data)
+                this.changeGraphState(this.parseJson(data.elements.nodes, data.elements.edges))
+
+
+                //this.changeGraphState(data)
 
                 // Update sim state.
                 this.simState = {
