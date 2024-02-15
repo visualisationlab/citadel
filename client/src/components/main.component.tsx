@@ -3,7 +3,8 @@ import { Set, Map } from 'immutable'
 import './home.component.css'
 
 import Navigator from './navigator.component'
-import PreProcess from './preprocess.component'
+// import PreProcess from './preprocess.component'
+import DisplaySigmaGraph from './sigmagraph.component'
 
 import { SessionDataReducer, SessionState, SessionReducer } from '../reducers/sessiondata.reducer'
 import { GraphDataReducerAction, GraphDataState, GraphDataReducer } from '../reducers/graphdata.reducer'
@@ -213,7 +214,8 @@ export default function Main() {
 
                         <Globals/>
                         <InspectionTab/>
-                        <PreProcess/>
+                        <DisplaySigmaGraph/>
+                        {/* <PreProcess/> */}
                 </UserDataContext.Provider>
 
             </GraphDataContext.Provider>
