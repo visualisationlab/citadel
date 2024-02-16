@@ -5,8 +5,10 @@
         "concurrently": "^8.2.1",
         "immutable": "^4.1.0",
         "pixi.js": "^5.3.12",
+        "react-sigma": "^1.2.35",
         "react-toggle": "^4.1.3",
-        "typescript": "^5.2.2"
+        "typescript": "^5.2.2",
+        "uninstall": "^0.0.0"
     },
     "workspaces": [
         "client",
