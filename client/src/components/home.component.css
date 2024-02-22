@@ -12,7 +12,17 @@ graphState {
     border-radius: 0px 0px 5px 5px;
     color:red;
     height:400px;
+;
     /* border-width: 1; */
+}
+
+.overlay-side-menu{
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0.7;
+    width:30vw;
+    /* background-color: #90aefc; */
 }
 
 /* .nav-link {

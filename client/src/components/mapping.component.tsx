@@ -1115,6 +1115,7 @@ export default function MappingTab() {
             }
             style={{
                 width: '100%',
+                marginTop:'10%'
             }}
             >
                 Add map
@@ -1127,6 +1128,7 @@ export default function MappingTab() {
             disabled={mappingsState.selectedMappings.has(Map(newItem))}
             onClick={() => {setSettingsType('palette')}}
             style={{
+                marginTop:'10%',
                 width: '100%',
             }}
         >
@@ -1137,19 +1139,19 @@ export default function MappingTab() {
     const content = mappingMenuType === 'visual' ? (
             <>
                 <Row style={{
-                    height: '100%'
+                    // height: '60%'
                 }}>
                     <Col>
                         <div style={{
-                            overflowY: 'auto',
-                            height: '90vh'
+                            // overflowY: 'auto',
+                            // height: '90vh'
                         }}>
                             {MappingList(mappingsState, mappingsDispatch, graphState, setSettingsType)}
                         </div>
                     </Col>
                 </Row>
                 <Row style={{
-                    position: 'absolute',
+                    //position: 'absolute',
                     bottom: '10px',
                     width: '100%'
                 }}>

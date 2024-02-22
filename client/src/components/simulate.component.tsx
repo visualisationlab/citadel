@@ -698,9 +698,9 @@ export function SimulatorTab() {
     // Renders the simulator controls.
     const simulatorControl = (
         <Row style={{
-            position: 'absolute',
-            bottom: '10px',
-            width: '100%'
+            // position: 'absolute',
+            paddingBottom: '5%',
+            // width: '100%'
         }}>
             <Col >
                 <Row>
@@ -800,8 +800,9 @@ export function SimulatorTab() {
                 <Col>
                     <ListGroup>
                         <div style={{
-                            overflowY: 'auto',
-                            height: '50vh',
+                            margin:'2% 0 4% 0'
+                            // overflowY: 'auto',
+                            // height: '50vh',
                         }}>
                             {sims}
                             <ListGroup.Item>

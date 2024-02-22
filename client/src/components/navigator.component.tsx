@@ -14,7 +14,7 @@ import { ResizeBar } from './inspection.component'
 const Navigator = memo(function Navigator() {
     const [ hidden, setHidden ] = useState(false)
     const [ width, setWidth ] = useState(500)
-    const [ activeTab, setActiveTab ] = useState('mapping')
+    const [ activeTab, setActiveTab ] = useState('simulator')
     let { theme, setTheme } = React.useContext(themeContext)
     console.log(theme)
     console.log(setTheme)
@@ -91,21 +91,21 @@ const Navigator = memo(function Navigator() {
     let content = <></>
 
     switch (activeTab) {
-        case 'mapping':
-            content = <MappingTab />
+        case 'simulator':
+            content = <SimulatorTab />
             break
         case 'search':
             content = <SearchTab />
             break
-        case 'simulator':
-            content = <SimulatorTab />
-            break
         case 'settings':
             content = <SessionTab />
             break
+        case 'mapping':
+            content = <MappingTab />
+            break
     }
 
-    let bgColor : string = theme === 'light' ? "shadow bg-white" : "shadow bg-dark";
+    let bgColor : string = theme === 'light' ? "shadow bg-white rounded" : "shadow bg-dark rounded";
     let button = theme === 'light'? 'primary' : 'secondary'
 
     return (
@@ -113,11 +113,11 @@ const Navigator = memo(function Navigator() {
             <Container
                 className={bgColor}
                 style={{
-                    width: width + 'px',
-                    height: '100vh',
+                    // width: width + 'px',
+                    height: '100%',
                     paddingTop: '10px',
                     // left: '10px',
-                    position:'absolute'
+                    // position:'absolute'
                 }}
                 draggable={false}
                 >
@@ -132,28 +132,40 @@ const Navigator = memo(function Navigator() {
                             }}
                         >
                             <Navbar.Brand>
-                                Citadel
+                                {/*Citadel*/}
+                                <img
+                                width='20vw'
+                                src="https://chimay.science.uva.nl:8061/VisLablogo-cropped-notitle.svg"
+                                className="custom-logo"
+                                alt="Visualisation Lab"
+                                />
                             </Navbar.Brand>
                             <Nav activeKey={activeTab}>
                                 {/* Set active */}
-                                <Nav.Link eventKey={'mapping'} onClick={() => {
-                                    setActiveTab('mapping')
-                                }}>
-                                    Mapping
-                                </Nav.Link>
-                                <Nav.Link eventKey={'search'} onClick={() => {
-                                    setActiveTab('search')
-                                }}>Search</Nav.Link>
+
                                 <Nav.Link eventKey={'simulator'} onClick={
                                     () => {
                                         setActiveTab('simulator')
                                     }
                                 }>Simulator</Nav.Link>
+
+                                <Nav.Link eventKey={'search'} onClick={() => {
+                                    setActiveTab('search')
+                                }}>Search</Nav.Link>
+
+
                                 <Nav.Link eventKey={'settings'} onClick={
                                     () => {
                                         setActiveTab('settings')
                                     }
                                 }>Settings</Nav.Link>
+
+                                <Nav.Link eventKey={'mapping'} onClick={() => {
+                                    setActiveTab('mapping')
+                                }}>
+                                    Costum Layout
+                                </Nav.Link>
+
                                 <Nav.Item>
                                     <Toggle
                                         checked={theme=='dark'}
@@ -182,7 +194,7 @@ const Navigator = memo(function Navigator() {
                 {content}
 
             </Container>
-            <ResizeBar
+            {/* <ResizeBar
                 hidden={hidden}
                 setHidden={setHidden}
                 width={width}
@@ -191,7 +203,7 @@ const Navigator = memo(function Navigator() {
                 maxWidth={800}
                 barWidth={10}
                 minWidth={500}
-            />
+            /> */}
 
         </>
     )

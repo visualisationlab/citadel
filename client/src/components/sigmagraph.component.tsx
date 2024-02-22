@@ -5,12 +5,12 @@
  */
 
 import React, { useRef, useContext,useEffect,useState } from 'react';
-import { Container} from 'react-bootstrap'
+import { Container, Row,Col} from 'react-bootstrap'
 
 import { GraphDataContext } from './main.component'
-import { SigmaContainer, useLoadGraph, useSigma,useRegisterEvents,useSetSettings} from "@react-sigma/core";
-import { useWorkerLayoutForce,useLayoutForce } from "@react-sigma/layout-force";
-import { useWorkerLayoutForceAtlas2,useLayoutForceAtlas2 } from "@react-sigma/layout-forceatlas2";
+import { SigmaContainer, useLoadGraph, useSigma,useRegisterEvents,useSetSettings,ControlsContainer} from "@react-sigma/core";
+// import { useWorkerLayoutForce,useLayoutForce } from "@react-sigma/layout-force";
+import { useWorkerLayoutForceAtlas2,useLayoutForceAtlas2,LayoutForceAtlas2Control} from "@react-sigma/layout-forceatlas2";
 import {random,floor} from "mathjs"
 
 import "@react-sigma/core/lib/react-sigma.min.css";
@@ -21,6 +21,15 @@ import { Attributes } from "graphology-types";
 
 import {themeContext} from './darkmode.component';
 
+
+const BUSINNESSROLE_TO_COLOR = {
+  // 'Dealer':"#b1d295",
+  // 'Organizer': "#95CFD2",
+  // 'Financer': "#B695D2",
+  // 'Assasin': '#8995C1'
+}
+
+
 export function LoadSigmaGraph(){
     const { graphState } = useContext(GraphDataContext)
     const loadGraph = useLoadGraph();
@@ -29,9 +38,25 @@ export function LoadSigmaGraph(){
     const setSettings = useSetSettings();
     const { positions, assign } = useLayoutForceAtlas2();
     const [hoveredNode, setHoveredNode] = useState<string | null>(null);
+    const [draggedNode, setDraggedNode] = useState<string | null>(null);
+    const { theme } = useContext(themeContext)
+
+    let fontColor = '#000'
+    let nodeColor = '#7a92d2'
+    let edgeColor = '#ccc'//#ccc
+
+    if (theme == "dark"){
+      fontColor = "#ccc"//"#ffffff"
+      edgeColor = '#595959'
+      nodeColor = '#536491'
+    }
+
 
     console.log('renddering LoadSigmagraph')
 
+    // setSettings({defaultLabelColor: '#fff'});sigma.instances(0).settings({defaultLabelColor: '#fff'});
+
+    // Load graph from server to sigma : 
     useEffect(() => {
         if (graphState == null){return}
         console.log('useeffect in loadsigma')
@@ -39,14 +64,20 @@ export function LoadSigmaGraph(){
         const graph = new Graph();
 
         graphState.nodes.data.forEach(basicNode =>{
-            console.log('adding node')
+          // console.log(basicNode["Criminal Capital"]+ basicNode["Financial Capital"])
+            // if (basicNode["Criminal Capital"]+ basicNode["Financial Capital"] > 1.5){
+            //   nodeColor = '#'+(Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0');
+            //   console.log('node color : ',nodeColor);
+            // }
+            // console.log('adding node')
             graph.addNode(
                 basicNode.id,
                 {
                     label:basicNode["Business Role"],
-                    size:basicNode["Criminal Capital"]*30,
+                    size:basicNode["Criminal Capital"]*20 + basicNode["Financial Capital"] *20,
                     x:floor(random(1500)),//basicNode.position.x,
-                    y:floor(random(900))//basicNode.position.y
+                    y:floor(random(900)),//basicNode.position.y
+                    color: nodeColor //BUSINNESSROLE_TO_COLOR[basicNode["Business Role"]] ||
                 }
             )
         })
@@ -54,14 +85,14 @@ export function LoadSigmaGraph(){
         graphState.edges.data.forEach(basicEdge =>{
             graph.addEdge(
                 basicEdge.source,
-                basicEdge.target
+                basicEdge.target,
             )
         })
 
         loadGraph(graph);
         assign()
-        console.log(graph);
-        console.log(positions())
+        // console.log(graph);
+        // console.log(positions())
 
         registerEvents({
             enterNode:(event) => setHoveredNode(event.node),
@@ -70,6 +101,65 @@ export function LoadSigmaGraph(){
         
     },[loadGraph,assign,graphState,positions,registerEvents]);
 
+    // Drag n drop
+
+    // useEffect(() => {
+    //   // Register the events
+    //   registerEvents({
+    //     downNode: (e) => {
+    //       setDraggedNode(e.node);
+    //       sigma.getGraph().setNodeAttribute(e.node, "highlighted", true);
+    //     },
+    //     mouseup: (e) => {
+    //       if (draggedNode) {
+    //         setDraggedNode(null);
+    //         sigma.getGraph().removeNodeAttribute(draggedNode, "highlighted");
+    //       }
+    //     },
+    //     mousedown: (e) => {
+    //       // Disable the autoscale at the first down interaction
+    //       if (!sigma.getCustomBBox()) sigma.setCustomBBox(sigma.getBBox());
+    //     },
+    //     mousemove: (e) => {
+    //       if (draggedNode) {
+    //         // Get new position of node
+    //         const pos = sigma.viewportToGraph(e);
+    //         sigma.getGraph().setNodeAttribute(draggedNode, "x", pos.x);
+    //         sigma.getGraph().setNodeAttribute(draggedNode, "y", pos.y);
+
+    //         // Prevent sigma to move camera:
+    //         e.preventSigmaDefault();
+    //         e.original.preventDefault();
+    //         e.original.stopPropagation();
+    //       }
+    //     },
+    //     touchup: (e) => {
+    //       if (draggedNode) {
+    //         setDraggedNode(null);
+    //         sigma.getGraph().removeNodeAttribute(draggedNode, "highlighted");
+    //       }
+    //     },
+    //     touchdown: (e) => {
+    //       // Disable the autoscale at the first down interaction
+    //       if (!sigma.getCustomBBox()) sigma.setCustomBBox(sigma.getBBox());
+    //     },
+    //     touchmove: (e) => {
+    //       if (draggedNode) {
+    //         // Get new position of node
+    //         const pos = sigma.viewportToGraph(e);
+    //         sigma.getGraph().setNodeAttribute(draggedNode, "x", pos.x);
+    //         sigma.getGraph().setNodeAttribute(draggedNode, "y", pos.y);
+
+    //         // Prevent sigma to move camera:
+    //         e.preventSigmaDefault();
+    //         e.original.preventDefault();
+    //         e.original.stopPropagation();
+    //       }
+    //     },
+    //   });
+    // }, [registerEvents, sigma, draggedNode]);
+
+    // Highlight node on hover : 
     useEffect(() => {
         setSettings({
             nodeReducer: (node, data) => {
@@ -119,8 +209,10 @@ export function LoadSigmaGraph(){
               }
               return newData;
             },
-          });
-    }, [hoveredNode, setSettings, sigma])
+            labelColor: { color: fontColor },
+            defaultEdgeColor: edgeColor,
+        });
+    }, [hoveredNode, setSettings, sigma,fontColor])
 
     return null
 }
@@ -128,9 +220,9 @@ export function LoadSigmaGraph(){
 export const DisplaySigmaGraph = () => {
     const { theme } = useContext(themeContext)
 
-    let sigmacontainerClass = "container"
+    let sigmacontainerClass = ""
     if (theme=='dark'){
-        sigmacontainerClass = "bg-dark container"
+        sigmacontainerClass = "bg-dark"
     }
 
     const Force = () => {
@@ -148,14 +240,25 @@ export const DisplaySigmaGraph = () => {
           return null
     }
     // let widthpx = screen.width.toString() + 'px';
-    // let heightpx = screen.height.toString() + 'px';
+    // let heightpx = screen.height.toString() + 'px';/,width:'100vw'
     return (
-        <Container>
-            <SigmaContainer style={{ height: '100vh'}} className={sigmacontainerClass}>
-                <LoadSigmaGraph/>
-                <Force />
-            </SigmaContainer>
-        </Container>
+      // <Container fluid className='ms-0 me-0'>
+        <SigmaContainer  style={{ height: '100vh'}} className={sigmacontainerClass}>
+          <LoadSigmaGraph/>
+          <Force />
+          {/* <ControlsContainer position={"bottom-right"}>
+            <LayoutForceAtlas2Control settings={{ settings: { slowDown: 10 } }} />
+          </ControlsContainer> */}
+        </SigmaContainer>
+      // </Container>
+
+        // <Container style={{marginRight:"0px"}}>
+          // <Row>
+          //   <Col style={{display:'flex', justifyContent:'right'}}>
+
+          //   </Col>
+          // </Row>
+        // </Container>
 
     );
 }
