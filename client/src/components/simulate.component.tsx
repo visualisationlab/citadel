@@ -621,6 +621,8 @@ function SimulatorRow<T extends ParamType>(props: {generating: boolean,
     )
 }
 
+
+
 // Renders the simulator options and list.
 export function SimulatorTab() {
     const { state,  } = useContext(UserDataContext)
@@ -670,6 +672,18 @@ export function SimulatorTab() {
         return sim.state !== 'idle'
     }).length > 0
 
+    const standardSimulators = (
+        <>
+            <ListGroup.Item>
+                Kinpin Replacement Model 
+                <Button >
+                    Setup
+                </Button>
+        
+            </ListGroup.Item>
+        </>
+    )
+
     // Renders the simulator list.
     const sims = state.simulators.map((sim, index) => {
         if (sim.key === null) {
@@ -677,21 +691,23 @@ export function SimulatorTab() {
         }
 
         return (
-            <ListGroup.Item>
-                <SimulatorRow
-                    simKey={sim.key}
-                    setSimKey={setSimKey}
-                    simState={sim.state}
-                    setSimOptionsSelection={setSimOptionsSelection}
-                    setShowSimulatorModal={setShowSimulatorModal}
-                    setModalSimKey={setSimKey}
-                    options={sim.params}
-                    simName={sim.title}
-                    generating={sim.state === 'generating'}
-                    serverState={state.state}
+            <>
+                <ListGroup.Item>
+                    <SimulatorRow
+                        simKey={sim.key}
+                        setSimKey={setSimKey}
+                        simState={sim.state}
+                        setSimOptionsSelection={setSimOptionsSelection}
+                        setShowSimulatorModal={setShowSimulatorModal}
+                        setModalSimKey={setSimKey}
+                        options={sim.params}
+                        simName={sim.title}
+                        generating={sim.state === 'generating'}
+                        serverState={state.state}
 
-                    />
-            </ListGroup.Item>
+                        />
+                </ListGroup.Item>
+            </>
         )
     })
 
@@ -707,6 +723,7 @@ export function SimulatorTab() {
                     <Col>
                         <Button
                             style={{float: 'left'}}
+                            variant={"secondary"}
                             onClick={() => {
                                 API.setGraphIndex(0)
                             }}>
@@ -715,6 +732,7 @@ export function SimulatorTab() {
                     </Col>
                     <Col>
                         <Button
+                            variant={"secondary"}
                             onClick={() => {
                                 API.setGraphIndex(state.graphIndex - 1)
                             }}
@@ -745,14 +763,18 @@ export function SimulatorTab() {
             <Col>
                 <Row>
                     <Col>
-                        <Button onClick={() => {
+                        <Button 
+                        variant={"secondary"}
+                        onClick={() => {
                             API.setGraphIndex(state.graphIndex + 1)
                         }}>
                             {'>'}
                         </Button>
                     </Col>
                     <Col>
-                        <Button onClick={() => {
+                        <Button 
+                        variant={"secondary"}
+                        onClick={() => {
                             API.setGraphIndex(state.graphIndexCount - 1)
                         }}>
                             {'>>'}
@@ -804,6 +826,8 @@ export function SimulatorTab() {
                             // overflowY: 'auto',
                             // height: '50vh',
                         }}>
+                            {standardSimulators}
+                            <h6>Connect costum Simulation  </h6>
                             {sims}
                             <ListGroup.Item>
                                 <Row>
@@ -823,11 +847,12 @@ export function SimulatorTab() {
                                                 API.addSim()
                                                 setSimKey('_waiting')
                                             }}
-                                            variant='outline-success'>
+                                            variant='success'>
                                             Add
                                         </Button>
                                     </Col>
-                                    {/* <Col>
+
+                                    {/* <Col> outline-
                                         <Button
                                             disabled={state.simulators.filter((sim) => {
                                                 return sim.state === 'disconnected'
@@ -890,7 +915,7 @@ export function SimulatorTab() {
                 <Col>
                     <h3>Simulate</h3>
                 </Col>
-                <Col>
+                {/* <Col>
                     <ButtonGroup style={{
                         float: 'right'
                     }}>
@@ -907,7 +932,7 @@ export function SimulatorTab() {
                             Others
                         </Button>
                     </ButtonGroup>
-                </Col>
+                </Col> */}
             </Row>
             {content}
         </>

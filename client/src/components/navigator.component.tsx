@@ -158,7 +158,7 @@ const Navigator = memo(function Navigator() {
                                     () => {
                                         setActiveTab('settings')
                                     }
-                                }>Settings</Nav.Link>
+                                }>Info</Nav.Link>
 
                                 <Nav.Link eventKey={'mapping'} onClick={() => {
                                     setActiveTab('mapping')

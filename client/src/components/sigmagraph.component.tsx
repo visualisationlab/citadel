@@ -209,7 +209,7 @@ export function LoadSigmaGraph(){
               }
               return newData;
             },
-            labelColor: { color: fontColor },
+            labelColor: { color: fontColor},
             defaultEdgeColor: edgeColor,
         });
     }, [hoveredNode, setSettings, sigma,fontColor])
