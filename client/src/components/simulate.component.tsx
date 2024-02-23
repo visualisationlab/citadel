@@ -624,7 +624,9 @@ function SimulatorRow<T extends ParamType>(props: {generating: boolean,
 
 
 // Renders the simulator options and list.
-export function SimulatorTab() {
+export function SimulatorTab(
+    {setSimSetupVisible} : {setSimSetupVisible:React.Dispatch<React.SetStateAction<boolean>>}
+) {
     const { state,  } = useContext(UserDataContext)
 
     const [ simOptionsSelection, setSimOptionsSelection ] = useState<string | null>(null)
@@ -672,18 +674,6 @@ export function SimulatorTab() {
         return sim.state !== 'idle'
     }).length > 0
 
-    const standardSimulators = (
-        <>
-            <ListGroup.Item>
-                Kinpin Replacement Model 
-                <Button >
-                    Setup
-                </Button>
-        
-            </ListGroup.Item>
-        </>
-    )
-
     // Renders the simulator list.
     const sims = state.simulators.map((sim, index) => {
         if (sim.key === null) {
@@ -716,6 +706,7 @@ export function SimulatorTab() {
         <Row style={{
             // position: 'absolute',
             paddingBottom: '5%',
+            display:'none'
             // width: '100%'
         }}>
             <Col >
@@ -813,10 +804,24 @@ export function SimulatorTab() {
 
     content = (
         <>
-            <Row>
+            <Row style={{ marginBottom:"2rem"}}>
                 <Col>
                     <hr/>
                 </Col>
+            </Row>
+            <Row>
+                <Button 
+                onClick={() => {
+                    setSimSetupVisible(simSetupVisible => !simSetupVisible)
+                }}
+                className="SimSetupButton">Setup Kingpin Replacement Simulation</Button>
+            </Row>
+            <Row>
+                <Button 
+                onClick={() => {
+                    setSimSetupVisible(simSetupVisible => !simSetupVisible)
+                }}
+                className="SimSetupButton">Setup Prison Model Simulation</Button>
             </Row>
             <Row style={{marginBottom: '10px'}}>
                 <Col>
@@ -826,7 +831,7 @@ export function SimulatorTab() {
                             // overflowY: 'auto',
                             // height: '50vh',
                         }}>
-                            {standardSimulators}
+                            {/* {standardSimulators} */}
                             <h6>Connect costum Simulation  </h6>
                             {sims}
                             <ListGroup.Item>

@@ -11,7 +11,9 @@ import {themeContext,Theme} from './darkmode.component'
 import './home.component.css'
 import { ResizeBar } from './inspection.component'
 
-const Navigator = memo(function Navigator() {
+const Navigator = memo(function Navigator(
+    {setSimSetupVisible} : {setSimSetupVisible:React.Dispatch<React.SetStateAction<boolean>>}
+) {
     const [ hidden, setHidden ] = useState(false)
     const [ width, setWidth ] = useState(500)
     const [ activeTab, setActiveTab ] = useState('simulator')
@@ -92,7 +94,7 @@ const Navigator = memo(function Navigator() {
 
     switch (activeTab) {
         case 'simulator':
-            content = <SimulatorTab />
+            content = <SimulatorTab setSimSetupVisible={setSimSetupVisible}/>
             break
         case 'search':
             content = <SearchTab />
@@ -133,12 +135,15 @@ const Navigator = memo(function Navigator() {
                         >
                             <Navbar.Brand>
                                 {/*Citadel*/}
-                                <img
-                                width='20vw'
-                                src="https://chimay.science.uva.nl:8061/VisLablogo-cropped-notitle.svg"
-                                className="custom-logo"
-                                alt="Visualisation Lab"
-                                />
+                                <a href={process.env['REACT_APP_URL'] +':'+ process.env['REACT_APP_CLIENTPORT']}>
+                                    <img
+                                    width='20vw'
+                                    src="https://chimay.science.uva.nl:8061/VisLablogo-cropped-notitle.svg"
+                                    className="custom-logo"
+                                    alt="Visualisation Lab"
+                                    />
+                                </a>
+
                             </Navbar.Brand>
                             <Nav activeKey={activeTab}>
                                 {/* Set active */}
