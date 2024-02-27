@@ -20,7 +20,7 @@ graphState {
     position: absolute;
     top: 0;
     left: 0;
-    opacity: 0.90;
+    opacity: 0.85;
     width:30vw;
     /* background-color: #90aefc; */
 }
@@ -129,4 +129,9 @@ svg {
 #cy {
     width: 900px;
     height: 900px;
+}
+
+.card-hover:hover {
+    transform: scale(1.01);
+    cursor:pointer;
 }

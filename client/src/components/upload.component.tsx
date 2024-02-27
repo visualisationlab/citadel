@@ -244,8 +244,11 @@ function renderCreate(
     // Get theme 
     // const {theme} = useContext(themeContext)
     let buttonVariant = 'outline-secondary'
+    let defaultNetImgUrl= "https://dev.citadel:3001/images/noun-neural-network-white.png"
     if (theme =='dark'){
         buttonVariant = 'outline-primary'
+        defaultNetImgUrl = "https://dev.citadel:3001/images/noun-neural-network-black.png"
+
     }
 
     // Renders the start session button in the second panel.
@@ -278,6 +281,8 @@ function renderCreate(
     )
 
     // const buttonVariant='light'"hover",
+
+    // const graphCards = 
 
     const graphListDropdown = graphList.length === 0 ? <></>
         : (
@@ -319,20 +324,67 @@ function renderCreate(
        </OverlayTrigger>
     )
 
-    const graphIndex = graphList.findIndex((graph) => {
-        return graph.name === url
-    })
+    // const graphIndex = graphList.findIndex((graph) => {
+    //     return graph.name === url
+    // })
 
-    const renderGraphInfo = (graphIndex === -1) ? <></> : (
-        <Card>
-            <Card.Body>
-                <Card.Title>Graph Information</Card.Title>
-                <Card.Body>Graph information stored on server.</Card.Body>
-                <ListGroup className="list-group-flush">
-                    <ListGroup.Item>{graphList[graphIndex]?.name}</ListGroup.Item>
-                </ListGroup>
-            </Card.Body>
-        </Card>
+    // const renderGraphInfo = (graphIndex === -1) ? <></> : 
+    //     graphList.map((graph,index) => {
+    //         return (
+    //         <Card>
+    //             <Card.Body>
+    //                 <Card.Title>{graph.name}</Card.Title>
+    //                 <Card.Body>Graph information stored on server.</Card.Body>
+    //             </Card.Body>
+    //         </Card>
+    //         )
+    //     })
+
+
+    const graphChoiceCards = (
+        <Row className='ms-auto'>
+            {
+                graphList.map((graph) =>{
+                    console.log(graph)
+                    return (
+                        <Card //as="button"
+                            className='card-hover'
+                            style={{ width: '20%' ,margin:'1% 1% 1% 0' }}
+                            onClick={async () => {
+                                // setURL(graph)
+                                // const delay = ms => new Promise(res => setTimeout(res, ms));
+                                // await delay(100)
+                                startSession(
+                                    graph,
+                                    setError,
+                                    setLoading,
+                                    history
+                                )
+                            }}
+                        >
+                            <h6>{graph}</h6>
+
+                            <img
+                                // width='100%'
+                                // src="https://chimay.science.uva.nl:8061/VisLablogo-cropped-notitle.svg"
+                                src= {defaultNetImgUrl ?? graph.imgUrl }
+                                // className="custom-logo"
+                                // alt="Visualisation Lab"
+                            />
+                        </Card>
+                        
+                    )
+                })
+            }
+
+        </Row>
+    )
+
+    const createNetworkMenu = (
+        <Row className='ms-auto'>
+            <Form.Label> Number of Agents : </Form.Label>
+            <Form.Range></Form.Range>
+        </Row>
     )
 
     const urlOverlay = (
@@ -348,10 +400,22 @@ function renderCreate(
         <>
             <Row>
                 <Col>
+                    <h5> Choose a network from library : </h5>
+                    {graphChoiceCards}
+                </Col>
+            </Row>
+            <Row>
+                <Col>
+                    <h5>Generate test network : </h5>
+                    {createNetworkMenu}
+                </Col>
+            </Row>
+            <Row>
+                <Col>
                     <Form>
                         <Form.Group className="mb-3">
                             <Form.Label>
-                                New Session
+                                Use Graph from specific URL
                             </Form.Label>
                             <InputGroup>
                                 <OverlayTrigger
@@ -382,11 +446,7 @@ function renderCreate(
                     </Form>
                 </Col>
             </Row>
-            <Row>
-                <Col>
-                    {renderGraphInfo}
-                </Col>
-            </Row>
+
         </>
     )
 
