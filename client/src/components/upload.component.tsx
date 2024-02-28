@@ -381,9 +381,25 @@ function renderCreate(
     )
 
     const createNetworkMenu = (
-        <Row className='ms-auto'>
-            <Form.Label> Number of Agents : </Form.Label>
-            <Form.Range></Form.Range>
+        <Row className='ms-auto mb-4'>
+            <Form.Group>
+                <Form.Label> Number of Agents : </Form.Label>
+                <Form.Range></Form.Range>
+            </Form.Group>
+            <Form.Group>
+                <Form.Label> Edge Probability : </Form.Label>
+                <Form.Range></Form.Range>
+            </Form.Group>
+            <Form.Group>
+                <Form.Label> Role distribution : </Form.Label>
+                <Form.Range></Form.Range>
+            </Form.Group>
+            <Container>
+                <Button variant="primary" type="submit">
+                    Generate
+                </Button>
+            </Container>
+
         </Row>
     )
 
@@ -406,7 +422,7 @@ function renderCreate(
             </Row>
             <Row>
                 <Col>
-                    <h5>Generate test network : </h5>
+                    <h5>Generate synthetic network : </h5>
                     {createNetworkMenu}
                 </Col>
             </Row>
