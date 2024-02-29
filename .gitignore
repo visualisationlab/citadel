@@ -1,6 +1,6 @@
 *.graphml
-*.jsx
-*.js
+# *.jsx
+# *.js
 cache
 node_modules
 .vscode
