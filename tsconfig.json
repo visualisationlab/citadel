@@ -44,4 +44,9 @@
         // Completeness
         "skipLibCheck": true
     },
+    "include": [
+        "./client",
+        "./server",
+        "./shared"
+    ],
 }

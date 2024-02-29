@@ -7,6 +7,7 @@
         "@react-sigma/layout-force": "^3.4.2",
         "@react-sigma/layout-forceatlas2": "^3.4.2",
         "concurrently": "^8.2.1",
+        "eslint-import-resolver-typescript": "^3.6.1",
         "graphology": "^0.25.4",
         "graphology-types": "^0.24.7",
         "immutable": "^4.1.0",
