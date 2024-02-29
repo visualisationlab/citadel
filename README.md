@@ -68,7 +68,8 @@ npm run start
 in the root repository path.
 
 ## Authors and acknowledgment
-Miles van der Lely, Bsc. <milesvanderlely@uva.nl>
+Miles van der Lely, Bsc. <milesvanderlely@uva.nl>, 
+Laurens Stuurman, <laurensstuurman@gmail.com>, 
 Dr. Rob Belleman
 ## License
 MIT
