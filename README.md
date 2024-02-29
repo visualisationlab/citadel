@@ -20,6 +20,7 @@ Install [yarn](https://yarnpkg.com/getting-started/install) and clone the reposi
 ```bash
 git clone git@github.com:visualisationlab/citadel.git
 ```
+## FOLLOWING INSTRUCTIONS PROBABLY WON"T WORK **not sure whyy**
 
 Go into the root directory and run:
 
@@ -29,7 +30,7 @@ npm run generate-certs
 cd client && npm install
 cd ../server && npm install
 
-cd ../shared npm run compile
+cd ../shared npm && run compile
 ```
 
 Create `.env` files for the server and the client.
