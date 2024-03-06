@@ -23,6 +23,7 @@ import {themeContext} from './darkmode.component';
 
 
 const BUSINNESSROLE_TO_COLOR = {
+  'Kingpin': "#bf3051"
   // 'Dealer':"#b1d295",
   // 'Organizer': "#95CFD2",
   // 'Financer': "#B695D2",
@@ -70,14 +71,18 @@ export function LoadSigmaGraph(){
             //   console.log('node color : ',nodeColor);
             // }
             // console.log('adding node')
+            if (basicNode.id == "1"){
+              console.log(basicNode.position.x == 0 || null ? floor(random(1500)) : basicNode.position.x)
+              console.log(basicNode.position.x)
+            }
             graph.addNode(
                 basicNode.id,
                 {
                     label:basicNode["Business Role"],
                     size:basicNode["Criminal Capital"]*20 + basicNode["Financial Capital"] *20,
-                    x:floor(random(1500)),//basicNode.position.x,
-                    y:floor(random(900)),//basicNode.position.y
-                    color: nodeColor //BUSINNESSROLE_TO_COLOR[basicNode["Business Role"]] ||
+                    x:basicNode.position.x == 0 || null ? floor(random(1500)) : basicNode.position.x,//basicNode.position.x,
+                    y:basicNode.position.y == 0 || null ? floor(random(900)) : basicNode.position.y,//basicNode.position.y
+                    color: BUSINNESSROLE_TO_COLOR[basicNode["Business Role"]] ?? nodeColor
                 }
             )
         })
