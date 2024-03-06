@@ -1,0 +1,1 @@
+{"version":3,"file":"CytoGraph.d.ts","sourceRoot":"","sources":["../../src/CytoGraph.ts"],"names":[],"mappings":";AAAA,MAAM,WAAW,SAAS;IACtB,QAAQ,EAAE;QACN,KAAK,EAAE,SAAS,CAAC,cAAc,EAAE,CAAC;QAClC,KAAK,EAAE,SAAS,CAAC,cAAc,EAAE,CAAA;KACpC,CAAC;IACF,IAAI,EAAE,MAAM,CAAC,MAAM,EAAE,MAAM,GAAG,MAAM,GAAG,MAAM,CAAC,CAAA;CACjD"}

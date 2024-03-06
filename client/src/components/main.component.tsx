@@ -2,9 +2,12 @@ import React, {useEffect, useReducer, createContext, Reducer, useState } from 'r
 import { Set, Map } from 'immutable'
 import './home.component.css'
 
+import { Container,Col,Row } from 'react-bootstrap'
 import Navigator from './navigator.component'
+import SetupSimPopupMenu from './simulatorsetup.component'
 import PreProcess from './preprocess.component'
 import ThreeDimGraph from './react-force-graph.component'
+import { DisplaySigmaGraph } from './sigmagraph.component'
 
 import { SessionDataReducer, SessionState, SessionReducer } from '../reducers/sessiondata.reducer'
 import { GraphDataReducerAction, GraphDataState, GraphDataReducer } from '../reducers/graphdata.reducer'
@@ -49,11 +52,15 @@ export const GlobalSettingsContext = createContext({
     globalSettingsDispatch: null as React.Dispatch<GlobalSettingsReducerAction> | null
 })
 
+export interface SetupSimPopupMenuProps {
+    setSimSetupVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  }
 
 export default function Main() {
     let currentTheme:Theme = localStorage.getItem('theme') || 'dark'
 
     let [theme, setTheme] = useState<Theme>(currentTheme);
+    const [simSetupVisible, setSimSetupVisible] = useState(false);
 
 
     let [mappingsState, mappingsDispatch] = useReducer<Reducer<MappingsState, MappingsReducerAction>>(MappingsReducer,
@@ -210,12 +217,42 @@ export default function Main() {
             <MappingContext.Provider value={{ mappingsState: mappingsState, mappingsDispatch: mappingsDispatch}}>
             <GraphDataContext.Provider value={{ graphState: graphData, graphDispatch: graphDataDispatch }}>
                 <UserDataContext.Provider value={{ state: sessionData, dispatch: sessionDataDispatch}}>
-                        <Navigator disconnected = {sessionData.state === 'disconnected'}/>
+                    <Container fluid>
+                    <ThreeDimGraph></ThreeDimGraph>
+                    {/* <DisplaySigmaGraph/> */}
 
-                        <Globals/>
-                        <InspectionTab/>
-                        <ThreeDimGraph/>
-                        {/* <PreProcess/> */}
+                        {/* <Row>
+
+                            // {/* <Col xs={3} className="pe-1">
+                            //     <Navigator disconnected = {sessionData.state === 'disconnected'}/>
+                            // </Col> */}
+                            {/* <Col xs={{span:8, offset:4}} className="ps-0 pe-0">
+                            </Col> */}
+                            {/* 
+                            <Globals/>
+                            <InspectionTab/> */}
+                            {/* <PreProcess/> */}
+                        {/* </Row>  */}
+                    </Container>
+                    <Container fluid className="overlay-side-menu">
+                        {/* <Row>
+                            <Col xs={4} className="pe-1 pt-3 pb-3"> */}
+                            {/* <Container className=""> */}
+                                <Navigator disconnected = {sessionData.state === 'disconnected'} setSimSetupVisible={setSimSetupVisible}/>
+                            {/* </Container> */}
+                            {/* </Col> */}
+                            {/* <Col xs={9} className="ps-0 pe-0">
+                                <DisplaySigmaGraph/>
+                            </Col> */}
+                            {/* 
+                            <Globals/>
+                            <InspectionTab/> */}
+                            {/* <PreProcess/> */}
+                        {/* </Row> */}
+                    </Container>
+                    <Container fluid className="overlay-middle-menu">
+                        {simSetupVisible && <SetupSimPopupMenu setSimSetupVisible={setSimSetupVisible}/>}
+                    </Container>
                 </UserDataContext.Provider>
 
             </GraphDataContext.Provider>

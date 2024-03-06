@@ -1,0 +1,1 @@
+{"version":3,"file":"SimulatorMessage.d.ts","sourceRoot":"","sources":["../../../src/simulator/SimulatorMessage.ts"],"names":[],"mappings":"AAAA,MAAM,MAAM,oBAAoB,GAAG,MAAM,GAAG,OAAO,GAAG,SAAS,GAAG,SAAS,CAAA;AAE3E,MAAM,WAAW,gBAAgB;IAC7B,IAAI,EAAE,oBAAoB,CAAC;IAC3B,OAAO,EAAE,MAAM,CAAC;IAChB,IAAI,EAAE,MAAM,CAAC;CAChB"}

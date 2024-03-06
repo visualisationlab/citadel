@@ -1,57 +1,75 @@
-# Visgraph
+# Citadel
 
-Git repo for visgraph, an application for rendering interactive networks.
+This repository contains software for rendering graph networks in-browser.
+
+- [`api`](api): Contains Python code for connecting and running simulations on a session.
+- [`client`](client): Contains the React frontend code.
+- [`server`](server): Contains the NodeJS and Cytoscape backend server code.
+- [`shared`](shared): Contains shared Typescript definitions for the client and server.
+- [`ar-unity`](ar-unity): Contains code for the AR Unity application.
+
+For the full documentation consult the [`Citadel Documentation`](https://visualisationlab.github.io/visualisationlab) section of the Visualisation Lab documentation site.
 
 ## Description
-Visgraph allows users to analyze and edit graphs through the web browser. It offers an API through which users can run code on the graph, by adding or removing nodes or edges, or changing attributes. Visual properties of nodes and edges are able to be mapped to their attributes. The tool is designed for explorative analysis of graphs.
-
-## Visuals
-
+Citadel allows users to analyze and edit graphs through the web browser. It offers an API through which users can run code on the graph, by adding or removing nodes or edges, or changing attributes. Visual properties of nodes and edges are able to be mapped to their attributes. The tool is designed for explorative analysis of graphs.
 
 ## Installation
-Pull the repo.
 
-Run npm install in root directory.
+Install [yarn](https://yarnpkg.com/getting-started/install) and clone the repository:
 
-Run npm install in server directory, add .env file in server directory containing definitions for:
-- CLIENTPORT
-- SERVERPORT
-- WSCLIENTPORT
+```bash
+git clone git@github.com:visualisationlab/citadel.git
+```
 
-Change line 10: self to this in /node_modules/cytoscape_fcose/cytoscape-fcose.js
+Go into the root directory and run:
 
-Start server with npm start.
+```bash
+npm install
+npm run generate-certs
+cd client && npm install
+cd ../server && npm install
+mkdir cache
 
-Run npm install in client directory.
+cd ../shared npm && run compile
+```
 
-Add .env file in client directory containing definitions for:
-REACT_APP_SERVERPORT
-REACT_APP_CLIENTPORT
-REACT_APP_WEBSOCKETPORT
-REACT_APP_URL (ex. "http://localhost")
-REACT_APP_WSURL (ex. "ws://192.168.0.199")
+Create `.env` files for the server and the client.
 
-Update node_modules for port you want to run on. E.g. 3000, 8064, etc.
+### Client
+The client `.env` should contain the following definitions:
 
-## Usage
-TODO
-## Support
-Miles van der Lely, milesvanderlely@uva.nl
-## Roadmap
-Functional frontend implementation.
+```bash
+REACT_APP_SERVERPORT=3001
+REACT_APP_CLIENTPORT=3000
+REACT_APP_WEBSOCKETPORT=3001
+REACT_APP_URL="https://dev.citadel"
+REACT_APP_WSURL="wss://dev.citadel"
+REACT_APP_SPRITE_ORIGIN="https://dev.citadel:3001/images"
+```
 
-Timeline system.
+### Server
+The server `.env` should be placed in the root `server` directory and contain these definitions:
+```bash
+SESSION_CHECKING_INTERVAL=60
+SESSION_TIMEOUT=24
+LOCAL_ADDRESS=dev.citadel
+WEBSOCKET_PORT=3001
+DEFAULT_GRAPH_URL="https://dev.citadel:3001/graphs"
+NODE_ENV=development
+SERVERPORT=3001
+CLIENTPORT=3000
+KEY_PATH=path/to/generated/certs/key
+CERT_PATH=path/to/generated/certs/crt
+```
+```bash
+npm run start
+```
 
-AR functionality.
-
-## Contributing
-
+in the root repository path.
 
 ## Authors and acknowledgment
-Miles van der Lely, Bsc.
+Miles van der Lely, Bsc. <milesvanderlely@uva.nl>, 
+Laurens Stuurman, <laurensstuurman@gmail.com>, 
 Dr. Rob Belleman
 ## License
-TODO
-
-## Project status
-Work In Progress
+MIT

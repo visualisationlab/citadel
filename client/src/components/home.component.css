@@ -12,9 +12,32 @@ graphState {
     border-radius: 0px 0px 5px 5px;
     color:red;
     height:400px;
+;
     /* border-width: 1; */
 }
 
+.overlay-side-menu{
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0.85;
+    width:30vw;
+    /* background-color: #90aefc; */
+}
+
+.overlay-middle-menu{
+    position: absolute;
+    top: 30%;
+    left: 35%;
+    opacity: 0.90;
+    width:35vw;
+    /* background-color: #90aefc; */
+}
+
+.SimSetupButton{
+    width:60%;
+    margin:0 2rem 2rem 2rem;
+}
 /* .nav-link {
     color:white !important;
 } */
@@ -106,4 +129,9 @@ svg {
 #cy {
     width: 900px;
     height: 900px;
+}
+
+.card-hover:hover {
+    transform: scale(1.01);
+    cursor:pointer;
 }

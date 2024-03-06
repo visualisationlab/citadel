@@ -1,6 +1,6 @@
 *.graphml
-*.jsx
-*.js
+# *.jsx
+# *.js
 cache
 node_modules
 .vscode
@@ -8,3 +8,4 @@ node_modules
 *.__pycache__/*
 /certs/*
 package-lock.json
+*.private*
