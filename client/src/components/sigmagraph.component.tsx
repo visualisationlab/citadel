@@ -11,7 +11,7 @@ import { GraphDataContext } from './main.component'
 import { SigmaContainer, useLoadGraph, useSigma,useRegisterEvents,useSetSettings,ControlsContainer} from "@react-sigma/core";
 // import { useWorkerLayoutForce,useLayoutForce } from "@react-sigma/layout-force";
 import { useWorkerLayoutForceAtlas2,useLayoutForceAtlas2,LayoutForceAtlas2Control} from "@react-sigma/layout-forceatlas2";
-import {random,floor} from "mathjs"
+import { random, floor } from "mathjs";
 
 import "@react-sigma/core/lib/react-sigma.min.css";
 
@@ -46,13 +46,13 @@ export function LoadSigmaGraph(){
     let edgeColor = '#ccc'//#ccc
 
     if (theme == "dark"){
-      fontColor = "#ccc"//"#ffffff"
+      fontColor = "#cccccc"//"#ffffff"
       edgeColor = '#595959'
       nodeColor = '#536491'
     }
 
 
-    console.log('renddering LoadSigmagraph')
+    console.log('rendering LoadSigmagraph')
 
     // setSettings({defaultLabelColor: '#fff'});sigma.instances(0).settings({defaultLabelColor: '#fff'});
 
@@ -164,23 +164,24 @@ export function LoadSigmaGraph(){
         setSettings({
             nodeReducer: (node, data) => {
               const graph = sigma.getGraph();
-              const newData: Attributes = { ...data, highlighted: data.highlighted || false };
+              const newData: Attributes = { ...data, ['highlighted']: data['highlighted'] || false };
       
               if (hoveredNode) {
                 if (node === hoveredNode || graph.neighbors(hoveredNode).includes(node)) {
-                  newData.highlighted = true;
+                  newData['highlighted'] = true;
                 } else {
-                  newData.color = "#E2E2E2";    setSettings({
+                    newData['color'] = "#E2E2E2";
+                    setSettings({
                         nodeReducer: (node, data) => {
                           const graph = sigma.getGraph();
-                          const newData: Attributes = { ...data, highlighted: data.highlighted || false };
+                          const newData: Attributes = { ...data, ['highlighted']: data['highlighted'] || false };
                   
                           if (hoveredNode) {
                             if (node === hoveredNode || graph.neighbors(hoveredNode).includes(node)) {
-                              newData.highlighted = true;
+                              newData['highlighted'] = true;
                             } else {
-                              newData.color = "#E2E2E2";
-                              newData.highlighted = false;
+                              newData['color'] = "#E2E2E2";
+                              newData['highlighted'] = false;
                             }
                           }
                           return newData;
@@ -195,7 +196,7 @@ export function LoadSigmaGraph(){
                           return newData;
                         },
                       });
-                  newData.highlighted = false;
+                  newData['highlighted'] = false;
                 }
               }
               return newData;

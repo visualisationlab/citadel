@@ -1,3 +1,4 @@
+// Imports
 import React, {useEffect, useReducer, createContext, Reducer, useState } from 'react'
 import { Set, Map } from 'immutable'
 import './home.component.css'
@@ -56,7 +57,7 @@ export interface SetupSimPopupMenuProps {
   }
 
 export default function Main() {
-    let currentTheme:Theme = localStorage.getItem('theme') || 'dark'
+    let currentTheme: Theme = localStorage.getItem('theme') as Theme || 'dark';
 
     let [theme, setTheme] = useState<Theme>(currentTheme);
     const [simSetupVisible, setSimSetupVisible] = useState(false);
@@ -67,7 +68,7 @@ export default function Main() {
             // Add default colour scheme
             schemes: Map({
             'default': [
-                0, 32, 52, 120, 204,276
+                0, 32, 52, 120, 204, 276
             ]
             }),
             config: Map(),
@@ -236,7 +237,7 @@ export default function Main() {
                         {/* <Row>
                             <Col xs={4} className="pe-1 pt-3 pb-3"> */}
                             {/* <Container className=""> */}
-                                <Navigator disconnected = {sessionData.state === 'disconnected'} setSimSetupVisible={setSimSetupVisible}/>
+                                <Navigator setSimSetupVisible={setSimSetupVisible}/>
                             {/* </Container> */}
                             {/* </Col> */}
                             {/* <Col xs={9} className="ps-0 pe-0">
