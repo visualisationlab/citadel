@@ -96,6 +96,9 @@ const Navigator = memo(function Navigator(
         case 'simulator':
             content = <SimulatorTab setSimSetupVisible={setSimSetupVisible}/>
             break
+        case 'layouts':
+            content = ''//<LayoutsTab setSimSetupVisible={setSimSetupVisible}/>
+            break
         case 'search':
             content = <SearchTab />
             break
@@ -153,6 +156,12 @@ const Navigator = memo(function Navigator(
                                         setActiveTab('simulator')
                                     }
                                 }>Simulator</Nav.Link>
+
+                                <Nav.Link eventKey={'layouts'} onClick={
+                                    () => {
+                                        setActiveTab('layouts')
+                                    }
+                                }>Layouts</Nav.Link>
 
                                 <Nav.Link eventKey={'search'} onClick={() => {
                                     setActiveTab('search')
