@@ -39,7 +39,7 @@ export function LoadSigmaGraph(){
     const setSettings = useSetSettings();
     const { positions, assign } = useLayoutForceAtlas2();
     const [hoveredNode, setHoveredNode] = useState<string | null>(null);
-    const [draggedNode, setDraggedNode] = useState<string | null>(null);
+    // const [draggedNode, setDraggedNode] = useState<string | null>(null);
     const { theme } = useContext(themeContext)
 
     let fontColor = '#000'
