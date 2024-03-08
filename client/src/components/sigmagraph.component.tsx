@@ -15,6 +15,8 @@ import {random,floor} from "mathjs"
 
 import "@react-sigma/core/lib/react-sigma.min.css";
 
+import { GraphDataState } from '../reducers/graphdata.reducer'
+
 import Graph from "graphology";
 import { Attributes } from "graphology-types";
 
@@ -31,7 +33,7 @@ const BUSINNESSROLE_TO_COLOR = {
 }
 
 
-export function LoadSigmaGraph(){
+export function LoadGraph_noLayout(){
     const { graphState } = useContext(GraphDataContext)
     const loadGraph = useLoadGraph();
     const registerEvents = useRegisterEvents();
@@ -52,8 +54,10 @@ export function LoadSigmaGraph(){
       nodeColor = '#536491'
     }
 
+    let positions_missing = noNodePositions(graphState)
 
-    console.log('renddering LoadSigmagraph')
+    
+    console.log('renddering LoadGraph_noLayout')
 
     // setSettings({defaultLabelColor: '#fff'});sigma.instances(0).settings({defaultLabelColor: '#fff'});
 
@@ -71,15 +75,17 @@ export function LoadSigmaGraph(){
             //   console.log('node color : ',nodeColor);
             // }
             // console.log('adding node')
-            if (basicNode.id == "1"){
-              console.log(basicNode.position.x == 0 || null ? floor(random(1500)) : basicNode.position.x)
-              console.log(basicNode.position.x)
-            }
+            // if (basicNode.id == "1"){
+            //   console.log(basicNode.position.x == 0 || null ? floor(random(1500)) : basicNode.position.x)
+            //   console.log(basicNode.position.x)
+            // }
+            console.log(basicNode.position.x,basicNode.position.y)
+            console.log(basicNode.position.x == 0 || null ? floor(random(1500)) : basicNode.position.x,basicNode.position.y == 0 || null ? floor(random(1500)) : basicNode.position.y)
             graph.addNode(
                 basicNode.id,
                 {
                     label:basicNode["Business Role"],
-                    size:basicNode["Criminal Capital"]*20 + basicNode["Financial Capital"] *20,
+                    size:basicNode["Criminal Capital"]*15 + basicNode["Financial Capital"]*15 + basicNode["Criminal Capital"]*15,
                     x:basicNode.position.x == 0 || null ? floor(random(1500)) : basicNode.position.x,//basicNode.position.x,
                     y:basicNode.position.y == 0 || null ? floor(random(900)) : basicNode.position.y,//basicNode.position.y
                     color: BUSINNESSROLE_TO_COLOR[basicNode["Business Role"]] ?? nodeColor
@@ -95,7 +101,10 @@ export function LoadSigmaGraph(){
         })
 
         loadGraph(graph);
-        assign()
+        if (positions_missing){
+          assign()
+        }
+        //assign()
         // console.log(graph);
         // console.log(positions())
 
@@ -104,7 +113,165 @@ export function LoadSigmaGraph(){
             leaveNode:() => setHoveredNode(null)
         })
         
-    },[loadGraph,assign,graphState,positions,registerEvents]);
+    },[loadGraph,graphState,registerEvents,positions,assign]);//positions,assign,
+
+
+
+    // Highlight node on hover : 
+    useEffect(() => {
+        setSettings({
+            labelRenderedSizeThreshold:0,
+            nodeReducer: (node, data) => {
+              const graph = sigma.getGraph();
+              const newData: Attributes = { ...data, highlighted: data.highlighted || false };
+      
+              if (hoveredNode) {
+                if (node === hoveredNode || graph.neighbors(hoveredNode).includes(node)) {
+                  newData.highlighted = true;
+                } else {
+                  newData.color = "#E2E2E2";    setSettings({
+                        nodeReducer: (node, data) => {
+                          const graph = sigma.getGraph();
+                          const newData: Attributes = { ...data, highlighted: data.highlighted || false };
+                  
+                          if (hoveredNode) {
+                            if (node === hoveredNode || graph.neighbors(hoveredNode).includes(node)) {
+                              newData.highlighted = true;
+                            } else {
+                              newData.color = "#E2E2E2";
+                              newData.highlighted = false;
+                            }
+                          }
+                          return newData;
+                        },
+                        edgeReducer: (edge, data) => {
+                          const graph = sigma.getGraph();
+                          const newData = { ...data, hidden: false };
+                  
+                          if (hoveredNode && !graph.extremities(edge).includes(hoveredNode)) {
+                            newData.hidden = true;
+                          }
+                          return newData;
+                        },
+                      });
+                  newData.highlighted = false;
+                }
+              }
+              return newData;
+            },
+            edgeReducer: (edge, data) => {
+              const graph = sigma.getGraph();
+              const newData = { ...data, hidden: false };
+      
+              if (hoveredNode && !graph.extremities(edge).includes(hoveredNode)) {
+                newData.hidden = true;
+              }
+              return newData;
+            },
+            labelColor: { color: fontColor},
+            defaultEdgeColor: edgeColor,
+        });
+    }, [hoveredNode, setSettings, sigma,fontColor])
+
+    return null
+}
+
+// export const PositionedGraph = () => {
+//   const loadGraph = useLoadGraph();
+
+//   useEffect(() => {
+//     const graph = new Graph();
+//     graph.addNode("first", { x: 0, y: 0, size: 15, label: "My first node", color: "#FA4F40" });
+//     loadGraph(graph);
+//   }, [loadGraph]);
+
+//   return null;
+// };
+
+function noNodePositions(graphState:GraphDataState){
+  
+  let zero_positions_count = 0
+  
+  graphState.nodes.data.forEach(basicNode =>{
+    if ((basicNode.position.x == 0 || null)  && (basicNode.position.y == 0 || null )){
+      zero_positions_count ++
+    }
+  })
+
+  console.log("counted ",zero_positions_count," non positioned nodes out of ",graphState.nodes.data.length)
+  console.log(zero_positions_count == graphState.nodes.data.length)
+
+  return zero_positions_count == graphState.nodes.data.length
+}
+
+export const DisplaySigmaGraph = () => {
+    const { theme } = useContext(themeContext)
+    const { graphState } = useContext(GraphDataContext)
+
+    let content = <>
+    <LoadGraph_noLayout/>
+    </>
+
+
+    let sigmacontainerClass = ""
+    if (theme=='dark'){
+        sigmacontainerClass = "bg-dark"
+    }
+
+    // if (noNodePositions(graphState)){
+    //   console.log('this should not be executed')
+    //   const Force = () => {
+    //     const { start, kill, isRunning } = useWorkerLayoutForceAtlas2({settings: { slowDown: 20 } });
+    //     useEffect(() => {
+    //       console.log('starting force atlas')
+    //       // start FA2
+    //       start();
+    //       return () => {
+    //         // Kill FA2 on unmount
+    //         kill();
+    //       };
+    //     }, [start, kill]);
+
+    //     return null
+    //   }
+    //   content = <>
+    //     <LoadGraph_noLayout/>
+    //     {/* <Force /> */}
+    //   </>
+    // } else {
+    //   console.log('this is executed')
+    //   content = <>
+    //     <LoadGraph_noLayout/>
+    //   </>
+    // }
+
+
+    // let widthpx = screen.width.toString() + 'px';
+    // let heightpx = screen.height.toString() + 'px';/,width:'100vw'
+    return (
+      // <Container fluid className='ms-0 me-0'>
+        <SigmaContainer  style={{ height: '100vh'}} className={sigmacontainerClass}>
+          {content}
+          {/* <ControlsContainer position={"bottom-right"}>
+            <LayoutForceAtlas2Control settings={{ settings: { slowDown: 10 } }} />
+          </ControlsContainer> */}
+        </SigmaContainer>
+      // </Container>
+
+        // <Container style={{marginRight:"0px"}}>
+          // <Row>
+          //   <Col style={{display:'flex', justifyContent:'right'}}>
+
+          //   </Col>
+          // </Row>
+        // </Container>
+
+    );
+}
+
+export default DisplaySigmaGraph;
+
+
 
     // Drag n drop
 
@@ -163,113 +330,6 @@ export function LoadSigmaGraph(){
     //     },
     //   });
     // }, [registerEvents, sigma, draggedNode]);
-
-    // Highlight node on hover : 
-    useEffect(() => {
-        setSettings({
-            nodeReducer: (node, data) => {
-              const graph = sigma.getGraph();
-              const newData: Attributes = { ...data, highlighted: data.highlighted || false };
-      
-              if (hoveredNode) {
-                if (node === hoveredNode || graph.neighbors(hoveredNode).includes(node)) {
-                  newData.highlighted = true;
-                } else {
-                  newData.color = "#E2E2E2";    setSettings({
-                        nodeReducer: (node, data) => {
-                          const graph = sigma.getGraph();
-                          const newData: Attributes = { ...data, highlighted: data.highlighted || false };
-                  
-                          if (hoveredNode) {
-                            if (node === hoveredNode || graph.neighbors(hoveredNode).includes(node)) {
-                              newData.highlighted = true;
-                            } else {
-                              newData.color = "#E2E2E2";
-                              newData.highlighted = false;
-                            }
-                          }
-                          return newData;
-                        },
-                        edgeReducer: (edge, data) => {
-                          const graph = sigma.getGraph();
-                          const newData = { ...data, hidden: false };
-                  
-                          if (hoveredNode && !graph.extremities(edge).includes(hoveredNode)) {
-                            newData.hidden = true;
-                          }
-                          return newData;
-                        },
-                      });
-                  newData.highlighted = false;
-                }
-              }
-              return newData;
-            },
-            edgeReducer: (edge, data) => {
-              const graph = sigma.getGraph();
-              const newData = { ...data, hidden: false };
-      
-              if (hoveredNode && !graph.extremities(edge).includes(hoveredNode)) {
-                newData.hidden = true;
-              }
-              return newData;
-            },
-            labelColor: { color: fontColor},
-            defaultEdgeColor: edgeColor,
-        });
-    }, [hoveredNode, setSettings, sigma,fontColor])
-
-    return null
-}
-
-export const DisplaySigmaGraph = () => {
-    const { theme } = useContext(themeContext)
-
-    let sigmacontainerClass = ""
-    if (theme=='dark'){
-        sigmacontainerClass = "bg-dark"
-    }
-
-    const Force = () => {
-        const { start, kill, isRunning } = useWorkerLayoutForceAtlas2({settings: { slowDown: 10 } });
-        useEffect(() => {
-            console.log('starting force atlas')
-            // start FA2
-            start();
-            return () => {
-              // Kill FA2 on unmount
-              kill();
-            };
-          }, [start, kill]);
-
-          return null
-    }
-    // let widthpx = screen.width.toString() + 'px';
-    // let heightpx = screen.height.toString() + 'px';/,width:'100vw'
-    return (
-      // <Container fluid className='ms-0 me-0'>
-        <SigmaContainer  style={{ height: '100vh'}} className={sigmacontainerClass}>
-          <LoadSigmaGraph/>
-          <Force />
-          {/* <ControlsContainer position={"bottom-right"}>
-            <LayoutForceAtlas2Control settings={{ settings: { slowDown: 10 } }} />
-          </ControlsContainer> */}
-        </SigmaContainer>
-      // </Container>
-
-        // <Container style={{marginRight:"0px"}}>
-          // <Row>
-          //   <Col style={{display:'flex', justifyContent:'right'}}>
-
-          //   </Col>
-          // </Row>
-        // </Container>
-
-    );
-}
-
-export default DisplaySigmaGraph;
-
 
 // import { useEffect } from "react";
 // import Graph from "graphology";
