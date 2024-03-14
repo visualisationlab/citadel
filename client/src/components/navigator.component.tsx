@@ -7,9 +7,15 @@ import SessionTab from './session.component'
 import { SimulatorTab } from './simulate.component'
 import SearchTab from './searchtab.component'
 import {themeContext,Theme} from './darkmode.component'
+import ButtonsComponent from './buttons.component';
+
+
 
 import './home.component.css'
 import { ResizeBar } from './inspection.component'
+import Sigma from 'sigma';
+import sigma from 'sigma';
+import { useSigma } from '@react-sigma/core';
 
 const Navigator = memo(function Navigator(
     {setSimSetupVisible} : {setSimSetupVisible:React.Dispatch<React.SetStateAction<boolean>>}
@@ -20,6 +26,8 @@ const Navigator = memo(function Navigator(
     let { theme, setTheme } = React.useContext(themeContext)
     console.log(theme)
     console.log(setTheme)
+
+
 
     // // // check for them in locastorage : 
     // useEffect(() => {
@@ -108,6 +116,9 @@ const Navigator = memo(function Navigator(
         case 'mapping':
             content = <MappingTab />
             break
+        case 'buttons':
+            content = <ButtonsComponent sigma={sigma}/>
+            break
     }
 
     let bgColor : string = theme === 'light' ? "shadow bg-white rounded" : "shadow bg-dark rounded";
@@ -178,6 +189,12 @@ const Navigator = memo(function Navigator(
                                     setActiveTab('mapping')
                                 }}>
                                     Costum Layout
+                                </Nav.Link>
+
+                                <Nav.Link eventKey={'buttons'} onClick={() => {
+                                    setActiveTab('buttons')
+                                }}>
+                                    Buttons
                                 </Nav.Link>
 
                                 <Nav.Item>

@@ -17,10 +17,9 @@ import "@react-sigma/core/lib/react-sigma.min.css";
 
 import Graph from "graphology";
 import { Attributes } from "graphology-types";
-
-
-import {themeContext} from './darkmode.component';
-
+import ButtonsComponent from './buttons.component';
+import { themeContext } from './darkmode.component';
+import sigma from 'sigma';
 
 const BUSINNESSROLE_TO_COLOR = {
   'Kingpin': "#bf3051"
@@ -251,6 +250,7 @@ export const DisplaySigmaGraph = () => {
       // <Container fluid className='ms-0 me-0'>
         <SigmaContainer  style={{ height: '100vh'}} className={sigmacontainerClass}>
           <LoadSigmaGraph/>
+          <ButtonsComponent sigma={sigma}/>
           <Force />
           {/* <ControlsContainer position={"bottom-right"}>
             <LayoutForceAtlas2Control settings={{ settings: { slowDown: 10 } }} />
