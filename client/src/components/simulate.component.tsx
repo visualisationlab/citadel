@@ -947,3 +947,52 @@ export function SimulatorTab(
 
     return res
 }
+
+
+export function PlaySimulationButton(){
+
+    const [playing,setPlaying] = React.useState(false)
+
+    let playbutton = <></>
+
+    // setPlaying(playing => playing ===  false ? true : false);
+
+    if (playing){
+        playbutton = (
+            <Button onClick={() => {
+                API.pause()
+                setPlaying(false)
+            }}>
+                <GrPause></GrPause>
+            </Button>
+        )
+    } else {
+        playbutton = (
+            <Button onClick={() => {
+                API.play()
+                setPlaying(true)
+            }}>
+                <GrPlay></GrPlay>
+            </Button>
+        )
+    }
+    return <>{playbutton}</>
+
+
+
+    // const { state,  } = useContext(UserDataContext)
+
+    // const sim = state.simulators[0]
+
+    // const stepButton = (
+    //     <Button
+    //         disabled={props.serverState !== 'idle'}
+    //         onClick={() => {
+    //             API.step(stepSetting, props.simKey, props.options, props.simName)
+    //         }}>
+    //         Step
+    //     </Button>
+    // )
+
+}
+

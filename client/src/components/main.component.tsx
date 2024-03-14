@@ -8,6 +8,8 @@ import SetupSimPopupMenu from './simulatorsetup.component'
 import PreProcess from './preprocess.component'
 import ThreeDimGraph from './react-force-graph.component'
 import { DisplaySigmaGraph } from './sigmagraph.component'
+import { PlaySimulationButton } from './simulate.component'
+
 
 import { SessionDataReducer, SessionState, SessionReducer } from '../reducers/sessiondata.reducer'
 import { GraphDataReducerAction, GraphDataState, GraphDataReducer } from '../reducers/graphdata.reducer'
@@ -239,6 +241,7 @@ export default function Main() {
                             <Col xs={4} className="pe-1 pt-3 pb-3"> */}
                             {/* <Container className=""> */}
                                 <Navigator disconnected = {sessionData.state === 'disconnected'} setSimSetupVisible={setSimSetupVisible}/>
+                                <PlaySimulationButton/>
                             {/* </Container> */}
                             {/* </Col> */}
                             {/* <Col xs={9} className="ps-0 pe-0">

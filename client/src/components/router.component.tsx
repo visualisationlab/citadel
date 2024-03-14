@@ -19,7 +19,8 @@ export type BasicNode = {
     id: string,
     position: {
         x: number,
-        y: number
+        y: number,
+        z: number,
     },
     [key: string]: any
 }
