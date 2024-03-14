@@ -56,12 +56,22 @@ export const GlobalSettingsContext = createContext({
 
 export interface SetupSimPopupMenuProps {
     setSimSetupVisible: React.Dispatch<React.SetStateAction<boolean>>;
-  }
+}
+
+export const SimStepContext = createContext<SimstepContextProps | undefined>(undefined);
+
+//   export type SimSteps = number;
+
+type SimstepContextProps = {
+    stepSetting: number;
+    setStepSetting: React.Dispatch<React.SetStateAction<number>>;
+};
 
 export default function Main() {
     let currentTheme:Theme = localStorage.getItem('theme') || 'dark'
 
     let [theme, setTheme] = useState<Theme>(currentTheme);
+    const [ stepSetting, setStepSetting ] = useState(1)
     const [simSetupVisible, setSimSetupVisible] = useState(false);
 
 
@@ -214,6 +224,7 @@ export default function Main() {
     return (
         <>
             <themeContext.Provider value={{ theme, setTheme }}>
+            <SimStepContext.Provider value={{stepSetting, setStepSetting }}>
             <GlobalSettingsContext.Provider value={{ globalSettingsState: globalSettingsState, globalSettingsDispatch: globalSettingsDispatch}}>
             <SelectionDataContext.Provider value={{ selectionState: selectionData, selectionDispatch: selectionDataDispatch}}>
             <MappingContext.Provider value={{ mappingsState: mappingsState, mappingsDispatch: mappingsDispatch}}>
@@ -262,6 +273,7 @@ export default function Main() {
             </MappingContext.Provider>
             </SelectionDataContext.Provider>
             </GlobalSettingsContext.Provider>
+            </SimStepContext.Provider>
             </themeContext.Provider>
 
         </>

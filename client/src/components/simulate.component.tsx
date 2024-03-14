@@ -10,7 +10,7 @@ import { Row, Col, Button, ListGroup, Dropdown, ProgressBar,
     Form, CloseButton, InputGroup, ButtonGroup, SplitButton, Modal } from 'react-bootstrap'
     import { GrPlay, GrPause } from 'react-icons/gr'
 
-import { UserDataContext } from '../components/main.component'
+import { SimStepContext, UserDataContext } from '../components/main.component'
 import { API } from '../services/api.service'
 import './home.component.css'
 import { ParamType, ServerState, SimulatorParam } from '../reducers/sessiondata.reducer'
@@ -500,7 +500,9 @@ function SimulatorRow<T extends ParamType>(props: {generating: boolean,
     serverState: ServerState,
     }) {
 
-    const [ stepSetting, setStepSetting ] = useState(1)
+    // const [ stepSetting, setStepSetting ] = useState(1)
+    const {stepSetting, setStepSetting} = useContext(SimStepContext)
+    
     const [ stopping, setStopping ] = useState(false)
 
     useEffect(() => {
@@ -951,7 +953,9 @@ export function SimulatorTab(
 
 export function PlaySimulationButton(){
 
-    const [playing,setPlaying] = React.useState(false)
+    const [playing,setPlaying] = React.useState(true)
+    const {stepSetting, } = useContext(SimStepContext)
+
 
     let playbutton = <></>
 
@@ -960,19 +964,35 @@ export function PlaySimulationButton(){
     if (playing){
         playbutton = (
             <Button onClick={() => {
-                API.pause()
+                API.stop()
                 setPlaying(false)
             }}>
                 <GrPause></GrPause>
             </Button>
         )
     } else {
-        playbutton = (
-            <Button onClick={() => {
-                API.play()
-                setPlaying(true)
-            }}>
-                <GrPlay></GrPlay>
+        const { state,  } = useContext(UserDataContext)
+
+        const sim = state.simulators[0]
+
+        // simKey={sim.key}
+        // setSimKey={setSimKey}
+        // simState={sim.state}
+        // setSimOptionsSelection={setSimOptionsSelection}
+        // setShowSimulatorModal={setShowSimulatorModal}
+        // setModalSimKey={setSimKey}
+        // options={sim.params}
+        // simName={sim.title}
+        // generating={sim.state === 'generating'}
+        // serverState={state.state}
+
+        const stepButton = (
+            <Button
+                disabled={state.state !== 'idle'}
+                onClick={() => {
+                    API.step(stepSetting, sim.key, sim.params, sim.title)
+                }}>
+                Step
             </Button>
         )
     }
@@ -980,19 +1000,7 @@ export function PlaySimulationButton(){
 
 
 
-    // const { state,  } = useContext(UserDataContext)
 
-    // const sim = state.simulators[0]
-
-    // const stepButton = (
-    //     <Button
-    //         disabled={props.serverState !== 'idle'}
-    //         onClick={() => {
-    //             API.step(stepSetting, props.simKey, props.options, props.simName)
-    //         }}>
-    //         Step
-    //     </Button>
-    // )
 
 }
 
