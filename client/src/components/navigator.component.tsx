@@ -68,8 +68,8 @@ const Navigator = memo(function Navigator(
     //         html.setAttribute('data-bs-theme', theme)
     //     }
     // }
-    let buttonVariant = 'outline-secondary'
-    if (theme =='dark'){
+    let buttonVariant = 'secondary'
+    if (theme =='light'){
         buttonVariant = 'outline-primary'
     }
 

@@ -8,7 +8,7 @@ import React, { useState, useEffect, useContext, useRef } from 'react'
 
 import { Row, Col, Button, ListGroup, Dropdown, ProgressBar,
     Form, CloseButton, InputGroup, ButtonGroup, SplitButton, Modal } from 'react-bootstrap'
-    import { GrPlay, GrPause } from 'react-icons/gr'
+    import { GrPlay, GrPause, GrFastForward ,GrRewind, GrRevert} from 'react-icons/gr'
 
 import { SimStepContext, UserDataContext } from '../components/main.component'
 import { API } from '../services/api.service'
@@ -953,7 +953,7 @@ export function SimulatorTab(
 
 export function PlaySimulationButton(){
 
-    const [playing,setPlaying] = React.useState(true)
+    const [playing,setPlaying] = React.useState(false)
     const {stepSetting, } = useContext(SimStepContext)
 
 
@@ -963,11 +963,14 @@ export function PlaySimulationButton(){
 
     if (playing){
         playbutton = (
-            <Button onClick={() => {
+            <Button 
+            className="SimPlayButton"
+            variant='dark'
+            onClick={() => {
                 API.stop()
                 setPlaying(false)
             }}>
-                <GrPause></GrPause>
+                <GrPause size={40}></GrPause>
             </Button>
         )
     } else {
@@ -986,17 +989,42 @@ export function PlaySimulationButton(){
         // generating={sim.state === 'generating'}
         // serverState={state.state}
 
-        const stepButton = (
+        playbutton = (
             <Button
-                disabled={state.state !== 'idle'}
+                variant='dark'
+                className="SimPlayButton"
+                // disabled={state.state !== 'idle'}
                 onClick={() => {
                     API.step(stepSetting, sim.key, sim.params, sim.title)
+                    setPlaying(true)
+
                 }}>
-                Step
+                <GrPlay size={50}></GrPlay>
             </Button>
         )
     }
-    return <>{playbutton}</>
+
+    const forwardButton = (
+        <Button 
+            className="simForwardButton"
+            variant='dark'>
+            <GrFastForward size={50}></GrFastForward>
+        </Button>
+    )
+
+    const reverseButton = (
+        <Button 
+            variant='dark'
+            className="simReverseButton">
+            <GrRewind size={50}></GrRewind>
+        </Button>
+    )
+
+    return <>
+        {playbutton}
+        {forwardButton}
+        {reverseButton}
+        </>
 
 
 

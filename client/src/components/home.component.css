@@ -135,3 +135,30 @@ svg {
     transform: scale(1.01);
     cursor:pointer;
 }
+
+
+.SimPlayButton {
+    position: fixed;
+    left:calc(50vw - 15vh);
+    top:calc(95vh - 15vh);
+    width:15vh;
+    height:15vh;
+    border-radius:20%
+}
+
+.simForwardButton {
+    position: fixed;
+    left:calc(65vw - 15vh);
+    top:calc(95vh - 15vh);
+    width:15vh;
+    height:15vh;
+    border-radius:20%
+}
+.simReverseButton {
+    position: fixed;
+    left:calc(35vw - 15vh);
+    top:calc(95vh - 15vh);
+    width:15vh;
+    height:15vh;
+    border-radius:20%
+}
