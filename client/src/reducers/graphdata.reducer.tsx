@@ -244,42 +244,44 @@ export function GraphDataReducer(state: GraphDataState, action: GraphDataReducer
                 edges: {...newState.edges,
                     metadata: calculateMetadata(newState.edges.data)
                 }}
-                case 'BATCH_UPDATE': {
-                    const updatedNodes = state.nodes.data.map(node => {
-                        const update = action.value.nodes.find(n => n.id === node.id);
-                        if (update) {
-                            return {
-                                ...node,
-                                ...update['attributes'],
-                            };
-                        }
-                        return node;
-                    });
-                
-                    const updatedEdges = state.edges.data.map(edge => {
-                        const update = action.value.edges.find(e => e.id === edge.id);
-                        if (update) {
-                            return {
-                                ...edge,
-                                ...update['attributes'],
-                            };
-                        }
-                        return edge;
-                    });
-                
+        case 'BATCH_UPDATE': {
+            const updatedNodes = state.nodes.data.map(node => {
+                const update = action.value.nodes.find(n => n.id === node.id);
+                if (update) {
                     return {
-                        ...state,
-                        nodes: {
-                            ...state.nodes,
-                            data: updatedNodes,
-                            metadata: calculateMetadata(updatedNodes),
-                        },
-                        edges: {
-                            ...state.edges,
-                            data: updatedEdges,
-                            metadata: calculateMetadata(updatedEdges),
-                        },
+                        ...node,
+                        size: update['attributes']['size'],
+                        color: update['attributes']['color'],
+                        ...update['attributes'],
                     };
                 }
+                return node;
+            });
+        
+            const updatedEdges = state.edges.data.map(edge => {
+                const update = action.value.edges.find(e => e.id === edge.id);
+                if (update) {
+                    return {
+                        ...edge,
+                        ...update['attributes'],
+                    };
+                }
+                return edge;
+            });
+        
+            return {
+                ...state,
+                nodes: {
+                    ...state.nodes,
+                    data: updatedNodes,
+                    metadata: calculateMetadata(updatedNodes),
+                },
+                edges: {
+                    ...state.edges,
+                    data: updatedEdges,
+                    metadata: calculateMetadata(updatedEdges),
+                },
+            };
+        }
     }
 }

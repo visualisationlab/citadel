@@ -105,7 +105,7 @@ const Navigator = memo(function Navigator(
             content = <SimulatorTab setSimSetupVisible={setSimSetupVisible}/>
             break
         case 'layouts':
-            content = ''//<LayoutsTab setSimSetupVisible={setSimSetupVisible}/>
+            content = null // <LayoutsTab setSimSetupVisible={setSimSetupVisible}/>
             break
         case 'search':
             content = <SearchTab />

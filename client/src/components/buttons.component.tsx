@@ -38,6 +38,7 @@ function ButtonsComponent() {
         let newSize;
         let color;
 
+        console.log(node);
         switch (actionType) {
           case "financial": {
             const financialCapital = node["Financial Capital"] || 1;

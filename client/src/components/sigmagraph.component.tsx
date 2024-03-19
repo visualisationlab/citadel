@@ -12,7 +12,12 @@ import MappingTab from './mapping.component';
 import { SigmaContainer, useLoadGraph, useSigma,useRegisterEvents,useSetSettings,ControlsContainer} from "@react-sigma/core";
 // import { useWorkerLayoutForce,useLayoutForce } from "@react-sigma/layout-force";
 import { useWorkerLayoutForceAtlas2,useLayoutForceAtlas2,LayoutForceAtlas2Control} from "@react-sigma/layout-forceatlas2";
-import { random, floor } from "mathjs";
+let random, floor;
+
+import('mathjs').then(mathjs => {
+  random = mathjs.random;
+  floor = mathjs.floor;
+});
 
 import "@react-sigma/core/lib/react-sigma.min.css";
 
@@ -38,6 +43,7 @@ export function LoadSigmaGraph(){
     const sigma = useSigma()
     const setSettings = useSetSettings();
     const { positions, assign } = useLayoutForceAtlas2();
+    const [graphVersion, setGraphVersion] = useState(0);
     const [hoveredNode, setHoveredNode] = useState<string | null>(null);
     const [draggedNode, setDraggedNode] = useState<string | null>(null);
     const { theme } = useContext(themeContext)
@@ -234,6 +240,7 @@ export const DisplaySigmaGraph = () => {
     if (theme=='dark'){
         sigmacontainerClass = "bg-dark"
     }
+    const [graphVersion, setGraphVersion] = useState(0);
 
     const Force = () => {
         const { start, kill, isRunning } = useWorkerLayoutForceAtlas2({settings: { slowDown: 10 } });
@@ -253,7 +260,7 @@ export const DisplaySigmaGraph = () => {
     // let heightpx = screen.height.toString() + 'px';/,width:'100vw'
     return (
       // <Container fluid className='ms-0 me-0'>
-        <SigmaContainer  style={{ height: '100vh'}} className={sigmacontainerClass}>
+        <SigmaContainer  key={graphVersion} style={{ height: '100vh'}} className={sigmacontainerClass}>
           <LoadSigmaGraph/>
           <MappingTab />
           <ButtonsComponent/>
