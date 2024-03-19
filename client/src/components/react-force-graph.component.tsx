@@ -121,10 +121,10 @@ export default function ThreeDimGraph(){
             d3AlphaMin={.002}
             nodeAutoColorBy="group"
             onNodeDrag={()=>{
-                if (fgRef == undefined){
-                    return
+                if (fgRef != undefined){
+                    fgRef.current.d3ReheatSimulation()
                 }
-                fgRef.current.d3ReheatSimulation()}
+                }
             }
             onNodeDragEnd={node => {
                 node.fx = node.x;
@@ -136,7 +136,7 @@ export default function ThreeDimGraph(){
                 if (reactForceData.nodes[0] == undefined){
                     return
                 }
-                console.log(reactForceData.nodes[0].x)
+                console.log(reactForceData.nodes[0].x,reactForceData.nodes[0].y,reactForceData.nodes[0].z)
                 }
             }
             onEngineStop={() => {
