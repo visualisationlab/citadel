@@ -117,7 +117,7 @@ const Navigator = memo(function Navigator(
             content = <MappingTab />
             break
         case 'buttons':
-            content = <ButtonsComponent sigma={sigma}/>
+            content = <ButtonsComponent/>
             break
     }
 

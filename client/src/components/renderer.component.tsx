@@ -516,7 +516,6 @@ function updateNodePositions(nodes: ExtendedNode[]) {
         renderedNode['y'] = nodes[index].position['y']
         // renderedNode['x'] = nodes[index]['x']     //renderedNode.x = nodes[index].x
         // renderedNode['y'] = nodes[index]['y']
-
         renderedNode.nodesprite.scale.x = ((renderedNode.visualAttributes.radius) / 16  * transformK ) / SPRITESCALE
         renderedNode.nodesprite.scale.y = ((renderedNode.visualAttributes.radius) / 16  * transformK ) / SPRITESCALE
 

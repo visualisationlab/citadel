@@ -27,6 +27,7 @@ import { API } from '../services/api.service'
 import InspectionTab from './inspection.component'
 import Globals from './globals.component'
 
+
 export const UserDataContext = createContext({
     state: null as SessionState | null,
     dispatch: null as React.Dispatch<SessionReducer> | null

@@ -8,6 +8,7 @@ import React, { useRef, useContext,useEffect,useState } from 'react';
 import { Container, Row,Col} from 'react-bootstrap'
 
 import { GraphDataContext } from './main.component'
+import MappingTab from './mapping.component';
 import { SigmaContainer, useLoadGraph, useSigma,useRegisterEvents,useSetSettings,ControlsContainer} from "@react-sigma/core";
 // import { useWorkerLayoutForce,useLayoutForce } from "@react-sigma/layout-force";
 import { useWorkerLayoutForceAtlas2,useLayoutForceAtlas2,LayoutForceAtlas2Control} from "@react-sigma/layout-forceatlas2";
@@ -20,6 +21,7 @@ import { Attributes } from "graphology-types";
 import ButtonsComponent from './buttons.component';
 import { themeContext } from './darkmode.component';
 import sigma from 'sigma';
+import { GraphContext } from "./graphcontext";
 
 const BUSINNESSROLE_TO_COLOR = {
   'Kingpin': "#bf3051"
@@ -58,7 +60,7 @@ export function LoadSigmaGraph(){
 
     // Load graph from server to sigma : 
     useEffect(() => {
-        if (graphState == null){return}
+        if (!graphState){return}
         console.log('useeffect in loadsigma')
         console.log(graphState.nodes.data)
         const graph = new Graph();
@@ -104,6 +106,7 @@ export function LoadSigmaGraph(){
         })
         
     },[loadGraph,assign,graphState,positions,registerEvents]);
+
 
     // Drag n drop
 
@@ -250,7 +253,8 @@ export const DisplaySigmaGraph = () => {
       // <Container fluid className='ms-0 me-0'>
         <SigmaContainer  style={{ height: '100vh'}} className={sigmacontainerClass}>
           <LoadSigmaGraph/>
-          <ButtonsComponent sigma={sigma}/>
+          <MappingTab />
+          <ButtonsComponent/>
           <Force />
           {/* <ControlsContainer position={"bottom-right"}>
             <LayoutForceAtlas2Control settings={{ settings: { slowDown: 10 } }} />

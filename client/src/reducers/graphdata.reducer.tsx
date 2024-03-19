@@ -47,7 +47,9 @@ export type GraphDataReducerAction =
     | { type: 'set', property: 'directed', value: boolean}
     | { type: 'update', object: 'node' | 'edge', value: {
         id: string,
-        attributes: {[key: string]: string}
+        attributes: {
+            [key: string]: string | { [key: string]: any };
+          };
     } }
 
 // The graph data reducer is used to update the graph data state.
