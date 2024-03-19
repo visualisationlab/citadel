@@ -21,7 +21,6 @@ import { Attributes } from "graphology-types";
 import ButtonsComponent from './buttons.component';
 import { themeContext } from './darkmode.component';
 import sigma from 'sigma';
-import { GraphContext } from "./graphcontext";
 
 const BUSINNESSROLE_TO_COLOR = {
   'Kingpin': "#bf3051"
@@ -60,18 +59,20 @@ export function LoadSigmaGraph(){
 
     // Load graph from server to sigma : 
     useEffect(() => {
-        if (!graphState){return}
-        console.log('useeffect in loadsigma')
-        console.log(graphState.nodes.data)
-        const graph = new Graph();
-
-        graphState.nodes.data.forEach(basicNode =>{
+      if (!graphState){return}
+      console.log('useEffect in LoadSigmaGraph');
+      console.log(graphState.nodes.data)
+      const graph = new Graph();
+  
+      // Directly add nodes to the graph
+      graphState.nodes.data.forEach(basicNode =>{
           // console.log(basicNode["Criminal Capital"]+ basicNode["Financial Capital"])
             // if (basicNode["Criminal Capital"]+ basicNode["Financial Capital"] > 1.5){
             //   nodeColor = '#'+(Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0');
             //   console.log('node color : ',nodeColor);
             // }
             // console.log('adding node')
+            // console.log(basicNode);
             if (basicNode.id == "1"){
               console.log(basicNode.position.x == 0 || null ? floor(random(1500)) : basicNode.position.x)
               console.log(basicNode.position.x)
@@ -106,6 +107,7 @@ export function LoadSigmaGraph(){
         })
         
     },[loadGraph,assign,graphState,positions,registerEvents]);
+  
 
 
     // Drag n drop

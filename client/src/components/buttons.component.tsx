@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef, useContext } from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
 import { GraphDataContext } from "./main.component";
 import { GraphDataReducerAction } from "../reducers/graphdata.reducer";
+import { BasicNode } from "./router.component";
 
 function ButtonsComponent() {
   const { graphState, graphDispatch } = useContext(GraphDataContext);
@@ -29,92 +30,109 @@ function ButtonsComponent() {
       console.error("Graph state or nodes are not initialized.");
       return;
     }
-  
+    // console.log("Graph State Nodes Data:", graphState.nodes.data);
     console.log("Updating graph appearance for action:", actionType);
-  
-    graphState.nodes.data.forEach((node) => {
-      let newSize;
-      let color;
-  
-      switch (actionType) {
-        case "financial": {
-          const financialCapital = node["Financial Capital"];
-          if (financialCapital !== undefined) {
-            newSize = financialCapital * 100;
-            console.log(
-              "The new size of the node is",
-              newSize,
-              "for node",
-              node.id
-            );
-          } else {
-            console.warn("Financial Capital not defined for node:", node.id);
-          }
-          break;
-        }
-        case "criminal": {
-          const criminalCapital = node["Criminal Capital"];
-          if (criminalCapital !== undefined) {
-            newSize = criminalCapital * 100;
-            console.log(
-              "The new size of the node is",
-              newSize,
-              "for node",
-              node.id
-            );
-          } else {
-            console.warn("Criminal Capital not defined for node:", node.id);
-          }
-          break;
-        }
-        case "violence": {
-          const violenceCapital = node["Violence Capital"];
-          if (violenceCapital != undefined) {
-            newSize = violenceCapital * 100;
-            console.log(
-              "The new size of the node is",
-              newSize,
-              "for node",
-              node.id
-            );
-          } else {
-            console.warn("Violence not defined for node:", node.id);
-          }
-          break;
-        }
-        case "roleColor": {
-          const roleColors = {
-            Kingpin: "#1E90FF",
-            Dealer: "#87CEEB",
-            Organizer: "#00BFFF",
-            Financer: "#4682B4",
-            Assassin: "#7B68EE",
-          };
-          color = roleColors[node["Business Role"]] || "#000000"
-          break;
-        }
-        default: {
-          console.log("No action defined for this type.");
-          return;
-        }
-      }
 
-      if (newSize || color) {
-        const action: GraphDataReducerAction = {
-          type: "update",
-          object: "node",
-          value: {
-            id: node.id,
-            attributes: {
-              ...(newSize && { size: newSize }),
-              ...(color && { color }),
-            },
-          },
-        };
+    const updatedNodes = graphState.nodes.data
+      .map((node) => {
+        let newSize;
+        let color;
 
-        graphDispatch(action);
-      }
-    });
+        switch (actionType) {
+          case "financial": {
+            const financialCapital = node["Financial Capital"] || 1;
+            if (financialCapital !== undefined) {
+              newSize = financialCapital * 100;
+              console.log(
+                "The new size of the node is",
+                newSize,
+                "for node",
+                node.id
+              );
+            } else {
+              console.warn("Financial Capital not defined for node:", node.id);
+            }
+            break;
+          }
+          case "criminal": {
+            const criminalCapital = node["Criminal Capital"] || 1;
+            if (criminalCapital !== undefined) {
+              newSize = criminalCapital * 100;
+              console.log(
+                "The new size of the node is",
+                newSize,
+                "for node",
+                node.id
+              );
+            } else {
+              console.warn("Criminal Capital not defined for node:", node.id);
+            }
+            break;
+          }
+          case "violence": {
+            const violenceCapital = node["Violence Capital"] || 1;
+            if (violenceCapital != undefined) {
+              newSize = violenceCapital * 100;
+              console.log(
+                "The new size of the node is",
+                newSize,
+                "for node",
+                node.id
+              );
+            } else {
+              console.warn("Violence not defined for node:", node.id);
+            }
+            break;
+          }
+          case "roleColor": {
+            const roleColors = {
+              Kingpin: "#1E90FF",
+              Dealer: "#87CEEB",
+              Organizer: "#00BFFF",
+              Financer: "#4682B4",
+              Assassin: "#7B68EE",
+            };
+            if (node["Business Role"] != undefined) {
+            color = roleColors[node["Business Role"]] || "#000000"
+            } else {
+              console.warn("Business role not defined for node:", node.id)
+            }
+            break;
+
+          }
+          default: {
+            console.log("No action defined for this type.");
+            return;
+          }
+        }
+
+        return newSize || color
+          ? {
+              id: node.id,
+              attributes: {
+                ...(newSize && { size: newSize }),
+                ...(color && { color }),
+              },
+            }
+          : null;
+      })
+      .filter((node) => node !== null);
+
+    if (updatedNodes.length > 0) {
+      const action: GraphDataReducerAction = {
+        type: "BATCH_UPDATE",
+        value: {
+          nodes: updatedNodes.map((update) => ({
+            ...update,
+            position: { x: 0, y: 0 },
+          })),
+          edges: graphState.edges.data,
+          globals: {}
+        },
+      };
+
+      graphDispatch(action);
+    }
   };
 
   return (

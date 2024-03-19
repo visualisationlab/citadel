@@ -39,18 +39,35 @@ export interface GraphDataState {
 }
 
 export type GraphDataReducerAction =
-    | { type: 'set', property: 'data', value: {
-        nodes: BasicNode[],
-        edges: BasicEdge[],
-        globals: {[key: string]: any},
-    }}
-    | { type: 'set', property: 'directed', value: boolean}
-    | { type: 'update', object: 'node' | 'edge', value: {
-        id: string,
+  | {
+      type: "set";
+      property: "data";
+      value: {
+        nodes: BasicNode[];
+        edges: BasicEdge[];
+        globals: { [key: string]: any };
+      };
+    }
+  | { type: "set"; property: "directed"; value: boolean }
+  | {
+      type: "update";
+      object: "node" | "edge";
+      value: {
+        id: string;
         attributes: {
-            [key: string]: string | { [key: string]: any };
-          };
-    } }
+          [key: string]: string | { [key: string]: any };
+        };
+      };
+    }
+  | {
+      type: "BATCH_UPDATE";
+      value: {
+        nodes: BasicNode[];
+        edges: BasicEdge[];
+        globals: { [key: string]: any };
+      };
+    };
+
 
 // The graph data reducer is used to update the graph data state.
 function updateData(state: GraphDataState, action: GraphDataReducerAction): GraphDataState {
@@ -227,7 +244,42 @@ export function GraphDataReducer(state: GraphDataState, action: GraphDataReducer
                 edges: {...newState.edges,
                     metadata: calculateMetadata(newState.edges.data)
                 }}
-        default:
-            return state
+                case 'BATCH_UPDATE': {
+                    const updatedNodes = state.nodes.data.map(node => {
+                        const update = action.value.nodes.find(n => n.id === node.id);
+                        if (update) {
+                            return {
+                                ...node,
+                                ...update['attributes'],
+                            };
+                        }
+                        return node;
+                    });
+                
+                    const updatedEdges = state.edges.data.map(edge => {
+                        const update = action.value.edges.find(e => e.id === edge.id);
+                        if (update) {
+                            return {
+                                ...edge,
+                                ...update['attributes'],
+                            };
+                        }
+                        return edge;
+                    });
+                
+                    return {
+                        ...state,
+                        nodes: {
+                            ...state.nodes,
+                            data: updatedNodes,
+                            metadata: calculateMetadata(updatedNodes),
+                        },
+                        edges: {
+                            ...state.edges,
+                            data: updatedEdges,
+                            metadata: calculateMetadata(updatedEdges),
+                        },
+                    };
+                }
     }
 }
