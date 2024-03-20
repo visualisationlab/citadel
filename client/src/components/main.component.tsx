@@ -139,6 +139,8 @@ export default function Main() {
 
     const [qrCode, setqrCode] = useState('')
 
+    let updateGraphCoords = false
+
     useEffect(() => {
         // Update remote window size on resize.
         window.addEventListener('resize', () => {
@@ -212,6 +214,10 @@ export default function Main() {
 
     }, [])
 
+    // useEffect(() => {
+    //     updateGraphCoords = true
+    // },[sessionData])
+
     // If we have a QR code, display it.
     if (qrCode !== '') {
         return (
@@ -231,7 +237,9 @@ export default function Main() {
             <GraphDataContext.Provider value={{ graphState: graphData, graphDispatch: graphDataDispatch }}>
                 <UserDataContext.Provider value={{ state: sessionData, dispatch: sessionDataDispatch}}>
                     <Container fluid>
-                    <ThreeDimGraph></ThreeDimGraph>
+                    <ThreeDimGraph
+                        updateGraphState={updateGraphCoords}
+                    ></ThreeDimGraph>
                     {/* <DisplaySigmaGraph/> */}
 
                         {/* <Row>

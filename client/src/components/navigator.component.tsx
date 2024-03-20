@@ -18,8 +18,8 @@ const Navigator = memo(function Navigator(
     const [ width, setWidth ] = useState(500)
     const [ activeTab, setActiveTab ] = useState('simulator')
     let { theme, setTheme } = React.useContext(themeContext)
-    console.log(theme)
-    console.log(setTheme)
+    // console.log(theme)
+    // console.log(setTheme)
 
     // // // check for them in locastorage : 
     // useEffect(() => {
@@ -35,7 +35,7 @@ const Navigator = memo(function Navigator(
     // })
     const html = document.getElementsByTagName('html')[0]
     // localStorage.setItem('theme',theme)
-    console.log('theme in toggleDarkmode',theme)
+    // console.log('theme in toggleDarkmode',theme)
     if (html) {
     // Set data-bs-theme to dark
         html.setAttribute('data-bs-theme', theme)
@@ -46,7 +46,7 @@ const Navigator = memo(function Navigator(
 
         setTheme(prevTheme => prevTheme ===  'dark' ? 'light' : 'dark');
 
-        console.log('thogling them',theme)
+        // console.log('thogling them',theme)
         const html = document.getElementsByTagName('html')[0]
         // localStorage.setItem('theme',theme)
         console.log('theme in toggleDarkmode',theme)

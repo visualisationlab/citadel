@@ -46,19 +46,25 @@ const BUSINNESSROLE_TO_COLOR = {
     // 'Assasin': '#8995C1'
   }
 
-export default function ThreeDimGraph(){
+//   interface MyComponentProps { bar: string; }
+//   {setSimSetupVisible} : {setSimSetupVisible:React.Dispatch<React.SetStateAction<boolean>>}
+
+export default function ThreeDimGraph(
+    {updateGraphState} : {updateGraphState:boolean}){
     const { graphState,graphDispatch } = useContext(GraphDataContext)
     const [reactForceData, setGraphData] = useState({ nodes: [], links: [] });
+    // let updatePositionsOnForceEngine = false
 
     const fgRef = useRef();
     // let nodeColor = '#7a92d2'
 
-
-    if (graphState === null) {
-        return
-    }
     console.log('GRAPH STATE IN TRHEEDIMGRAPH')
     console.log(graphState)
+
+    // if (graphState === null) {
+    //     return
+    // }
+
 
     useEffect(() => {
 
@@ -74,6 +80,8 @@ export default function ThreeDimGraph(){
         // fg.d3Force('center', null);
         // fg.d3Force('charge', null);
         // fg.pauseAnimation()
+
+        console.log('first useffect')
 
         let nodes = []
         graphState.nodes.data.forEach(basicNode =>{
@@ -91,6 +99,7 @@ export default function ThreeDimGraph(){
                 color: BUSINNESSROLE_TO_COLOR[basicNode["Business Role"]]
     
             })
+            console.log('added node')
     
         })
         let links = []
@@ -105,9 +114,16 @@ export default function ThreeDimGraph(){
         })
 
         setGraphData({ nodes, links});
+        // updatePositionsOnForceEngine = true
+
 
     },[graphState])
 
+
+    // useEffect(() => {
+    //     updatePositionsOnForceEngine = true
+        
+    // },[])
 
     console.log(reactForceData)
 
@@ -141,10 +157,46 @@ export default function ThreeDimGraph(){
             }
             onEngineStop={() => {
                 let {nodes,} = reactForceData
-                RFDataToGraphstate(nodes,graphState)
+                let newState = RFDataToGraphstate(nodes,graphState)
+
                 // graphDispatch('set')let newGraphstate = 
                 // Update graphstate in api: 
-                // API.updateGraph(graphState) 
+                // API.updateGraph(newState) 
+                // console.log(reactForceData)
+
+
+                // console.log("ENGINE STOP")
+                // if (updateGraphState){
+                //     const action: GraphDataReducerAction = {
+                //         type: "set",
+                //         property: "data",
+                //         value: {
+                //           nodes: graphState.nodes.data.map((node,idx) => {
+                //             // console.log(reactForceData[0])
+                //             // console.log(idx)
+                //             return {
+                //             ...node,
+                //             position:{
+                //                 x:reactForceData.nodes[idx].x,
+                //                 y:reactForceData.nodes[idx].y,
+                //                 z:reactForceData.nodes[idx].z
+                //             }
+                //             // position:graphState.nodes.data.map(node => (node.position)
+                //             // position: { x: 0, y: 0 },
+                //           }}),
+                //           edges: graphState.edges.data,
+                //           globals: graphState.globals
+                //         },
+                //       };
+
+
+                //     graphDispatch(action);
+                //     // updatePositionsOnForceEngine = true
+
+                //     console.log('UPDATED GRAPH STATE WITH COMPUTED COORDINATES')
+                // }
+
+
             }}
         />
         </div> //
@@ -160,7 +212,9 @@ function RFDataToGraphstate(nodes: any[],graphState:GraphDataState) {
     return graphState
 }
 
+// const ThreeDimGraph = React.memo(ThreeDimGraphcomp)
 
+// export default ThreeDimGraph
 
 // const { useState, useEffect, useRef } = React;
 

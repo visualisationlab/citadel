@@ -203,6 +203,7 @@ function setData(state: GraphDataState, action: GraphDataReducerAction): GraphDa
 }
 
 export function GraphDataReducer(state: GraphDataState, action: GraphDataReducerAction): GraphDataState {
+    console.log('GraphDataReducer fired')
     let newState
     switch (action.type) {
         case 'set':
