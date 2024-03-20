@@ -82,9 +82,9 @@ export default function ThreeDimGraph(){
                 "name":basicNode["Business Role"],
                 "val":basicNode["Criminal Capital"],
                 "group":BUSINNESSROLE_TO_GROUP[basicNode["Business Role"]],
-                "x":basicNode.position.x * 500,//basicNode.position.x == 0 || null ? null : 
-                "y":basicNode.position.y * 500,//basicNode.position.y == 0 || null ? null: 
-                "z":basicNode.position.z * 500,//basicNode.position.z == 0 || null ? null : 
+                "x":basicNode.position.x ,//basicNode.position.x == 0 || null ? null : * 500
+                "y":basicNode.position.y ,//basicNode.position.y == 0 || null ? null: * 500
+                "z":basicNode.position.z ,//basicNode.position.z == 0 || null ? null : * 500
                 // "fx":basicNode.position.x * 500,//basicNode.position.x == 0 || null ? null : 
                 // "fy":basicNode.position.y * 500,//basicNode.position.y == 0 || null ? null: 
                 // "fz":basicNode.position.z * 500,//basicNode.position.z == 0 || null ? null : 
@@ -136,7 +136,7 @@ export default function ThreeDimGraph(){
                 if (reactForceData.nodes[0] == undefined){
                     return
                 }
-                console.log(reactForceData.nodes[0].x,reactForceData.nodes[0].y,reactForceData.nodes[0].z)
+                console.log(reactForceData.nodes[0].id,reactForceData.nodes[0].x,reactForceData.nodes[0].y,reactForceData.nodes[0].z)
                 }
             }
             onEngineStop={() => {
