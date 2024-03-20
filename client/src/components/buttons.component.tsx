@@ -109,11 +109,15 @@ function ButtonsComponent() {
 
         return newSize || color
           ? {
-              id: node.id,
-              attributes: {
-                ...(newSize && { size: newSize }),
-                ...(color && { color }),
-              },
+              ...node,
+              ...(newSize && { size: newSize }),
+              ...(color && { color })
+              // id: node.id,
+              // attributes: {
+              //   ...(newSize && { size: newSize }),
+              //   ...(color && { color }),
+              // },
+              // position: node.position
             }
           : null;
       })
@@ -121,11 +125,13 @@ function ButtonsComponent() {
 
     if (updatedNodes.length > 0) {
       const action: GraphDataReducerAction = {
-        type: "BATCH_UPDATE",
+        type: "set",
+        property: "data",
         value: {
           nodes: updatedNodes.map((update) => ({
             ...update,
-            position: { x: 0, y: 0 },
+            // position:graphState.nodes.data.map(node => (node.position)
+            // position: { x: 0, y: 0 },
           })),
           edges: graphState.edges.data,
           globals: {}

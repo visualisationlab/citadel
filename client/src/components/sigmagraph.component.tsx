@@ -87,7 +87,7 @@ export function LoadSigmaGraph(){
                 basicNode.id,
                 {
                     label:basicNode["Business Role"],
-                    size:basicNode["Criminal Capital"]*20 + basicNode["Financial Capital"] *20,
+                    size:basicNode["size"] == null ? basicNode["Criminal Capital"]*20 + basicNode["Financial Capital"] *20 : basicNode["size"],
                     x:basicNode.position.x == 0 || null ? floor(random(1500)) : basicNode.position.x,//basicNode.position.x,
                     y:basicNode.position.y == 0 || null ? floor(random(900)) : basicNode.position.y,//basicNode.position.y
                     color: BUSINNESSROLE_TO_COLOR[basicNode["Business Role"]] ?? nodeColor
