@@ -2,7 +2,22 @@ import React, { useEffect, useState, useRef, useContext } from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
 import { GraphDataContext } from "./main.component";
 import { GraphDataReducerAction } from "../reducers/graphdata.reducer";
-import { BasicNode } from "./router.component";
+
+const scaling_factor = 50
+
+const roleColors = {
+  Kingpin: "#1E90FF",
+  Dealer: "#87CEEB",
+  Organizer: "#00BFFF",
+  Financer: "#4682B4",
+  Assassin: "#7B68EE",
+};
+
+function calculateSizeForValueOne() {
+  const value = 1;
+  const size = value * scaling_factor;
+  return { value, size };
+}
 
 function ButtonsComponent() {
   const { graphState, graphDispatch } = useContext(GraphDataContext);
@@ -36,14 +51,14 @@ function ButtonsComponent() {
     const updatedNodes = graphState.nodes.data
       .map((node) => {
         let newSize;
-        let color;
+        let newColor;
 
         console.log(node);
         switch (actionType) {
           case "financial": {
             const financialCapital = node["Financial Capital"] || 1;
             if (financialCapital !== undefined) {
-              newSize = financialCapital * 100;
+              newSize = financialCapital * scaling_factor;
               console.log(
                 "The new size of the node is",
                 newSize,
@@ -58,7 +73,7 @@ function ButtonsComponent() {
           case "criminal": {
             const criminalCapital = node["Criminal Capital"] || 1;
             if (criminalCapital !== undefined) {
-              newSize = criminalCapital * 100;
+              newSize = criminalCapital * scaling_factor;
               console.log(
                 "The new size of the node is",
                 newSize,
@@ -73,7 +88,7 @@ function ButtonsComponent() {
           case "violence": {
             const violenceCapital = node["Violence Capital"] || 1;
             if (violenceCapital != undefined) {
-              newSize = violenceCapital * 100;
+              newSize = violenceCapital * scaling_factor;
               console.log(
                 "The new size of the node is",
                 newSize,
@@ -85,43 +100,28 @@ function ButtonsComponent() {
             }
             break;
           }
-          case "roleColor": {
-            const roleColors = {
-              Kingpin: "#1E90FF",
-              Dealer: "#87CEEB",
-              Organizer: "#00BFFF",
-              Financer: "#4682B4",
-              Assassin: "#7B68EE",
-            };
-            if (node["Business Role"] != undefined) {
-            color = roleColors[node["Business Role"]] || "#000000"
+          case "roleColor":
+            if (node["Business Role"] !== undefined) {
+                newColor = roleColors[node["Business Role"]] || "#000000";
             } else {
-              console.warn("Business role not defined for node:", node.id)
+                console.warn("Business role not defined for node:", node.id);
             }
             break;
-
-          }
           default: {
             console.log("No action defined for this type.");
             return;
           }
         }
 
-        return newSize || color
-          ? {
-              ...node,
-              ...(newSize && { size: newSize }),
-              ...(color && { color })
-              // id: node.id,
-              // attributes: {
-              //   ...(newSize && { size: newSize }),
-              //   ...(color && { color }),
-              // },
-              // position: node.position
-            }
-          : null;
-      })
-      .filter((node) => node !== null);
+        return newSize || newColor
+        ? {
+            ...node,
+            ...(newSize && { size: newSize }),
+            ...(newColor && { color: newColor }),
+        }
+        : null;
+})
+.filter((node) => node !== null);
 
     if (updatedNodes.length > 0) {
       const action: GraphDataReducerAction = {
@@ -129,12 +129,10 @@ function ButtonsComponent() {
         property: "data",
         value: {
           nodes: updatedNodes.map((update) => ({
-            ...update,
-            // position:graphState.nodes.data.map(node => (node.position)
-            // position: { x: 0, y: 0 },
+            ...update
           })),
           edges: graphState.edges.data,
-          globals: {}
+          globals: {},
         },
       };
 
@@ -142,44 +140,78 @@ function ButtonsComponent() {
     }
   };
 
-  return (
-    <div style={{ display: "flex", justifyContent: "space-between" }}>
-      <ButtonGroup
-        style={{ width: "100%", display: "flex" }}
-        ref={buttonGroupRef}
-        aria-label="Graph control buttons"
-      >
-        {["financial", "criminal", "violence", "roleColor"].map(
-          (type, index) => (
-            <Button
-              key={type}
-              variant={activeButton === index + 1 ? "primary" : "secondary"}
-              onClick={() => {
-                setActiveButton(index + 1);
-                updateGraphAppearance(type);
-              }}
-              className="mr-2 mb-2"
-            >
-              {type === "roleColor"
-                ? "Color nodes by role"
-                : `Change node size: ${
-                    type.charAt(0).toUpperCase() + type.slice(1)
-                  }`}
-            </Button>
-          )
-        )}
-      </ButtonGroup>
 
-      <Button
-        variant="warning"
-        onClick={() => {
-          setActiveButton(null);
-        }}
-        style={{ marginLeft: "10px" }}
-        className="mr-2 mb-2"
-      >
-        Revert State
-      </Button>
+  const renderLegend = (activeButton) => {
+    if (!activeButton) return <div>Select a button to see the legend.</div>;
+  
+    const actionType = ["Financial", "Criminal", "Violence", "roleColor"][activeButton - 1];
+    
+    if (actionType === "roleColor") {
+      return Object.entries(roleColors).map(([role, color], index) => (
+        <div key={index} style={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
+          <div style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: color, marginRight: '10px' }}></div>
+          <span>{role}</span>
+        </div>
+      ));
+    } else {
+      const { value, size } = calculateSizeForValueOne();
+      return (
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
+          <div style={{ width: `${size}px`, height: `${size}px`, borderRadius: '50%', backgroundColor: '#000', marginRight: '10px' }}></div>
+          <span>{actionType} Capital = {value}</span>
+        </div>
+      );
+    }
+  };
+  
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+      }}
+    >
+      <div>
+        <ButtonGroup
+          style={{ width: "100%", display: "flex" }}
+          ref={buttonGroupRef}
+          aria-label="Graph control buttons"
+        >
+          {["financial", "criminal", "violence", "roleColor"].map(
+            (type, index) => (
+              <Button
+                key={type}
+                variant={activeButton === index + 1 ? "primary" : "secondary"}
+                onClick={() => {
+                  setActiveButton(index + 1);
+                  updateGraphAppearance(type);
+                }}
+                className="mr-2 mb-2"
+              >
+                {type === "roleColor"
+                  ? "Color nodes by role"
+                  : `Change node size: ${
+                      type.charAt(0).toUpperCase() + type.slice(1)
+                    }`}
+              </Button>
+            )
+          )}
+        </ButtonGroup>
+
+        <Button
+          variant="warning"
+          onClick={() => {
+            setActiveButton(null);
+          }}
+          style={{ marginLeft: "0px" }}
+          className="mr-2 mb-2"
+        >
+          Revert State
+        </Button>
+      </div>
+      <div style={{ marginTop: "20px" }}>{renderLegend(activeButton)}</div>
     </div>
   );
 }
