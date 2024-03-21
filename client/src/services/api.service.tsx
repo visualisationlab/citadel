@@ -270,6 +270,28 @@ export module API {
         websocketService.sendMessageToServer(newMessage)
     }
 
+    export function sendGraphPositions(graphState: GraphDataState,currentSimStep) {
+        if (sid === null || userID === null) {
+            return
+        }
+
+        const newMessage: MessageTypes.Message<'setGraphPositions'> = {
+            type: 'setGraphPositions',
+            payload: {
+                nodes: graphState.nodes.data,
+                step: currentSimStep
+            },
+            sessionID: sid!,
+            receiverID: 'server',
+            receiverType: 'server',
+            senderID: userID!,
+            senderType: 'user',
+            timestamp: new Date()
+        }
+
+        websocketService.sendMessageToServer(newMessage)
+    }
+
     export function updateUsername(name: string) {
         if (sid === null || name === '' || userID === null) {
             console.log(userID)

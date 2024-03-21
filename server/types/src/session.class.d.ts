@@ -55,6 +55,7 @@ export declare class Session {
     private globalsGeneratedOn;
     private simState;
     private graphHistory;
+    private latestLayout;
     private graphIndex;
     private logger;
     private playmode;
@@ -70,6 +71,7 @@ export declare class Session {
     private parseJson;
     private loadGraphState;
     private handleRegisterSimulatorMessage;
+    private triggerSimStep;
     private handleSimulatorDataMessage;
     private parseSimulatorMessage;
     private parseGetMessage;

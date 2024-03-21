@@ -315,6 +315,8 @@ export class Session {
     /* Stores graph slices for timeline. */
     private graphHistory: [string, AvailableLayout | null][]
 
+    private latestLayout: {nodes:Types.Graph.BasicNode[],step:number}
+
     /* Current graph index. */
     private graphIndex = 0
 
@@ -370,8 +372,8 @@ export class Session {
 
         this.cy.json(data) //Added by LAU
         
-        console.log('data in session constructor')
-        console.log(data)
+        // console.log('data in session constructor')
+        // console.log(data)
         this.graphHistory = [[gzipSync(JSON.stringify(data)).toString('base64'), null]]
 
 
@@ -630,44 +632,19 @@ export class Session {
         })
     }
 
-    private handleSimulatorDataMessage(message: MessageTypes.Message<'simulatorResponse'>,
-        resolve: (value: () => void) => void,
-        reject: (error: Error) => void)  {
-
-        const payload = message.payload
-
-        console.log(message)
+    private triggerSimStep(payload: MessageTypes.SimulatorDataPayload){
 
         const data = this.parseJson(payload.nodes,
             payload.edges)
 
-        // If cancel message is received, reset state.
-        if (this.cancelSim) {
-            this.simulators.forEach((sim) => {
-                if (sim.key === this.simState.apiKey) {
-                    sim.state = 'idle'
-                }
-            })
+        data.elements.nodes.forEach(node => {
+            let new_position = this.latestLayout.nodes.filter(n => {return n.id === node['id'].toString()}) // mega inefficient..
+            node['position'] = new_position
+        })
 
-            this.simState = {
-                step: 0,
-                stepMax: 0,
-                name: '',
-                apiKey: null,
-                params: payload.params,
-            }
+        console.log('updated node postion:',data.elements.nodes[0]['position'])
 
-            this.setState('idle')
-
-            this.cancelSim = false
-
-            resolve(() => {
-                this.sendSessionState()
-                this.sendGraphState()
-            })
-
-            return
-        }
+        // this.cy.json(data) // not sure if this is needed/ probably is though
 
         /* Process new data message. */
         this.storeCurrentGraphState().then(() => {
@@ -726,13 +703,75 @@ export class Session {
                     // Otherwise send new message to sim.
                     this.sendSimulatorMessage()
                 }
-
-                resolve(() => {
-                    this.sendSessionState()
-                    this.sendGraphState()
-                })
             })
         })
+
+    }
+
+    private handleSimulatorDataMessage(message: MessageTypes.Message<'simulatorResponse'>,
+        resolve: (value: () => void) => void,
+        reject: (error: Error) => void)  {
+
+        const payload = message.payload
+
+        // console.log(message)
+
+        // If cancel message is received, reset state.
+        if (this.cancelSim) {
+            this.simulators.forEach((sim) => {
+                if (sim.key === this.simState.apiKey) {
+                    sim.state = 'idle'
+                }
+            })
+
+            this.simState = {
+                step: 0,
+                stepMax: 0,
+                name: '',
+                apiKey: null,
+                params: payload.params,
+            }
+
+            this.setState('idle')
+
+            this.cancelSim = false
+
+            resolve(() => {
+                this.sendSessionState()
+                this.sendGraphState()
+            })
+
+            return
+        }
+
+        console.log(this.simState.currentStep != this.latestLayout.step)
+        console.log(this.simState.currentStep)
+        console.log(this.latestLayout.step)
+        // while (this.simState.currentStep == this.latestLayout.step){
+        //     //wait for the layout to be updated
+        // }
+        console.log('got out of while loop')
+        // update current data form simulator with latest node positions : 
+
+        if (this.simState.step == this.latestLayout.step){
+            // client layout algorithm finished in while simulation stepped
+            // so can continue to next step and send state to client 
+
+            this.triggerSimStep(payload)
+
+            resolve(() => {
+                this.sendSessionState()
+                this.sendGraphState()
+            })
+
+        } else if (this.simState.step > this.latestLayout.step){
+            // simulation finished before layout was computed. 
+            // don't continue simulation, don't send graph state. 
+            // simulation will continue on set graph positions
+            resolve(() => {})
+        }
+
+
     }
 
     /* Parse message sent by simulator. */
@@ -892,9 +931,9 @@ export class Session {
 
             this.logger.log('warn', "Layout generation timed out")
             await worker.terminate().then(() => {
-                console.log('thingy')
+                // console.log('thingy')
             }).catch((reason) => {
-                console.log(reason)
+                // console.log(reason)
             })
 
             resolve('')
@@ -1092,6 +1131,73 @@ export class Session {
                         this.sendGraphState()
                     })
                     break
+                case 'setGraphPositions':
+                        const graphPositionMessage = message as MessageTypes.Message<'setGraphPositions'>
+
+                        this.latestLayout = {nodes:graphPositionMessage.payload.nodes,step:graphPositionMessage.payload.step}
+
+                        if (this.simState.step == this.latestLayout.step){
+                            // layout ahead of simulation. So the simulationResponse 
+                            console.log('Saved graph positions from client for current session ')
+                            resolve(() => {
+                                // this.sendGraphState()
+                            })
+                        }
+                        else if (this.simState.step > this.latestLayout.step){
+                            // simulation was faster then layout algorith (very unlikely)
+                            // so now we need to initiate the next simulation step from this response
+
+                            // data :payload: MessageTypes.SimulatorDataPayload
+
+                            
+                            console.log('sendGraphState')
+                            // console.log(graphData)
+                    
+                            // const payload = {
+                            //     nodes: graphData.elements.nodes.map((node) => {
+                            //         return {
+                            //             id: node.data.id!,
+                            //             position: node.position!,
+                            //             ...node.data,
+                            //         }}),
+                            //     edges: graphData.elements.edges.map((edge) => {
+                            //         return {
+                            //             id: edge.data.id!,
+                            //             ...edge.data,
+                            //         }}
+                            //     ),
+                            //     globals: this.globals,
+                            // }
+
+                            const graphData = this.cy.json() as Types.CytoGraph
+
+                            let payload : MessageTypes.SimulatorDataPayload = {
+                                nodes:graphPositionMessage.payload.nodes,
+                                edges: graphData.elements.edges.map((edge) => {
+                                    return {
+                                        id: edge.data.id!,
+                                        ...edge.data,
+                                    }}),
+                                globals: this.globals,
+                                params: this.simState.params,
+                                apikey: this.simState.apiKey
+                                
+                            }
+
+                            resolve(() => {
+                                this.sendGraphState()
+                                this.triggerSimStep(payload)
+                            })
+                            
+
+                        }
+    
+                        // Update server graph state.
+                        // this.changeGraphState(
+                        //     this.parseJson(graphPositionMessage.payload.nodes,[]))
+                        
+
+                        break
                 case 'setSliceIndex':
                     const indexMessage = message as MessageTypes.Message<'setSliceIndex'>
 
@@ -1132,8 +1238,8 @@ export class Session {
                     break
                 case 'changeWindowSize':
                     const windowMessage = message as MessageTypes.Message<'changeWindowSize'>
-                    console.log('did I change the window size?')
-                    console.log(this.users)
+                    // console.log('did I change the window size?')
+                    // console.log(this.users)
                     this.users.forEach((user) => {
                         if (user.userID === windowMessage.senderID) {
                             user.width = windowMessage.payload.width
@@ -1282,8 +1388,8 @@ export class Session {
         this.pruneSessions()
 
         const graphData = this.cy.json() as Types.CytoGraph
-        console.log('sending graph state')
-        console.log(graphData)
+        console.log('sendGraphState')
+        // console.log(graphData)
 
         const payload = {
             nodes: graphData.elements.nodes.map((node) => {
@@ -1301,7 +1407,7 @@ export class Session {
             globals: this.globals,
         }
         console.log('created payload for sending graphdata')
-        console.log(this.users)
+        // console.log(this.users)
         // TODO: id and position checks
         this.users.forEach((user) => {
             const message: MessageTypes.Message<'sendGraphState'> = {
@@ -1314,9 +1420,9 @@ export class Session {
                 sessionID: this.sessionID,
                 timestamp: new Date,
             }
-            console.log('created message')
+            // console.log('created message')
             this.sendMessage(user.socket, message)
-            console.log('message send')
+            // console.log('message send')
             // user.headsets.forEach((headset) => {
             //     if (headset.socket) {
             //         message.receiverID = headset.headsetID
@@ -1486,12 +1592,13 @@ export class Session {
 
     // Sends session info to all users.
     private sendSessionState() {
-        console.log('pruning sessions')
+        // console.log('pruning sessions')
+        console.log('sendSessionState()')
         this.pruneSessions()
 
         const dateDiff = new Date(this.expirationDate.getTime() - new Date().getTime())
-        console.log(this.simState)
-        console.log('looping over users')
+        // console.log(this.simState)
+        // console.log('looping over users')
         this.users.forEach((user) => {
             const message: MessageTypes.Message<'sendSessionState'> = {
                 type: 'sendSessionState',
@@ -1656,9 +1763,9 @@ export class Session {
     // Adds a user to the session, giving it a random user ID and username.
     addUser(socket: WebSocket, username: string | null, keys: number, req: IncomingMessage): string {
         //const userID = uid.sync(4)
-        console.log('in adduser')
+        // console.log('in adduser')
         const userID = req.socket.remoteAddress
-        console.log('userID',userID)
+        // console.log('userID',userID)
 
         if (userID === undefined) {
             throw new Error('Could not get user ID')
@@ -1705,7 +1812,7 @@ export class Session {
             panY: 0,
             panK: 1
         })
-        console.log('added users info in addUser')
+        // console.log('added users info in addUser')
 
         const initMessage: MessageTypes.Message<'userInitialization'> = {
             sessionID: this.sessionID,

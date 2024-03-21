@@ -90,6 +90,11 @@ export type CytoGraph = {
     }
 }
 
+type PositionsAtStepPayload = {
+    nodes: BasicNode[],
+    step : number
+}
+
 export module MessageTypes {
     type ServerDataType = 'graphState' | 'sessionState' | 'layouts' | 'apiKey' | 'QR'
     export type SetType = 'playstate' | 'graphState' | 'simulator' | 'stopSimulator'
@@ -115,6 +120,7 @@ export module MessageTypes {
         'setPlayState': {playState: boolean},
         'generateLayout': {layout: LayoutSettings},
         'setGraphState': BasicGraph,
+        'setGraphPositions':PositionsAtStepPayload,
         'setSliceIndex': {index: number},
         'addHeadset': NonNullable<unknown>,//{},
         'userInitialization': UserInitializationPayload,
@@ -129,6 +135,8 @@ export module MessageTypes {
         globals: {[key: string]: any}
         params: Array<SimulatorParam<ParamType>>
     }
+
+    
 
     type StartSimulatorPayload = {
         stepCount: number,
@@ -239,12 +247,12 @@ export module Router {
         if (!sessionDataDispatch || !graphDataDispatch || !selectionDataDispatch) {
             return
         }
-        console.log(message)
+        // console.log(message)
 
         switch (message.type) {
             case 'sendGraphState':{
                 const messageData: BasicGraph = (message as MessageTypes.Message<'sendGraphState'>).payload
-                console.log(messageData)
+                // console.log(messageData)
 
                 const nodes: BasicNode[] = messageData.nodes
 
@@ -264,7 +272,7 @@ export module Router {
 
                 const edges: BasicEdge[] = messageData.edges
 
-                console.log(messageData.globals)
+                // console.log(messageData.globals)
                 graphDataDispatch({
                     property: 'data',
                     type: 'set',

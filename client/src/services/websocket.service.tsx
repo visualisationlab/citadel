@@ -88,7 +88,7 @@ class WebsocketService {
     }
 
     parseServerMessage<T  extends keyof MessageTypes.MessageTypeMap>(message: MessageTypes.Message<T>) {
-        console.log(message)
+        // console.log(message)
         Router.route(message)
     }
 

@@ -121,7 +121,7 @@ function configureExpressApp(app, config, sessions, logger, formatter) {
                     return;
                 }
                 https.get(url, (response) => {
-                    console.log('https get worked?');
+                    // console.log('https get worked?')
                     let data = '';
                     response.on('data', (chunk) => {
                         // Check for max size.
@@ -153,7 +153,7 @@ function configureExpressApp(app, config, sessions, logger, formatter) {
                             // }
                             let json;
                             const extension = url.split(/[#?]/)[0]?.split('.').pop()?.trim();
-                            console.log(extension);
+                            // console.log(extension)
                             if (extension === 'graphml') {
                                 const graphmlInstance = graph_format_converter_1.GraphFormatConverter.fromGraphml(data);
                                 json = graphmlInstance.toJson();
@@ -177,7 +177,7 @@ function configureExpressApp(app, config, sessions, logger, formatter) {
                                 });
                                 return;
                             }
-                            console.log(json);
+                            // console.log(json)
                             // Parse globals
                             let globals = { general: {} };
                             if (json.attributes) {
@@ -194,7 +194,7 @@ function configureExpressApp(app, config, sessions, logger, formatter) {
                                     }
                                 }
                             }
-                            console.log('made it this far');
+                            // console.log('made it this far')
                             const session = new session_class_1.Session(sid, ((sid) => {
                                 sessions[sid] = null;
                             }), url, json, config.localAddress, // as BasicGraph

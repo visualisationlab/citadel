@@ -119,8 +119,8 @@ export function SessionDataReducer(state: SessionState, action: SessionReducer):
         case 'all':{
             const message = action.value
             const payload = message.payload//! ? message.payload: {}
-            console.log('payload in sessionDataReducer')
-            console.log(payload)
+            // console.log('payload in sessionDataReducer')
+            // console.log(payload)
 
             return {
                 globals: payload.globals,
@@ -190,7 +190,7 @@ export function SessionDataReducer(state: SessionState, action: SessionReducer):
 
             return {...state}
         case 'simulatorSettings':
-            console.log(action.params)
+            // console.log(action.params)
             state.simulators = state.simulators.map((sim) => {
                 if (sim.key === action.key)
                     sim.params = action.params
@@ -198,7 +198,7 @@ export function SessionDataReducer(state: SessionState, action: SessionReducer):
                 return sim
                 })
 
-            console.log(state.simulators)
+            // console.log(state.simulators)
 
             return {...state}
         default:

@@ -166,7 +166,7 @@ export function configureExpressApp(
                 }
 
                 https.get(url, (response) => {
-                    console.log('https get worked?')
+                    // console.log('https get worked?')
                     let data = ''
 
                     response.on('data', (chunk) => {
@@ -209,7 +209,7 @@ export function configureExpressApp(
                             let json
 
                             const extension = url.split(/[#?]/)[0]?.split('.').pop()?.trim()
-                            console.log(extension)
+                            // console.log(extension)
 
                             if (extension === 'graphml') {
                                 const graphmlInstance = GraphFormatConverter.fromGraphml(data);
@@ -241,7 +241,7 @@ export function configureExpressApp(
                                 return
                             }
 
-                            console.log(json)
+                            // console.log(json)
 
                             // Parse globals
                             let globals: {[key: string]: {[key: string]: string}} = {general: {}}
@@ -262,7 +262,7 @@ export function configureExpressApp(
                                     }
                                 }
                             }
-                            console.log('made it this far')
+                            // console.log('made it this far')
 
                             const session = new Session(sid, ((sid) => {
                                 sessions[sid] = null

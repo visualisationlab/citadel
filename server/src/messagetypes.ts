@@ -29,6 +29,7 @@ export type MessageTypeMap = {
     'setPlayState': {playState: boolean},
     'generateLayout': {layout: LayoutSettings},
     'setGraphState': Types.Graph.BasicGraph,
+    'setGraphPositions': PositionsAtStepPayload,
     'setSliceIndex': {index: number},
     'addHeadset': object,
     'userInitialization': UserInitializationPayload,
@@ -36,13 +37,18 @@ export type MessageTypeMap = {
     'createTestSimulator': object,
 }
 
-type SimulatorDataPayload = {
+export type SimulatorDataPayload = {
     nodes: Types.Graph.BasicNode[],
     edges: Types.Graph.BasicEdge[],
     apikey: string,
     globals: {[key: string]: string | number | boolean}//{ value: number; }
     //globals: {[key: string]: string | number | boolean}
     params: Array<Types.Simulator.SimulatorParameter<Types.Simulator.SimulatorParameterType>>
+}
+
+type PositionsAtStepPayload = {
+    nodes: Types.Graph.BasicNode[],
+    step : number
 }
 
 type StartSimulatorPayload = {

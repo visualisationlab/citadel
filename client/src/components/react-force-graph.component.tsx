@@ -11,6 +11,8 @@ import React, { useRef, useContext,useEffect,useState } from 'react';
 import { GraphDataContext } from './main.component'
 import { API } from '../services/api.service'
 import { GraphDataReducerAction, GraphDataState, GraphDataReducer } from '../reducers/graphdata.reducer'
+import {  UserDataContext } from '../components/main.component'
+
 
 import ForceGraph3D from 'react-force-graph-3d';
 import {ForceGraphMethods} from 'react-force-graph-3d';
@@ -53,13 +55,14 @@ export default function ThreeDimGraph(
     {updateGraphState} : {updateGraphState:boolean}){
     const { graphState,graphDispatch } = useContext(GraphDataContext)
     const [reactForceData, setGraphData] = useState({ nodes: [], links: [] });
+    const { state,  } = useContext(UserDataContext)
     // let updatePositionsOnForceEngine = false
 
     const fgRef = useRef();
     // let nodeColor = '#7a92d2'
 
-    console.log('GRAPH STATE IN TRHEEDIMGRAPH')
-    console.log(graphState)
+    // console.log('GRAPH STATE IN TRHEEDIMGRAPH')
+    // console.log(graphState)
 
     // if (graphState === null) {
     //     return
@@ -81,7 +84,7 @@ export default function ThreeDimGraph(
         // fg.d3Force('charge', null);
         // fg.pauseAnimation()
 
-        console.log('first useffect')
+        // console.log('first useffect')
 
         let nodes = []
         graphState.nodes.data.forEach(basicNode =>{
@@ -99,7 +102,7 @@ export default function ThreeDimGraph(
                 color: BUSINNESSROLE_TO_COLOR[basicNode["Business Role"]]
     
             })
-            console.log('added node')
+            // console.log('added node')
     
         })
         let links = []
@@ -125,7 +128,7 @@ export default function ThreeDimGraph(
         
     // },[])
 
-    console.log(reactForceData)
+    // console.log(reactForceData)
 
     //ForceGraphMethods.pauseAnimation()
 
@@ -161,7 +164,8 @@ export default function ThreeDimGraph(
 
                 // graphDispatch('set')let newGraphstate = 
                 // Update graphstate in api: 
-                // API.updateGraph(newState) 
+                API.sendGraphPositions(newState,state.simState.step) 
+                console.log('UPDATED GRAPH STATE WITH COMPUTED COORDINATES')
                 // console.log(reactForceData)
 
 

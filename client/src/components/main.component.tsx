@@ -225,7 +225,7 @@ export default function Main() {
         )
     }
 
-    console.log('theme about to given to context provider : ',theme)
+    // console.log('theme about to given to context provider : ',theme)
 
     return (
         <>

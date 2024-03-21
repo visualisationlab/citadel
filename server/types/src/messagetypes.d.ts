@@ -34,6 +34,7 @@ export type MessageTypeMap = {
         layout: LayoutSettings;
     };
     'setGraphState': Types.Graph.BasicGraph;
+    'setGraphPositions': PositionsAtStepPayload;
     'setSliceIndex': {
         index: number;
     };
@@ -46,7 +47,7 @@ export type MessageTypeMap = {
     };
     'createTestSimulator': object;
 };
-type SimulatorDataPayload = {
+export type SimulatorDataPayload = {
     nodes: Types.Graph.BasicNode[];
     edges: Types.Graph.BasicEdge[];
     apikey: string;
@@ -54,6 +55,10 @@ type SimulatorDataPayload = {
         [key: string]: string | number | boolean;
     };
     params: Array<Types.Simulator.SimulatorParameter<Types.Simulator.SimulatorParameterType>>;
+};
+type PositionsAtStepPayload = {
+    nodes: Types.Graph.BasicNode[];
+    step: number;
 };
 type StartSimulatorPayload = {
     stepCount: number;
