@@ -867,9 +867,9 @@ class Session {
                     console.log('setGraphPositions :', this.simState.currentStep);
                     console.log('setGraphPositions :', this.latestLayout.step);
                     console.log('setGraphPositions :', 'waiting for simulation to finish to send data back to client');
-                    console.log('setGraphPositions :', this.simState.currentStep == this.latestLayout.step || this.simState.currentStep === 0);
+                    console.log('setGraphPositions :', this.simState.currentStep < this.latestLayout.step || this.simState.currentStep === 0);
                     console.log('setGraphPositions :', 'simulation was one step ahead, so sending data now');
-                    console.log('setGraphPositions :', this.simState.currentStep > this.latestLayout.step);
+                    console.log('setGraphPositions :', this.simState.currentStep == this.latestLayout.step);
                     if (this.simState.currentStep < this.latestLayout.step || this.simState.currentStep === 0) {
                         // layout ahead of simulation. So the simulationResponse handles the data to be send back to client
                         // Or simulation is not initiated yet, so simState.step is 0
@@ -900,7 +900,7 @@ class Session {
                         // }
                         const graphData = this.cy.json();
                         let payload = {
-                            nodes: graphData.payload.nodes.map((node) => {
+                            nodes: graphData.elements.nodes.map((node) => {
                                 return {
                                     id: node.data.id,
                                     ...node.data,
