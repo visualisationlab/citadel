@@ -468,13 +468,21 @@ class Session {
         });
     }
     triggerSimStep(payload) {
+        // console.log(payload.nodes)
         const data = this.parseJson(payload.nodes, payload.edges);
+        console.log("simulatorResponse :", this.latestLayout.nodes[0]);
         data.elements.nodes.forEach(node => {
+            // if 
             let new_position = this.latestLayout.nodes.filter(n => { return n.id === node['id'].toString(); }); // mega inefficient..
-            node['position'] = new_position;
+            // console.log("simulatorResponse : filtered position",new_position)
+            node['position'] = new_position[0]['position'];
         });
-        console.log('updated node postion:', data.elements.nodes[0]['position']);
-        // this.cy.json(data) // not sure if this is needed/ probably is though
+        console.log("simulatorResponse :", 'updated node postion:', data.elements.nodes[0]);
+        //this.cy.json(data) // not sure if this is needed/ probably is thoughqq
+        // console.log('simulatorResponse : ','stored the new graph positions in data object')
+        this.changeGraphState(this.parseJson(data.elements.nodes, data.elements.edges));
+        var newData = this.cy.json();
+        console.log("simulatorResponse :", newData['elements'].nodes[0]);
         /* Process new data message. */
         this.storeCurrentGraphState().then(() => {
             const runID = this.simRunID[this.sessionID];
@@ -486,22 +494,22 @@ class Session {
                 this.graphIndex = this.graphHistory.length - 1;
                 this.globals = payload.globals;
                 this.globalsGeneratedOn = this.graphIndex;
-                this.changeGraphState(this.parseJson(data.elements.nodes, data.elements.edges));
+                console.log('simulatorRespons : ', 'called change graph state with new data');
                 //this.changeGraphState(data)
                 // Update sim state.
                 this.simState = {
                     ...this.simState,
-                    step: this.simState.step + 1,
+                    currentStep: this.simState.currentStep + 1,
                 };
                 // If simulation is done, reset state.
-                if (this.simState.step >= this.simState.stepMax) {
+                if (this.simState.currentStep >= this.simState.stepMax) {
                     this.simulators.forEach((sim) => {
                         if (sim.key === this.simState.apiKey) {
                             sim.state = 'idle';
                         }
                     });
                     this.simState = {
-                        step: 0,
+                        currentStep: 0,
                         stepMax: 0,
                         apiKey: null,
                         name: '',
@@ -530,7 +538,7 @@ class Session {
                 }
             });
             this.simState = {
-                step: 0,
+                currentStep: 0,
                 stepMax: 0,
                 name: '',
                 apiKey: null,
@@ -544,28 +552,30 @@ class Session {
             });
             return;
         }
-        console.log(this.simState.currentStep != this.latestLayout.step);
-        console.log(this.simState.currentStep);
-        console.log(this.latestLayout.step);
+        console.log("simulatorResponse :", this.simState.currentStep == this.latestLayout.step || this.simState.currentStep == undefined);
+        console.log("simulatorResponse :", this.simState.currentStep);
+        console.log("simulatorResponse :", this.latestLayout.step);
         // while (this.simState.currentStep == this.latestLayout.step){
         //     //wait for the layout to be updated
         // }
-        console.log('got out of while loop');
+        // console.log('got out of while loop')
         // update current data form simulator with latest node positions : 
-        if (this.simState.step == this.latestLayout.step) {
+        if (this.simState.currentStep == this.latestLayout.step || this.simState.currentStep == undefined) {
             // client layout algorithm finished in while simulation stepped
             // so can continue to next step and send state to client 
             this.triggerSimStep(payload);
+            // console.log(this.cy.json())
             resolve(() => {
                 this.sendSessionState();
                 this.sendGraphState();
             });
         }
-        else if (this.simState.step > this.latestLayout.step) {
+        else if (this.simState.currentStep > this.latestLayout.step) {
             // simulation finished before layout was computed. 
             // don't continue simulation, don't send graph state. 
             // simulation will continue on set graph positions
             resolve(() => { });
+            console.log("simulatorResponse :", 'simStep bigger then layout step, so resolved without sending data');
         }
     }
     /* Parse message sent by simulator. */
@@ -649,7 +659,7 @@ class Session {
             return;
         }
         this.simState = {
-            step: 0,
+            currentStep: 0,
             stepMax: payload.stepCount,
             apiKey: payload.apiKey,
             params: payload.params,
@@ -849,18 +859,29 @@ class Session {
                 case 'setGraphPositions':
                     const graphPositionMessage = message;
                     this.latestLayout = { nodes: graphPositionMessage.payload.nodes, step: graphPositionMessage.payload.step };
-                    if (this.simState.step == this.latestLayout.step) {
-                        // layout ahead of simulation. So the simulationResponse 
-                        console.log('Saved graph positions from client for current session ');
+                    console.log(this.latestLayout.nodes[0]);
+                    if (this.latestLayout.step === undefined) {
+                        console.log('setGraphPositions : ', graphPositionMessage.payload.step);
+                    }
+                    console.log('setGraphPositions :', 'Saved graph positions from client for current session ');
+                    console.log('setGraphPositions :', this.simState.currentStep);
+                    console.log('setGraphPositions :', this.latestLayout.step);
+                    console.log('setGraphPositions :', 'waiting for simulation to finish to send data back to client');
+                    console.log('setGraphPositions :', this.simState.currentStep == this.latestLayout.step || this.simState.currentStep === 0);
+                    console.log('setGraphPositions :', 'simulation was one step ahead, so sending data now');
+                    console.log('setGraphPositions :', this.simState.currentStep > this.latestLayout.step);
+                    if (this.simState.currentStep < this.latestLayout.step || this.simState.currentStep === 0) {
+                        // layout ahead of simulation. So the simulationResponse handles the data to be send back to client
+                        // Or simulation is not initiated yet, so simState.step is 0
                         resolve(() => {
                             // this.sendGraphState()
                         });
                     }
-                    else if (this.simState.step > this.latestLayout.step) {
+                    else if (this.simState.currentStep == this.latestLayout.step) {
                         // simulation was faster then layout algorith (very unlikely)
                         // so now we need to initiate the next simulation step from this response
                         // data :payload: MessageTypes.SimulatorDataPayload
-                        console.log('sendGraphState');
+                        // console.log('sendGraphState')
                         // console.log(graphData)
                         // const payload = {
                         //     nodes: graphData.elements.nodes.map((node) => {
@@ -879,7 +900,12 @@ class Session {
                         // }
                         const graphData = this.cy.json();
                         let payload = {
-                            nodes: graphPositionMessage.payload.nodes,
+                            nodes: graphData.payload.nodes.map((node) => {
+                                return {
+                                    id: node.data.id,
+                                    ...node.data,
+                                };
+                            }),
                             edges: graphData.elements.edges.map((edge) => {
                                 return {
                                     id: edge.data.id,
@@ -891,8 +917,8 @@ class Session {
                             apikey: this.simState.apiKey
                         };
                         resolve(() => {
-                            this.sendGraphState();
                             this.triggerSimStep(payload);
+                            this.sendGraphState();
                         });
                     }
                     // Update server graph state.
@@ -1047,7 +1073,7 @@ class Session {
         this.pruneSessions();
         const graphData = this.cy.json();
         console.log('sendGraphState');
-        // console.log(graphData)
+        console.log('position of first node : ', graphData.elements.nodes[0]);
         const payload = {
             nodes: graphData.elements.nodes.map((node) => {
                 return {
@@ -1166,7 +1192,7 @@ class Session {
         }
         if (sim.length === 0 || this.simState.apiKey === null || sim[0].socket === null) {
             this.simState = {
-                step: 0,
+                currentStep: 0,
                 stepMax: 0,
                 name: '',
                 apiKey: null,
@@ -1279,8 +1305,8 @@ class Session {
                         };
                     }),
                     simState: {
-                        step: this.simState.currentStep,
-                        stepMax: this.simState.steps,
+                        currentStep: this.simState.currentStep,
+                        stepMax: this.simState.currentSteps,
                         name: 'no simulator connected' //this.simState.name | 
                     },
                     sessionURL: this.localAddress,
@@ -1356,7 +1382,7 @@ class Session {
             if (sim.key === apiKey) {
                 if (sim.state === 'generating') {
                     this.simState = {
-                        step: 0,
+                        currentStep: 0,
                         stepMax: 0,
                         name: '',
                         apiKey: null,
@@ -1465,7 +1491,7 @@ class Session {
             if (sim.userID === userID) {
                 if (sim.state === 'generating') {
                     this.simState = {
-                        step: 0,
+                        currentStep: 0,
                         stepMax: 0,
                         name: '',
                         apiKey: null,

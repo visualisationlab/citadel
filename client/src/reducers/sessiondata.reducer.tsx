@@ -17,7 +17,7 @@ export interface SessionState {
     graphIndex: number,
     graphIndexCount: number,
     simState: {
-        step: number,
+        currentStep: number,
         stepMax: number,
         name: string
     },
@@ -173,7 +173,7 @@ export function SessionDataReducer(state: SessionState, action: SessionReducer):
                     return {...state.simulators[index], username: sim.username, state: sim.state}
                 }),
                 simState: {
-                    step: payload.simState.step,
+                    currentStep: payload.simState.currentStep,
                     stepMax: payload.simState.stepMax,
                     name: payload.simState.name,
 

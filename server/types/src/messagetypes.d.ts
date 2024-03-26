@@ -126,7 +126,7 @@ type SessionStatePayload = {
     }[];
     simState: {
         /** The current simulation step. */
-        step: number;
+        currentStep: number;
         /** The number of steps to calculate. */
         stepMax: number;
         /** Running sim name. */

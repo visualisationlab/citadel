@@ -11,7 +11,7 @@ import React, { useRef, useContext,useEffect,useState } from 'react';
 import { GraphDataContext } from './main.component'
 import { API } from '../services/api.service'
 import { GraphDataReducerAction, GraphDataState, GraphDataReducer } from '../reducers/graphdata.reducer'
-import {  UserDataContext } from '../components/main.component'
+import {  UserDataContext,SimStepContext } from '../components/main.component'
 
 
 import ForceGraph3D from 'react-force-graph-3d';
@@ -56,6 +56,8 @@ export default function ThreeDimGraph(
     const { graphState,graphDispatch } = useContext(GraphDataContext)
     const [reactForceData, setGraphData] = useState({ nodes: [], links: [] });
     const { state,  } = useContext(UserDataContext)
+    const {stepSetting} = useContext(SimStepContext)
+
     // let updatePositionsOnForceEngine = false
 
     const fgRef = useRef();
@@ -64,9 +66,9 @@ export default function ThreeDimGraph(
     // console.log('GRAPH STATE IN TRHEEDIMGRAPH')
     // console.log(graphState)
 
-    // if (graphState === null) {
-    //     return
-    // }
+    if (graphState === null) {
+        return
+    }
 
 
     useEffect(() => {
@@ -87,7 +89,12 @@ export default function ThreeDimGraph(
         // console.log('first useffect')
 
         let nodes = []
+        // console.log('graph position of first node on render : ',graphState.nodes.data[0])
+        // console.log(graphState === undefined)
+        // console.log(graphState === null)
+        // console.log(graphState)
         graphState.nodes.data.forEach(basicNode =>{
+            console.log(basicNode.position)
             nodes.push({
                 id:basicNode.id,
                 "name":basicNode["Business Role"],
@@ -97,7 +104,7 @@ export default function ThreeDimGraph(
                 "y":basicNode.position.y ,//basicNode.position.y == 0 || null ? null: * 500
                 "z":basicNode.position.z ,//basicNode.position.z == 0 || null ? null : * 500
                 // "fx":basicNode.position.x * 500,//basicNode.position.x == 0 || null ? null : 
-                // "fy":basicNode.position.y * 500,//basicNode.position.y == 0 || null ? null: 
+                // "fy":basicNode.position.y * 500,//basicNode.position.y == 0 || null ? null : 
                 // "fz":basicNode.position.z * 500,//basicNode.position.z == 0 || null ? null : 
                 color: BUSINNESSROLE_TO_COLOR[basicNode["Business Role"]]
     
@@ -164,8 +171,12 @@ export default function ThreeDimGraph(
 
                 // graphDispatch('set')let newGraphstate = 
                 // Update graphstate in api: 
-                API.sendGraphPositions(newState,state.simState.step) 
+                console.log('Simulation step in client SessionState : ',state.simState.currentStep)
+                console.log('Simulation step in client stepSetting : ',stepSetting)
+                API.sendGraphPositions(newState,state.simState.currentStep) 
+                console.log(newState.nodes.data)
                 console.log('UPDATED GRAPH STATE WITH COMPUTED COORDINATES')
+
                 // console.log(reactForceData)
 
 
