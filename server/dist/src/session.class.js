@@ -470,19 +470,19 @@ class Session {
     triggerSimStep(payload) {
         // console.log(payload.nodes)
         const data = this.parseJson(payload.nodes, payload.edges);
-        console.log("simulatorResponse :", this.latestLayout.nodes[0]);
+        // console.log("simulatorResponse :",this.latestLayout.nodes[0])
         data.elements.nodes.forEach(node => {
             // if 
             let new_position = this.latestLayout.nodes.filter(n => { return n.id === node['id'].toString(); }); // mega inefficient..
             // console.log("simulatorResponse : filtered position",new_position)
             node['position'] = new_position[0]['position'];
         });
-        console.log("simulatorResponse :", 'updated node postion:', data.elements.nodes[0]);
+        // console.log("simulatorResponse :",'updated node postion:',data.elements.nodes[0])
         //this.cy.json(data) // not sure if this is needed/ probably is thoughqq
         // console.log('simulatorResponse : ','stored the new graph positions in data object')
         this.changeGraphState(this.parseJson(data.elements.nodes, data.elements.edges));
-        var newData = this.cy.json();
-        console.log("simulatorResponse :", newData['elements'].nodes[0]);
+        // var newData = this.cy.json()
+        // console.log("simulatorResponse :",newData['elements'].nodes[0])
         /* Process new data message. */
         this.storeCurrentGraphState().then(() => {
             const runID = this.simRunID[this.sessionID];
@@ -563,6 +563,7 @@ class Session {
         if (this.simState.currentStep == this.latestLayout.step || this.simState.currentStep == undefined) {
             // client layout algorithm finished in while simulation stepped
             // so can continue to next step and send state to client 
+            console.log('simulatorResponse globasl : ', payload.globals);
             this.triggerSimStep(payload);
             // console.log(this.cy.json())
             resolve(() => {
@@ -574,8 +575,19 @@ class Session {
             // simulation finished before layout was computed. 
             // don't continue simulation, don't send graph state. 
             // simulation will continue on set graph positions
-            resolve(() => { });
-            console.log("simulatorResponse :", 'simStep bigger then layout step, so resolved without sending data');
+            resolve(() => {
+                // var oldData = this.cy.json()
+                // console.log("simulatorResponse : number of nodes BEFORE saving sim data :",oldData['elements'].nodes.length)
+                // Store received graph stat form simulator
+                const data = this.parseJson(payload.nodes, payload.edges);
+                this.changeGraphState(this.parseJson(data.elements.nodes, data.elements.edges));
+                this.storeCurrentGraphState();
+                // Store globals : 
+                this.globals = payload.globals;
+                // var newData = this.cy.json()
+                // console.log("simulatorResponse : number of nodes AFTER saving sim data :",newData['elements'].nodes.length)
+            });
+            console.log("simulatorResponse : ", 'simStep bigger then layout step, so resolved without sending data');
         }
     }
     /* Parse message sent by simulator. */
@@ -859,7 +871,7 @@ class Session {
                 case 'setGraphPositions':
                     const graphPositionMessage = message;
                     this.latestLayout = { nodes: graphPositionMessage.payload.nodes, step: graphPositionMessage.payload.step };
-                    console.log(this.latestLayout.nodes[0]);
+                    // console.log(this.latestLayout.nodes[0])
                     if (this.latestLayout.step === undefined) {
                         console.log('setGraphPositions : ', graphPositionMessage.payload.step);
                     }
@@ -898,6 +910,9 @@ class Session {
                         //     ),
                         //     globals: this.globals,
                         // }
+                        //update the step:
+                        // this.globals['step'] += 1;
+                        // console.log('setGraphPossitions :',this.globals)
                         const graphData = this.cy.json();
                         let payload = {
                             nodes: graphData.elements.nodes.map((node) => {
@@ -1072,8 +1087,8 @@ class Session {
     sendGraphState() {
         this.pruneSessions();
         const graphData = this.cy.json();
-        console.log('sendGraphState');
-        console.log('position of first node : ', graphData.elements.nodes[0]);
+        // console.log('sendGraphState')
+        // console.log('position of first node : ',graphData.elements.nodes[0])
         const payload = {
             nodes: graphData.elements.nodes.map((node) => {
                 return {
