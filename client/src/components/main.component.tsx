@@ -108,7 +108,7 @@ export default function Main() {
         graphIndex: 0,
         graphIndexCount: 1,
         simState: {
-            step: 0,
+            currentStep: 0,
             stepMax: 0,
             name: ''
         },

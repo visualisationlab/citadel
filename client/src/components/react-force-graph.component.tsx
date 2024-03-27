@@ -5,24 +5,26 @@
  */
 
 
-import React, { useRef, useContext,useEffect,useState } from 'react';
+import  { useRef, useContext,useEffect,useState } from 'react';
 
 // import { Renderer } from './renderer.component'
 import { GraphDataContext } from './main.component'
 import { API } from '../services/api.service'
-import { GraphDataReducerAction, GraphDataState, GraphDataReducer } from '../reducers/graphdata.reducer'
+import { GraphDataState } from '../reducers/graphdata.reducer'
 import {  UserDataContext,SimStepContext } from '../components/main.component'
 
 
 import ForceGraph3D from 'react-force-graph-3d';
-import {ForceGraphMethods} from 'react-force-graph-3d';
-import ForceGraph2D from 'react-force-graph-2d';
+import { forceLink,forceManyBody,forceSimulation,forceCenter } from 'd3';
 
-import { SelectionDataContext, GlobalSettingsContext } from "./main.component"
+// import {ForceGraphMethods} from 'react-force-graph-3d';
+// import ForceGraph2D from 'react-force-graph-2d';
+
+// import { SelectionDataContext, GlobalSettingsContext } from "./main.component"
 // import { MappingContext } from './main.component'
 // import { MappingType } from '../reducers/selectedmappings.reducer';
 // import { BasicEdge, BasicNode } from './router.component';
-import {themeContext} from './darkmode.component';
+// import {themeContext} from './darkmode.component';
 // import {random,floor} from "mathjs"
 
 const BUSINNESSROLE_TO_GROUP = {
@@ -71,20 +73,44 @@ export default function ThreeDimGraph(
     }
 
 
-    useEffect(() => {
 
+    useEffect(() => {
         const fg = fgRef.current;
 
         if (fg==undefined){
             console.log('fg undefined')
             return
         }
+    
+
+        //initiate force parameters
+        let charge:number = -30;
+        let theta:number = .9;// Burnes-Hut approximation. Larger is faster but less accurate. 
+        let distanceMax:number = null; //maximum reach of force between nodes
+        let alphaDecay:number = .0228;
+        let alphaMin:number = .001;
+        let alpha:number = 1
 
 
         // Deactivate existing forces
         // fg.d3Force('center', null);
         // fg.d3Force('charge', null);
         // fg.pauseAnimation()
+
+
+        // Set force layout parameter depending on simulation or first graph load : 
+        if (state.state == 'simulating'){
+                // set initial temp lower 
+                charge = -10
+                theta = 1
+                distanceMax = 100
+                alphaDecay = .035
+                alphaMin = .003
+                alpha = .5
+
+        }
+
+
 
         // console.log('first useffect')
 
@@ -115,15 +141,25 @@ export default function ThreeDimGraph(
         let links = []
     
         graphState.edges.data.forEach(basicEdge =>{
+            console.log(basicEdge)
             links.push(
                 {
                     "source":basicEdge.source,
-                    "target":basicEdge.target
+                    "target":basicEdge.target,
+                    "weight":basicEdge["Trust"]
                 }
             )
         })
 
         setGraphData({ nodes, links});
+
+            // set the force engine : 
+        const engine = forceSimulation(reactForceData.nodes)
+        .force("charge",forceManyBody().strength(charge).theta(theta).distanceMax(distanceMax))
+        .force('link', forceLink(reactForceData.links).strength((link) => link.weight))
+        .force("center",forceCenter());
+
+        fg.d3Force = engine
         // updatePositionsOnForceEngine = true
 
 
@@ -143,8 +179,9 @@ export default function ThreeDimGraph(
         <ForceGraph3D 
             ref={fgRef}
             graphData={reactForceData}
-            d3AlphaDecay={.03}
-            d3AlphaMin={.002}
+            // d3Force={engine}
+            // d3AlphaDecay={.03}
+            // d3AlphaMin={.002}
             nodeAutoColorBy="group"
             onNodeDrag={()=>{
                 if (fgRef != undefined){
